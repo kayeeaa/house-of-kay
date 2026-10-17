@@ -1,5 +1,4 @@
 User-agent: *
-Disallow: /planner
 Disallow: /voxie/new-passcode
 
 Sitemap: https://www.house-of-kay.co.uk/sitemap.xml

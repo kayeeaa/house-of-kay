@@ -4,6 +4,27 @@ const path = require('path')
 const app = express()
 
 const pub = (rel) => path.join(__dirname, 'public', rel)
+const CANONICAL_HOST = 'www.house-of-kay.co.uk'
+
+const hostname = (req) => (req.hostname || '').toLowerCase()
+
+app.use((req, res, next) => {
+  const host = hostname(req)
+
+  if (req.path === '/' || req.path === '/index.html') {
+    const target = host === 'house-of-kay.co.uk' || host === CANONICAL_HOST
+      ? `https://${CANONICAL_HOST}/voxie`
+      : '/voxie'
+
+    return res.redirect(host ? 301 : 302, target)
+  }
+
+  if (host === 'house-of-kay.co.uk') {
+    return res.redirect(301, `https://${CANONICAL_HOST}${req.originalUrl}`)
+  }
+
+  return next()
+})
 
 // Voxie content: one file per item/pet/location/mission. The game imports every file listed here,
 // so adding content is just dropping a file into the folder.
@@ -16,12 +37,10 @@ app.get('/voxie/content-manifest.json', (req, res) => res.json({
   locations: listVoxieContent('locations'), missions: listVoxieContent('missions')
 }))
 
-app.get('/menu',               (req, res) => res.sendFile(pub('menu/index.html')))
-app.get('/slap-war',           (req, res) => res.sendFile(pub('slap-war/index.html')))
-app.get('/voxie',              (req, res) => res.sendFile(pub('voxie/index.html')))
-app.get('/planner',              (req, res) => res.sendFile(pub('planner/index.html')))
-app.get('/planner/dashboard',      (req, res) => res.sendFile(pub('planner/dashboard/index.html')))
-app.get('/planner/dashboard/kids', (req, res) => res.sendFile(pub('planner/dashboard/kids/index.html')))
+app.get('/voxie', (req, res) => res.sendFile(pub('voxie/index.html')))
+
+// The family planner, the Snap game and the menu that linked them have gone: old links go to Voxie.
+app.use(['/menu', '/slap-war', '/planner'], (req, res) => res.redirect(301, '/voxie'))
 
 app.use(express.static(pub('')))
 
