@@ -506,23 +506,34 @@ function renderSchoolLessons() {
 }
 
 /* Not handed in first, soonest due at the top. Overdue ones stay until MCAS says they're handed in. */
+/* Grouped by when it's due: Late first, then each day (Today, Tomorrow, Monday 20 October…), then Done
+   (handed in or ticked off) at the bottom. In each one the due label is above the name, the subject below. */
 function renderSchoolHomework() {
-  const homework = [...mySchool.homework].sort((a, b) => Number(a.submitted) - Number(b.submitted) || `${a.dueDate} ${a.dueTime}`.localeCompare(`${b.dueDate} ${b.dueTime}`));
+  const today = getTodayInUk();
+  const finished = item => item.submitted || !!homeworkTick(item.id);
+  const groupFor = item => finished(item) ? "done" : homeworkDueLabel(item).urgency === "late" ? "late" : item.dueDate;
+  const groupName = group => group === "done" ? "Done" : group === "late" ? "Late" : group === today ? "Today" : group === shiftDate(today, 1) ? "Tomorrow"
+    : new Date(`${group}T12:00:00Z`).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+  const groupOrder = group => group === "late" ? "0" : group === "done" ? "9" : `1${group}`;
+  const homework = [...mySchool.homework].sort((a, b) => groupOrder(groupFor(a)).localeCompare(groupOrder(groupFor(b))) || `${a.dueDate} ${a.dueTime}`.localeCompare(`${b.dueDate} ${b.dueTime}`));
+  let lastGroup = null;
   element("schoolHomeworkList").innerHTML = !homework.length ? `<p class="hint">No homework right now. Nice!</p>`
     : homework.map(item => {
-      const due = homeworkDueLabel(item), tick = homeworkTick(item.id), finished = item.submitted || !!tick;
+      const due = homeworkDueLabel(item), tick = homeworkTick(item.id), group = groupFor(item);
       const status = item.submitted ? "Handed in" : tick ? "Done" : due.text;
-      return `<details class="school-homework${finished ? " done" : ""}" data-due="${due.urgency}">
+      const heading = group === lastGroup ? "" : `<h4 class="homework-day" data-group="${group === "late" || group === "done" ? group : "day"}">${escapeHtml(groupName(group))}</h4>`;
+      lastGroup = group;
+      return `${heading}<details class="school-homework${finished(item) ? " done" : ""}" data-due="${due.urgency}">
         <summary>
-          <span class="school-homework-title"><strong>${escapeHtml(item.title)}</strong>
-            <span class="homework-meta"><span class="school-due">${escapeHtml(status)}</span><span class="hint">${escapeHtml(item.subject || "From Teams")}</span></span></span>
+          <span class="school-homework-title"><span class="school-due">${escapeHtml(status)}</span><strong>${escapeHtml(item.title)}</strong>
+            <span class="hint">${escapeHtml(item.subject || "From Teams")}</span></span>
         </summary>
         <div class="school-homework-body">
           ${item.instructions ? `<p class="school-instructions">${escapeHtml(item.instructions)}</p>` : ""}
           ${homeworkLinksHtml(item)}
           ${item.setBy ? `<p class="hint">Set by ${escapeHtml(item.setBy)}</p>` : ""}
           ${canTickInSchool(item) ? `<button type="button" class="btn small" data-tick-homework="${escapeHtml(item.id)}">I've done it: +${HOMEWORK_XP} XP</button>` : ""}
-          ${tick && !item.submitted ? `<p class="hint">Ticked off${tick.completedOn === getTodayInUk() ? " today" : ""}.</p>` : ""}
+          ${tick && !item.submitted ? `<p class="hint">Ticked off${tick.completedOn === today ? " today" : ""}.</p>` : ""}
         </div>
       </details>`;
     }).join("");
@@ -661,7 +672,7 @@ function renderHomeworkTasks() {
     const tickAttributes = tick ? `checked${tick.completedOn === today ? "" : " disabled"}` : "";
     const about = [item.subject || "From Teams", item.setBy && `set by ${item.setBy}`].filter(Boolean).join(", ");
     return `<li class="homework-task" data-due="${due.urgency}">
-      <div class="chore"><label><input type="checkbox" data-homework-id="${escapeHtml(item.id)}" ${tickAttributes}><span class="homework-task-title"><strong>${escapeHtml(item.title)}</strong><span class="homework-meta"><span class="school-due">${escapeHtml(due.text)}</span><span class="hint">${escapeHtml(about)}</span></span></span></label></div>
+      <div class="chore"><label><input type="checkbox" data-homework-id="${escapeHtml(item.id)}" ${tickAttributes}><span class="homework-task-title"><span class="school-due">${escapeHtml(due.text)}</span><strong>${escapeHtml(item.title)}</strong><span class="hint">${escapeHtml(about)}</span></span></label></div>
       ${homeworkLinksHtml(item)}
       <details class="homework-task-more">
         <summary>What to do</summary>

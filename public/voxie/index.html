@@ -204,8 +204,9 @@
         </section>
 
         <div class="parent-columns">
-          <section class="block scheduled" aria-labelledby="parentTasksHeading">
-            <h2 id="parentTasksHeading">Tasks</h2>
+          <details class="game-panel admin-group">
+            <summary id="parentTasksHeading">Tasks</summary>
+            <div class="game-body">
             <p class="hint" id="parentTasksIntro"></p>
             <ul class="schedule-list" id="parentTaskList"></ul>
             <form class="schedule-form" id="parentTaskForm" novalidate>
@@ -229,11 +230,13 @@
               <p class="error" id="parentTaskError" role="alert"></p>
               <button class="btn" type="submit" id="parentTaskAddButton">Add task</button>
             </form>
-          </section>
+            </div>
+          </details>
 
           <div class="parent-side">
-            <section class="block" aria-labelledby="parentSettingsHeading">
-              <h2 id="parentSettingsHeading">Settings</h2>
+            <details class="game-panel admin-group">
+              <summary id="parentSettingsHeading">Settings</summary>
+              <div class="game-body">
               <div class="setting">
                 <div class="text"><strong><label for="parentSettingTimed">Timed missions</label></strong><span class="hint">A clock for reading each mission, then a few seconds to answer. Off means no clock at all.</span></div>
                 <input type="checkbox" class="switch" id="parentSettingTimed" role="switch">
@@ -251,10 +254,12 @@
                 <input type="checkbox" class="switch" id="parentSettingChildCanChange" role="switch">
               </div>
               <p class="error" id="parentSettingsError" role="alert"></p>
-            </section>
+              </div>
+            </details>
             <!-- Feature "school": notifications before lessons on the child's MCAS timetable -->
-            <section class="block" id="parentLessonSection" aria-labelledby="parentLessonHeading" hidden>
-              <h2 id="parentLessonHeading">Lesson reminders</h2>
+            <details class="game-panel admin-group" id="parentLessonSection" hidden>
+              <summary id="parentLessonHeading">Lesson reminders</summary>
+              <div class="game-body">
               <p class="hint" id="parentLessonIntro"></p>
               <div class="setting">
                 <div class="text"><strong><label for="parentRemindersSwitch">Notifications on this device</label></strong><span class="hint" id="parentRemindersHint"></span></div>
@@ -287,9 +292,11 @@
                 <p class="error" id="parentLessonError" role="alert"></p>
                 <button class="btn" type="submit" id="parentLessonAddButton">Add reminder</button>
               </form>
-            </section>
-            <section class="block" aria-labelledby="parentLoginHeading">
-              <h2 id="parentLoginHeading">Login</h2>
+              </div>
+            </details>
+            <details class="game-panel admin-group">
+              <summary id="parentLoginHeading">Login</summary>
+              <div class="game-body">
               <p class="login-detail"><span class="label">Username</span> <strong id="parentChildUsername"></strong></p>
               <form class="login-pop-form" id="parentPasscodeForm" novalidate>
                 <div class="field">
@@ -301,9 +308,11 @@
                 <p class="hint" id="parentPasscodeDone" role="status"></p>
                 <button class="btn small" type="submit" id="parentPasscodeButton">Set new passcode</button>
               </form>
-            </section>
-            <section class="block" aria-labelledby="parentBirthHeading">
-              <h2 id="parentBirthHeading">Age</h2>
+              </div>
+            </details>
+            <details class="game-panel admin-group">
+              <summary id="parentBirthHeading">Age</summary>
+              <div class="game-body">
               <form class="login-pop-form" id="parentBirthForm" novalidate>
                 <div class="field">
                   <span class="label" id="parentBirthLabel">Birth month and year</span>
@@ -317,9 +326,11 @@
                 <p class="hint" id="parentBirthDone" role="status"></p>
                 <button class="btn small" type="submit" id="parentBirthButton">Save</button>
               </form>
-            </section>
-            <section class="block" aria-labelledby="parentGrownUpsHeading">
-              <h2 id="parentGrownUpsHeading">Grown-ups</h2>
+              </div>
+            </details>
+            <details class="game-panel admin-group">
+              <summary id="parentGrownUpsHeading">Grown-ups</summary>
+              <div class="game-body">
               <ul class="grown-up-list" id="parentGrownUpList"></ul>
               <p class="hint" id="parentInviteText"></p>
               <p class="link-code" id="parentInviteCode" hidden></p>
@@ -331,7 +342,8 @@
                 <div class="btnrow" id="parentUnlinkRow"></div>
                 <p class="error" id="parentUnlinkError" role="alert"></p>
               </div>
-            </section>
+              </div>
+            </details>
           </div>
         </div>
       </div>

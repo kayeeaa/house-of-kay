@@ -562,6 +562,11 @@ select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 /* Homework name across the full width, then the due label and subject underneath (so long names aren't squashed on phones) */
 .school-homework-title strong,.homework-task-title strong{overflow-wrap:anywhere}
 .homework-meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.school-homework-title .school-due{align-self:flex-start}
+/* School tab: a heading for each due day */
+.homework-day{margin:8px 0 0;font-size:15px;color:var(--muted)}
+.homework-day:first-child{margin-top:0}
+.homework-day[data-group="late"]{color:var(--danger)}
 .school-due{flex:none;font-family:var(--f-display);font-size:13px;padding:3px 8px;background:var(--sunk);border:2px solid var(--line);color:var(--muted)}
 .school-homework[data-due="soon"] .school-due{background:var(--gold);border-color:var(--dirt);color:#2A2100}
 .school-homework[data-due="late"] .school-due{background:var(--danger-bg);border-color:var(--danger);color:var(--danger)}
@@ -599,6 +604,7 @@ select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .homework-task-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
 .homework-task{display:flex;flex-direction:column;gap:8px;padding:8px;background:var(--bg);border:2px solid var(--line);border-bottom-width:4px}
 .homework-task-title{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0;line-height:1.3}
+.homework-task-title .school-due{align-self:flex-start}   /* the due label above the name, only as wide as its words */
 .homework-task .chore input:checked + .homework-task-title strong{text-decoration:line-through;color:var(--muted)}
 .homework-task .chore input:checked + span{text-decoration:none}
 .homework-task[data-due="soon"] .school-due{background:var(--gold);border-color:var(--dirt);color:#2A2100}
