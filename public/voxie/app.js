@@ -1946,8 +1946,10 @@ function renderBuddyList() {
       <canvas ${buddy.isActive ? 'width="112" height="112"' : 'class="angel" width="24" height="20"'}></canvas><strong>${escapeHtml(buddy.petName)}</strong>
       <span class="level-chip">LV ${buddyLevel(buddy.id)}</span>
       <span class="status">${buddy.isActive ? "Playing now" : "Angel · tap to play"}</span></button>`);
-  // One card per pet still to collect: the rebirth button if one is ready, otherwise a mystery padlock.
-  const toCollectCards = notCollected.map((petType, index) => index === 0 && canRebirth
+  // The pets still to collect: the rebirth button if one is ready, then up to MAX_MYSTERY_BUDDY_CARDS mystery padlocks
+  // (one for every pet would make the page too long to scroll).
+  const MAX_MYSTERY_BUDDY_CARDS = 3;
+  const toCollectCards = notCollected.slice(0, MAX_MYSTERY_BUDDY_CARDS + (canRebirth ? 1 : 0)).map((petType, index) => index === 0 && canRebirth
     ? `<button type="button" class="buddy adopt" data-rebirth aria-pressed="${rebirthPanelOpen}"><span class="plus" aria-hidden="true">+</span><strong>Rebirth</strong><span class="status">Pick your next pet</span></button>`
     : `<div class="buddy locked" role="img" aria-label="A pet still to collect">${LOCK_ICON}<strong>?</strong><span class="status">Rebirth every ${REBIRTH_EVERY_LEVELS} levels</span></div>`);
   const grid = element("buddyGrid");
