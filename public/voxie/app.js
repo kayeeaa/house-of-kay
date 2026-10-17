@@ -73,6 +73,7 @@ function endSession() {
 /* Clears everything from the last child, so a brother logging in on the same tablet starts fresh. */
 function resetSessionState() {
   currentProfile = null;
+  if (typeof registerCreations === "function") registerCreations([]);
   missionHelp = {}; openMissionId = null; newItemQueue = []; levelsSeen = {};
   myChance = { wonItemIds: [], swappedAwayItemIds: [], triedItemIds: [], boxesOpenedToday: 0, treasureClaimedThisWeek: false, claimedMilestones: [] };
   myPurchases = []; myItemXp = {}; myItemColours = {}; myGotAtLevels = {}; myBuddies = [];
@@ -836,6 +837,169 @@ async function turnOffRemindersHere() {
   await subscription.unsubscribe();
 }
 
+/* ---------- Make your own ----------
+   Wall art first: a 16 × 16 picture drawn in Creative, which then hangs in the house's picture slot like any other
+   item ("made-<id>"). Making one costs CREATION_PRICE XP, at most MAX_CREATIONS per buddy (the server's numbers too:
+   make_creation). Only the child and their grown-ups can see what they make: the server leaves it out of what
+   friends see. Pixels are stored as 16 rows of "0"–"f" (a colour from CREATION_PALETTE) or "." (empty). */
+const CREATION_PRICE = 20, MAX_CREATIONS = 20, WALL_ART_SIZE = 16;
+const CREATION_PALETTE = [
+  ["0", "#14172E", "Black"], ["1", "#FFFFFF", "White"], ["2", "#9AA3AD", "Grey"], ["3", "#5C6470", "Dark grey"],
+  ["4", "#E2453C", "Red"], ["5", "#F28C28", "Orange"], ["6", "#F6D44A", "Yellow"], ["7", "#7ED957", "Light green"],
+  ["8", "#2E9E4F", "Green"], ["9", "#6EC6F0", "Sky blue"], ["a", "#2F6FD6", "Blue"], ["f", "#1E3A5F", "Navy"],
+  ["b", "#5B3FB8", "Purple"], ["c", "#FF7BC5", "Pink"], ["d", "#8A5E36", "Brown"], ["e", "#F2C9A0", "Sand"],
+];
+const paletteColour = letter => (CREATION_PALETTE.find(([id]) => id === letter) || [])[1] || null;
+const emptyWallArt = () => Array.from({ length: WALL_ART_SIZE }, () => ".".repeat(WALL_ART_SIZE));
+let myCreations = [];
+let makeDraft = emptyWallArt(), makeColour = "0", makeTool = "paint", makePainting = false, throwAwayAsked = null;
+
+/* Puts the playing buddy's creations into the game's item list (and takes the last buddy's out). */
+function registerCreations(creations) {
+  myCreations = creations;
+  for (let index = INVENTORY_ITEMS.length - 1; index >= 0; index--) if (INVENTORY_ITEMS[index].made) INVENTORY_ITEMS.splice(index, 1);
+  creations.forEach(creation => INVENTORY_ITEMS.push({
+    id: `made-${creation.id}`, label: creation.name, category: "house", houseType: "extras", slot: "house-picture",
+    roomLayer: "on-wall", rarity: "common", colourName: "Made by you", colour: "#8A5E36", season: null, structural: true, made: true,
+    drawInRoom: scene => drawWallArtInRoom(scene, creation.pixels),
+  }));
+}
+/* In a wooden frame where pictures hang. The room canvas is low-res, so each square is a few canvas pixels at most. */
+function drawWallArtInRoom({ fill, width, height, themeShade }, pixels) {
+  const square = Math.max(1, Math.floor(Math.min(width * 0.2, height * 0.34) / (WALL_ART_SIZE + 2)));
+  const framed = square * (WALL_ART_SIZE + 2);
+  const x = Math.max(0, Math.min(Math.round(width * 0.68), width - framed)), y = Math.max(0, Math.min(Math.round(height * 0.1), height - framed));   // inside small thumbnails too
+  fill(x, y, framed, framed, "#8A5E36");
+  fill(x + square, y + square, square * WALL_ART_SIZE, square * WALL_ART_SIZE, themeShade(90));
+  drawWallArtPixels(fill, pixels, x + square, y + square, square);
+}
+function drawWallArtPixels(fill, pixels, left, top, square) {
+  pixels.forEach((row, rowIndex) => [...row].forEach((letter, columnIndex) => {
+    const colour = paletteColour(letter);
+    if (colour) fill(left + columnIndex * square, top + rowIndex * square, square, square, colour);
+  }));
+}
+const wallArtPainted = pixels => pixels.some(row => /[0-9a-f]/.test(row));
+
+function renderMakePanel() {
+  const wallet = xpToSpend(), full = myCreations.length >= MAX_CREATIONS;
+  element("makeHint").textContent = full ? `You've made ${MAX_CREATIONS} pictures, the most for one buddy. Throw one away to make another.`
+    : `Draw a picture for your wall. Making it costs ${CREATION_PRICE} XP (you have ${wallet}). Only you and your grown-ups can see it.`;
+  element("makePalette").innerHTML = CREATION_PALETTE.map(([id, colour, label]) =>
+    `<button type="button" class="make-swatch" data-make-colour="${id}" style="--swatch:${colour}" aria-label="${label}" aria-pressed="${id === makeColour}"></button>`).join("")
+    + `<button type="button" class="make-swatch eraser" data-make-colour="." aria-label="Rubber (clear a square)" aria-pressed="${makeColour === "."}">✕</button>`;
+  element("makePalette").querySelectorAll("[data-make-colour]").forEach(button => button.onclick = () => { makeColour = button.dataset.makeColour; renderMakePanel(); });
+  document.querySelectorAll("[data-make-tool]").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.makeTool === makeTool)));
+  element("makeToolHint").textContent = makeTool === "fill"
+    ? "Fill: tap a square to colour it and every square of the same colour joined to it. Tap the background to fill the whole background."
+    : "Draw: tap or drag to colour squares in.";
+  setButtonText(element("makeButton"), `Make it: ${CREATION_PRICE} XP`);
+  element("makeButton").disabled = full;
+  drawMakeCanvas();
+  renderMakeList();
+}
+function drawMakeCanvas() {
+  const canvas = element("makeCanvas"), context = canvas.getContext("2d"), square = canvas.width / WALL_ART_SIZE;
+  for (let row = 0; row < WALL_ART_SIZE; row++) for (let column = 0; column < WALL_ART_SIZE; column++) {
+    context.fillStyle = paletteColour(makeDraft[row][column]) || ((row + column) % 2 ? "#F1F1F1" : "#FFFFFF");   // empty = a light check
+    context.fillRect(column * square, row * square, square, square);
+  }
+  context.strokeStyle = "rgba(0, 0, 0, 0.08)";
+  for (let line = 1; line < WALL_ART_SIZE; line++) {
+    context.beginPath(); context.moveTo(line * square, 0); context.lineTo(line * square, canvas.height); context.stroke();
+    context.beginPath(); context.moveTo(0, line * square); context.lineTo(canvas.width, line * square); context.stroke();
+  }
+}
+/* Draw: tap or drag to colour squares in. Fill: tap to fill that square's joined area of the same colour. */
+function makeSquareAt(event) {
+  const box = element("makeCanvas").getBoundingClientRect();
+  const column = Math.floor((event.clientX - box.left) / box.width * WALL_ART_SIZE), row = Math.floor((event.clientY - box.top) / box.height * WALL_ART_SIZE);
+  return row < 0 || row >= WALL_ART_SIZE || column < 0 || column >= WALL_ART_SIZE ? null : { row, column };
+}
+const setMakeSquare = (row, column, letter) => { makeDraft[row] = makeDraft[row].slice(0, column) + letter + makeDraft[row].slice(column + 1); };
+function paintMakeSquare(event) {
+  const square = makeSquareAt(event);
+  if (!square || makeDraft[square.row][square.column] === makeColour) return;
+  setMakeSquare(square.row, square.column, makeColour);
+  drawMakeCanvas();
+}
+/* Squares that touch side by side (not corners), like a paint bucket. */
+function fillMakeArea(event) {
+  const square = makeSquareAt(event);
+  if (!square) return;
+  const from = makeDraft[square.row][square.column];
+  if (from === makeColour) return;
+  const waiting = [square];
+  while (waiting.length) {
+    const { row, column } = waiting.pop();
+    if (row < 0 || row >= WALL_ART_SIZE || column < 0 || column >= WALL_ART_SIZE || makeDraft[row][column] !== from) continue;
+    setMakeSquare(row, column, makeColour);
+    waiting.push({ row: row + 1, column }, { row: row - 1, column }, { row, column: column + 1 }, { row, column: column - 1 });
+  }
+  drawMakeCanvas();
+}
+document.querySelectorAll("[data-make-tool]").forEach(button => button.onclick = () => { makeTool = button.dataset.makeTool; renderMakePanel(); });
+element("makeCanvas").addEventListener("pointerdown", event => {
+  if (makeTool === "fill") { fillMakeArea(event); return; }
+  makePainting = true; element("makeCanvas").setPointerCapture(event.pointerId); paintMakeSquare(event);
+});
+element("makeCanvas").addEventListener("pointermove", event => { if (makePainting) paintMakeSquare(event); });
+["pointerup", "pointercancel"].forEach(type => element("makeCanvas").addEventListener(type, () => { makePainting = false; }));
+element("makeClear").onclick = () => { makeDraft = emptyWallArt(); element("makeDone").textContent = ""; drawMakeCanvas(); };
+
+element("makeButton").onclick = async () => {
+  const name = element("makeName").value.replace(/\s+/g, " ").trim();
+  element("makeDone").textContent = "";
+  const problem = !wallArtPainted(makeDraft) ? "Colour some squares in first." : !name ? "Give it a name first."
+    : xpToSpend() < CREATION_PRICE ? `You need ${CREATION_PRICE} XP to make it. Do missions or play games to earn more.` : "";
+  element("makeError").textContent = problem;
+  if (problem) return;
+  element("makeButton").disabled = true;
+  try {
+    const made = await dataLayer.makeCreation("wall-art", name, makeDraft);
+    registerCreations([...myCreations, { id: made.id, kind: "wall-art", name: made.name, pixels: made.pixels }]);
+    currentProgress.xpSpentInShop += made.pricePaid;
+    makeDraft = emptyWallArt();
+    element("makeName").value = "";
+    element("makeDone").textContent = `Made it! Put "${made.name}" up below, or find it in Places → House.`;
+    renderProgress();
+  } catch (error) {
+    const messages = { "not-enough-xp": `You need ${CREATION_PRICE} XP to make it.`, "too-many": `You've made ${MAX_CREATIONS} pictures, the most for one buddy.`,
+      "bad-name": "Pick a name up to 24 letters long.", "bad-pixels": "Colour some squares in first." };
+    element("makeError").textContent = messages[error.message] || "Couldn't make it. Check your internet and try again.";
+  }
+  renderMakePanel();
+};
+
+function renderMakeList() {
+  const list = element("makeList"), equipped = currentProfile.equipped_items;
+  list.innerHTML = myCreations.length ? myCreations.slice().reverse().map(creation => {
+    const itemId = `made-${creation.id}`, up = equipped.includes(itemId), asking = throwAwayAsked === creation.id;
+    return `<li><canvas width="16" height="16" data-make-thumb="${creation.id}" aria-hidden="true"></canvas>
+      <span class="what"><strong>${escapeHtml(creation.name)}</strong>${up ? `<span class="hint">On your wall</span>` : ""}</span>
+      <button type="button" class="btn small${up ? " ghost" : ""}" data-make-hang="${itemId}">${up ? "Take it down" : "Put it up"}</button>
+      <button type="button" class="btn small ${asking ? "danger" : "ghost"}" data-make-bin="${creation.id}">${asking ? "Sure? Throw away" : "Throw away"}</button></li>`;
+  }).join("") : `<li class="empty"><span class="hint">Nothing yet. Draw something above!</span></li>`;
+  list.querySelectorAll("[data-make-thumb]").forEach(canvas => {
+    const creation = myCreations.find(candidate => candidate.id === canvas.dataset.makeThumb), context = canvas.getContext("2d");
+    drawWallArtPixels((x, y, w, h, colour) => { context.fillStyle = colour; context.fillRect(x, y, w, h); }, creation.pixels, 0, 0, 1);
+  });
+  list.querySelectorAll("[data-make-hang]").forEach(button => button.onclick = () => toggleInventoryItem(button.dataset.makeHang));
+  list.querySelectorAll("[data-make-bin]").forEach(button => button.onclick = () => throwAwayCreation(button.dataset.makeBin));
+}
+/* Two taps: "Throw away", then "Sure? Throw away". The XP isn't given back. */
+async function throwAwayCreation(creationId) {
+  if (throwAwayAsked !== creationId) { throwAwayAsked = creationId; renderMakeList(); return; }
+  throwAwayAsked = null;
+  try {
+    await dataLayer.throwAwayCreation(creationId);
+    registerCreations(myCreations.filter(creation => creation.id !== creationId));
+    currentProfile.equipped_items = currentProfile.equipped_items.filter(itemId => itemId !== `made-${creationId}`);
+    hideSaveError();
+  } catch (error) { showSaveError("Couldn't throw it away. Check your internet and try again."); }
+  renderMakePanel();
+}
+
 /* ---------- Games tab ----------
    Mini-games to play with your buddy.
    Each game saves its result through the dataLayer; the server gives the XP, at most MAX_GAME_XP_PER_DAY a day from EACH game. */
@@ -849,8 +1013,25 @@ function renderGamesSetting() {
   element("gamesRiskSwitch").checked = losePointsOnLoss();
 }
 
+/* Creative has two parts: Make and Games. It remembers which one was open. */
+let creativePart = "games";
+function renderCreativePart() {
+  element("creativeSwitcher").querySelectorAll("[data-creative]").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.creative === creativePart)));
+  element("creativeMake").hidden = creativePart !== "make";
+  element("creativeGames").hidden = creativePart !== "games";
+  element("creativeHint").textContent = creativePart === "make"
+    ? "Make your own things for your house. They're yours to keep." : "Play as much as you like. Each game gives up to 10 XP a day.";
+}
+element("creativeSwitcher").querySelectorAll("[data-creative]").forEach(button => button.onclick = () => {
+  creativePart = button.dataset.creative;
+  if (creativePart === "make") { stopPong(); stopSnap(); }   // a game left running in the background would keep scoring
+  renderCreativePart();
+  if (creativePart === "make") renderMakePanel();
+});
 async function openGames() {
   showScreen("screenGames");
+  renderCreativePart();
+  renderMakePanel();
   renderGamesXpToday();
   renderPong();
   renderSnap();
@@ -1069,6 +1250,7 @@ async function loadPlayingBuddyData() {
     dataLayer.loadMyItemColours(), dataLayer.loadMyBuddyDeals()]);
   ({ itemColours: myItemColours, gotAtLevels: myGotAtLevels } = itemColourData);
   applyBuddyDeals(deals);
+  registerCreations(await dataLayer.loadMyCreations());
 }
 async function openGame() {
   showScreen("screenLoading");
@@ -1135,6 +1317,7 @@ function xpToSpend() { return Math.max(0, currentProgress.xpEarned - currentProg
 /* Shop items are yours once bought; everything else once your level is high enough. */
 function isShopItem(item) { return item.xpPrice !== undefined; }
 function isItemUnlocked(item, level) {
+  if (item.made) return true;   // things you made yourself
   if (myChance.wonItemIds.includes(item.id)) return true;
   if (isShopItem(item)) return myPurchases.includes(item.id);
   if (item.chanceOnly) return false;
@@ -1897,6 +2080,7 @@ function rerenderCurrentScreen() {
   if (!element("screenHouse").hidden) renderHouse();
   if (!element("screenLocations").hidden) renderLocations();
   if (!element("screenBuddies").hidden) renderBuddies();
+  if (!element("screenGames").hidden) renderMakePanel();
 }
 async function toggleInventoryItem(itemId) {
   const item = getInventoryItem(itemId), previous = currentProfile.equipped_items;

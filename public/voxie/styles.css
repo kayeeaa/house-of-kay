@@ -310,6 +310,7 @@ select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .gamehead h1{font-size:24px;min-width:0;overflow-wrap:anywhere}
 /* Two-way switch at the top of Places (House | Locations). */
 .switcher{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.screen-part{display:flex;flex-direction:column;gap:16px}
 .switcher button{font-family:var(--f-display);font-size:17px;min-height:48px;background:var(--surface);color:var(--ink);border:2px solid var(--line);border-bottom-width:4px;cursor:pointer}
 .switcher button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent-dk)}
 /* Buddies */
@@ -567,6 +568,18 @@ select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .school-instructions{margin:0;white-space:pre-line}
 .school-links{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
 .school-links .btn{display:inline-flex;align-items:center;text-decoration:none}
+/* Creative → Make wall art: the drawing grid, the colours, and what you've made */
+.make-canvas{display:block;width:100%;max-width:320px;height:auto;aspect-ratio:1;align-self:center;image-rendering:pixelated;border:3px solid var(--dirt);touch-action:none;cursor:crosshair;background:#FFFFFF}
+.make-palette{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:4px}
+.make-swatch{aspect-ratio:1;min-height:32px;padding:0;background:var(--swatch);border:2px solid var(--line);cursor:pointer;font:inherit;font-size:14px;color:#14172E}
+.make-swatch[aria-pressed="true"]{outline:3px solid var(--accent-dk);outline-offset:1px}
+.make-swatch.eraser{background:repeating-conic-gradient(#DDDDDD 0 25%,#FFFFFF 0 50%) 50%/10px 10px}
+.make-tools{display:flex;flex-wrap:wrap;gap:8px}
+.make-tools [aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent-dk)}
+.make-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.make-list li{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px;background:var(--sunk);border:2px solid var(--line)}
+.make-list canvas{width:48px;height:48px;flex:none;image-rendering:pixelated;background:#FFFFFF;border:2px solid var(--dirt)}
+.make-list .what{flex:1;min-width:8em;display:flex;flex-direction:column}
 /* Admin tab: each group of settings opens and closes (the Creative tab's game-panel look) */
 .admin-subgroup{display:flex;flex-direction:column;gap:12px;padding-top:4px}
 .admin-subgroup h3,.admin-group .game-body > h3{font-size:17px}

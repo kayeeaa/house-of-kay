@@ -16,6 +16,7 @@ Files:
 - `supabase/migrations/20261016120000_voxie_homework_late_ticks.sql`: late homework can be ticked (a teacher may give more time). It leaves Home once late and is ticked in the School tab.
 - `supabase/migrations/20261017090000_voxie_lesson_reminders.sql`: lesson reminders set by grown-ups on the child's tab (night before and/or morning of a lesson, to the child and/or grown-ups, at two times per child), and grown-ups get a copy of homework reminders. Sent by `send-reminders`.
 - `supabase/migrations/20261017110000_voxie_weekly_shop.sql`: each buddy's Shop sells 12 items, a different 12 per buddy and a new 12 every Monday (`private.shop_this_week`); `buy_item` only sells this week's 12. `buddy_shop` is no longer used.
+- `supabase/migrations/20261017120000_voxie_creations.sql`: things children make (for everyone since `20261017130000_voxie_creations_for_everyone.sql`), starting with 16 × 16 wall art for the picture slot. 20 XP each, 20 per buddy, item id `made-<id>`, private (left out of `public_look`), no powers, never in Mystery boxes; thrown away = hidden, XP stays spent.
 - `supabase/functions/_shared/voxie.ts` plus the `add-child`, `set-child-passcode` and `delete-child-account` folders.
 
 ## Calling conventions
@@ -41,6 +42,9 @@ Files:
 | rebirthAsNewPet | `rebirth_as_new_pet` | `p_pet_type, p_pet_name` | profile |
 | setActiveBuddy | `set_active_buddy` | `p_buddy_id` | profile |
 | loadMyBuddyDeals | table `buddy_unlocks` (the playing buddy's rows) + RPC `load_my_shop_this_week` | none | `{ unlockLevels: { kind: { id: level } }, shopThisWeek: [itemId], shopRestocksOn }` |
+| loadMyCreations | table `creations` (the playing buddy's, not thrown away) | none | `[{ id, kind, name, pixels }]` |
+| makeCreation | `make_creation` | `p_kind, p_name, p_pixels` | `{ id, name, pixels, pricePaid }` |
+| throwAwayCreation | `throw_away_creation` | `p_creation_id` | none |
 | searchPlayers | `search_players` | `p_search_text` | `[{ id, displayName, petType, petLook, relationship, requestId }]` |
 | sendFriendRequest | `send_friend_request` | `p_to_child_id` | none |
 | loadMyFriendRequests | `load_my_friend_requests` | none | `[{ id, fromChildId, displayName, petType, petLook }]` |

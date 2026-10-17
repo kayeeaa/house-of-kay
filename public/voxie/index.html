@@ -640,63 +640,96 @@
       <section class="block">
         <h2>Creative</h2>
         <!-- "Lose my points if I lose" is in the Admin tab with the rest of the settings -->
-        <p class="hint">Play as much as you like. Each game gives up to 10 XP a day.</p>
+        <p class="hint" id="creativeHint">Play as much as you like. Each game gives up to 10 XP a day.</p>
       </section>
-      <!-- Each game is a drop-down under its own header -->
-      <details class="game-panel" id="pongPanel">
-        <summary>Ping pong</summary>
-        <div class="game-body">
-          <p class="hint" id="pongXpToday"></p>
-          <p class="pong-score" id="pongScore" aria-live="polite"></p>
-          <p class="hint" id="pongCourtName"></p>
-          <canvas class="pong-court" id="pongCourt" width="640" height="400" aria-label="Ping pong court. Your buddy's bat is on the left."></canvas>
-          <p class="hint">Slide your finger or mouse up and down the court, or use the ↑ and ↓ keys. First to 3 wins. You get 1 XP for every point you score.</p>
-          <p class="game-message" id="pongMessage" role="status"></p>
-          <button type="button" class="btn" id="pongPlay">Play</button>
-        </div>
-      </details>
-      <details class="game-panel" id="snapPanel">
-        <summary>Snap</summary>
-        <div class="game-body">
-          <p class="hint" id="snapXpToday"></p>
-          <div class="snap-setup" id="snapSetup">
-            <div class="snap-modes" role="group" aria-label="Snap mode">
-              <button type="button" class="snap-mode" data-snap-mode="classic" aria-pressed="true"><strong>Classic</strong><span>Match the numbers</span></button>
-              <button type="button" class="snap-mode" data-snap-mode="hard" aria-pressed="false"><strong>Hard</strong><span>Match on numbers and colours</span></button>
+      <!-- Make or Games -->
+      <div class="switcher" id="creativeSwitcher" role="group" aria-label="Make or play">
+        <button type="button" data-creative="make" aria-pressed="false">Make</button>
+        <button type="button" data-creative="games" aria-pressed="true">Games</button>
+      </div>
+      <div class="screen-part" id="creativeMake" hidden>
+        <!-- Draw your own wall art (costs XP). It hangs in your house like any other item. -->
+        <details class="game-panel" id="makePanel" open>
+          <summary>Make wall art</summary>
+          <div class="game-body">
+            <p class="hint" id="makeHint"></p>
+            <canvas class="make-canvas" id="makeCanvas" width="256" height="256" aria-label="Your picture, 16 squares by 16. Tap or drag to colour squares in."></canvas>
+            <div class="make-palette" id="makePalette" role="group" aria-label="Colours"></div>
+            <div class="make-tools" role="group" aria-label="Drawing tool">
+              <button type="button" class="btn small ghost" data-make-tool="paint" aria-pressed="true">Draw</button>
+              <button type="button" class="btn small ghost" data-make-tool="fill" aria-pressed="false">Fill</button>
+              <button type="button" class="btn small ghost" id="makeClear">Start again</button>
             </div>
-            <!-- Changes with the mode picked (SNAP_MODES in engine/snap.js) -->
-            <p class="hint" id="snapModeHint" aria-live="polite"></p>
+            <p class="hint" id="makeToolHint"></p>
+            <div class="field">
+              <label class="label" for="makeName">Name it</label>
+              <input type="text" id="makeName" maxlength="24" autocomplete="off" placeholder="e.g. Sunset">
+            </div>
+            <p class="error" id="makeError" role="alert"></p>
+            <p class="hint" id="makeDone" role="status"></p>
+            <button type="button" class="btn" id="makeButton">Make it</button>
+            <h3>Your wall art</h3>
+            <ul class="make-list" id="makeList"></ul>
           </div>
-          <!-- The game: bot card on top, SNAP in the middle, your card underneath -->
-          <div class="snap-arena" id="snapArena" hidden>
-            <div class="snap-top" id="snapTop">
-              <span class="snap-phase" id="snapPhase">Warm-up</span>
-              <span class="snap-score">Score <strong id="snapScore">--</strong></span>
-              <button type="button" class="btn small ghost" id="snapStop">Stop</button>
-            </div>
-            <div class="snap-progress" aria-hidden="true"><div class="snap-progress-fill" id="snapProgress"></div><span class="snap-countdown" id="snapCountdown">30</span></div>
-            <div class="snap-card" id="snapBotCard">
-              <span class="snap-card-label"><canvas id="snapBotBuddy" width="48" height="42" aria-hidden="true"></canvas>Bot</span>
-              <span class="snap-number" id="snapBotNumber" aria-live="off">--</span>
-            </div>
-            <div class="snap-middle">
-              <p class="snap-message" id="snapMessage" role="status"></p>
-              <button type="button" class="snap-button" id="snapButton">SNAP!</button>
-            </div>
-            <div class="snap-card" id="snapPlayerCard">
-              <span class="snap-card-label"><canvas id="snapPlayerBuddy" width="48" height="42" aria-hidden="true"></canvas><span id="snapPlayerName">You</span></span>
-              <span class="snap-number" id="snapPlayerNumber" aria-live="off">--</span>
-            </div>
-            <div class="snap-overlay" id="snapOverlay" hidden>
-              <p class="snap-overlay-small" id="snapOverlaySmall"></p>
-              <p class="snap-overlay-big" id="snapOverlayBig"></p>
-              <p class="snap-overlay-text" id="snapOverlayText"></p>
-            </div>
+        </details>
+      </div>
+      <div class="screen-part" id="creativeGames">
+        <!-- Each game is a drop-down under its own header -->
+        <details class="game-panel" id="pongPanel">
+          <summary>Ping pong</summary>
+          <div class="game-body">
+            <p class="hint" id="pongXpToday"></p>
+            <p class="pong-score" id="pongScore" aria-live="polite"></p>
+            <p class="hint" id="pongCourtName"></p>
+            <canvas class="pong-court" id="pongCourt" width="640" height="400" aria-label="Ping pong court. Your buddy's bat is on the left."></canvas>
+            <p class="hint">Slide your finger or mouse up and down the court, or use the ↑ and ↓ keys. First to 3 wins. You get 1 XP for every point you score.</p>
+            <p class="game-message" id="pongMessage" role="status"></p>
+            <button type="button" class="btn" id="pongPlay">Play</button>
           </div>
-          <p class="game-message" id="snapResult" role="status"></p>
-          <button type="button" class="btn" id="snapPlay">Play</button>
-        </div>
-      </details>
+        </details>
+        <details class="game-panel" id="snapPanel">
+          <summary>Snap</summary>
+          <div class="game-body">
+            <p class="hint" id="snapXpToday"></p>
+            <div class="snap-setup" id="snapSetup">
+              <div class="snap-modes" role="group" aria-label="Snap mode">
+                <button type="button" class="snap-mode" data-snap-mode="classic" aria-pressed="true"><strong>Classic</strong><span>Match the numbers</span></button>
+                <button type="button" class="snap-mode" data-snap-mode="hard" aria-pressed="false"><strong>Hard</strong><span>Match on numbers and colours</span></button>
+              </div>
+              <!-- Changes with the mode picked (SNAP_MODES in engine/snap.js) -->
+              <p class="hint" id="snapModeHint" aria-live="polite"></p>
+            </div>
+            <!-- The game: bot card on top, SNAP in the middle, your card underneath -->
+            <div class="snap-arena" id="snapArena" hidden>
+              <div class="snap-top" id="snapTop">
+                <span class="snap-phase" id="snapPhase">Warm-up</span>
+                <span class="snap-score">Score <strong id="snapScore">--</strong></span>
+                <button type="button" class="btn small ghost" id="snapStop">Stop</button>
+              </div>
+              <div class="snap-progress" aria-hidden="true"><div class="snap-progress-fill" id="snapProgress"></div><span class="snap-countdown" id="snapCountdown">30</span></div>
+              <div class="snap-card" id="snapBotCard">
+                <span class="snap-card-label"><canvas id="snapBotBuddy" width="48" height="42" aria-hidden="true"></canvas>Bot</span>
+                <span class="snap-number" id="snapBotNumber" aria-live="off">--</span>
+              </div>
+              <div class="snap-middle">
+                <p class="snap-message" id="snapMessage" role="status"></p>
+                <button type="button" class="snap-button" id="snapButton">SNAP!</button>
+              </div>
+              <div class="snap-card" id="snapPlayerCard">
+                <span class="snap-card-label"><canvas id="snapPlayerBuddy" width="48" height="42" aria-hidden="true"></canvas><span id="snapPlayerName">You</span></span>
+                <span class="snap-number" id="snapPlayerNumber" aria-live="off">--</span>
+              </div>
+              <div class="snap-overlay" id="snapOverlay" hidden>
+                <p class="snap-overlay-small" id="snapOverlaySmall"></p>
+                <p class="snap-overlay-big" id="snapOverlayBig"></p>
+                <p class="snap-overlay-text" id="snapOverlayText"></p>
+              </div>
+            </div>
+            <p class="game-message" id="snapResult" role="status"></p>
+            <button type="button" class="btn" id="snapPlay">Play</button>
+          </div>
+        </details>
+      </div>
     </section>
 
     <!-- ===================== SCHOOL (timetable and homework from MyChildAtSchool; feature "school") ===================== -->

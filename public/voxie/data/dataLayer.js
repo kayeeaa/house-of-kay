@@ -140,6 +140,15 @@ const dataLayer = {
     unlocks.forEach(row => { (unlockLevels[row.kind] = unlockLevels[row.kind] || {})[row.option_id] = row.unlock_level; });
     return { unlockLevels, shopThisWeek: shop.itemIds, shopRestocksOn: shop.restocksOn };
   },
+  /** Things the playing buddy made: [{ id, kind: "wall-art", name, pixels: 16 rows of 16 chars }]. */
+  async loadMyCreations() {
+    const { rows } = await readMyBuddyRows("creations", "id, kind, name, pixels, created_at", query => query.eq("thrown_away", false).order("created_at"));
+    return rows.map(row => ({ id: row.id, kind: row.kind, name: row.name, pixels: row.pixels }));
+  },
+  /** → { id, name, pixels, pricePaid }. Throws Error("not-enough-xp"), Error("too-many"), Error("bad-name") or Error("bad-pixels"). */
+  async makeCreation(kind, name, pixels) { return callRpc("make_creation", { p_kind: kind, p_name: name, p_pixels: pixels }); },
+  /** Takes it down and out of My stuff. The XP isn't given back. */
+  async throwAwayCreation(creationId) { await callRpc("throw_away_creation", { p_creation_id: creationId }); },
   /** [{ id, displayName, petType, petLook, relationship, requestId }] */
   async searchPlayers(searchText) { return callRpc("search_players", { p_search_text: searchText }); },
   async sendFriendRequest(toChildId) { return callRpc("send_friend_request", { p_to_child_id: toChildId }); },
