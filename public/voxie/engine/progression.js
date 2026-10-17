@@ -46,25 +46,28 @@ let LEVEL_REWARDS = buildLevelRewards();
 
 /* ---------- Each buddy's own unlock order and Shop ----------
    The server deals every buddy its own order when it's made (buddy_unlocks, buddy_shop): items, places and looks
-   above level 1 swap levels with others of the same kind, and its Shop sells about two thirds of the Shop items.
+   above level 1 swap levels with others of the same kind. Its Shop sells 12 of the Shop items, a different 12 for
+   every buddy and a new 12 every Monday (the server picks them: private.shop_this_week).
    applyBuddyDeals() sets each option's unlockLevel to the playing buddy's, so the rest of the game just reads
    unlockLevel as before. The levels in the content files are kept, for anything the deal doesn't mention. */
 const CONTENT_UNLOCK_LEVELS = new WeakMap();
 const DEALT_OPTION_LISTS = () => ({ item: INVENTORY_ITEMS, location: LOCATIONS, "body-colour": BODY_COLOURS, face: FACES,
   arms: ARM_POSES, width: BODY_WIDTHS, height: BODY_HEIGHTS });
-let buddyShopStock = {};   // { itemId: false } for Shop items this buddy's Shop doesn't sell
-function applyBuddyDeals({ unlockLevels = {}, shopStock = {} } = {}) {
+let buddyShopThisWeek = new Set();   // the playing buddy's Shop items this week
+let buddyShopRestocksOn = null;      // "YYYY-MM-DD": the Monday the Shop changes
+function applyBuddyDeals({ unlockLevels = {}, shopThisWeek = [], shopRestocksOn = null } = {}) {
   Object.entries(DEALT_OPTION_LISTS()).forEach(([kind, options]) => options.forEach(option => {
     if (!CONTENT_UNLOCK_LEVELS.has(option)) CONTENT_UNLOCK_LEVELS.set(option, option.unlockLevel);
     const contentLevel = CONTENT_UNLOCK_LEVELS.get(option);
     if (contentLevel === undefined) return;   // not a level unlock (Shop or chance items)
     option.unlockLevel = (unlockLevels[kind] || {})[option.id] ?? contentLevel;
   }));
-  buddyShopStock = shopStock;
+  buddyShopThisWeek = new Set(shopThisWeek);
+  buddyShopRestocksOn = shopRestocksOn;
   LEVEL_REWARDS = buildLevelRewards();
 }
-/* Does the playing buddy's Shop sell this? (Shop items added to the game later are always in stock.) */
-const inBuddyShop = item => item.xpPrice !== undefined && buddyShopStock[item.id] !== false;
+/* Does the playing buddy's Shop sell this, this week? */
+const inBuddyShop = item => item.xpPrice !== undefined && buddyShopThisWeek.has(item.id);
 /* Level points come ONLY from tasks (1 per task ticked). Points needed to REACH each level:
    level 2 after 2 tasks, level 3 after 4 more, level 4 after 5 more. After that each level costs
    POINTS_PER_LEVEL_AFTER_LAST, plus 1 more task for every LEVELS_PER_EXTRA_TASK levels, never more than

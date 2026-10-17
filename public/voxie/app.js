@@ -2060,8 +2060,10 @@ function openShop() { showScreen("screenShop"); renderShop(); }
 function renderShop() {
   const look = lookFromProfile(currentProfile), wallet = xpToSpend();
   element("shopXpNumber").textContent = wallet;
-  // Each buddy's Shop sells its own selection (anything this buddy already bought stays on show).
-  const shopItems = INVENTORY_ITEMS.filter(item => inBuddyShop(item) || (isShopItem(item) && myPurchases.includes(item.id)))
+  // This week's 12 for this buddy. Anything bought before is in My stuff, whatever the Shop has now.
+  element("shopRestockHint").textContent = buddyShopRestocksOn
+    ? `New things in the Shop on ${new Date(`${buddyShopRestocksOn}T12:00:00Z`).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" })}.` : "";
+  const shopItems = INVENTORY_ITEMS.filter(inBuddyShop)
     .sort((first, second) => first.xpPrice - second.xpPrice);
   const grid = element("shopGrid");
   const boxPrizes = mysteryBoxChances(ownsItemNow, powerValue("lucky")), boxesLeft = MYSTERY_BOXES_PER_DAY - myChance.boxesOpenedToday;
@@ -2383,7 +2385,12 @@ async function buyOpenItem() {
     justBoughtItemId = itemId;
     hideSaveError();
   } catch (error) {
-    const messages = { "not-enough-xp": "You don't have enough XP for that.", "already-owned": "You already have this." };
+    if (error.message === "not-for-sale") {   // the Shop changed (a new week) since it was opened
+      try { applyBuddyDeals(await dataLayer.loadMyBuddyDeals()); } catch (reloadError) {}
+      element("buySheet").hidden = true;
+    }
+    const messages = { "not-enough-xp": "You don't have enough XP for that.", "already-owned": "You already have this.",
+      "not-for-sale": "The Shop has just restocked, so that's gone. Have a look at what's new!" };
     showSaveError(messages[error.message] || "Couldn't buy that. Check your internet and try again.", messages[error.message] ? null : buyOpenItem);
   }
   buySaving = false;

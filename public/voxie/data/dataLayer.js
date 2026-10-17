@@ -130,15 +130,15 @@ const dataLayer = {
   async rebirthAsNewPet(petType, petName) { return callRpc("rebirth_as_new_pet", { p_pet_type: petType, p_pet_name: petName }); },
   async setActiveBuddy(buddyId) { return callRpc("set_active_buddy", { p_buddy_id: buddyId }); },
   /** The playing buddy's own unlock order and Shop, dealt out when the buddy was made:
-      { unlockLevels: { item | location | body-colour | face | arms | width | height: { id: level } }, shopStock: { itemId: true/false } }.
-      Anything not listed (added to the game later) unlocks at its usual level / is in the Shop. */
+      { unlockLevels: { item | location | body-colour | face | arms | width | height: { id: level } }, shopThisWeek: [itemId, ...] (the playing buddy's 12 Shop items this week), shopRestocksOn: "YYYY-MM-DD" (next Monday) }.
+      Anything not listed (added to the game later) unlocks at its usual level. */
   async loadMyBuddyDeals() {
-    const [{ rows: unlocks }, { rows: shop }] = await Promise.all([
+    const [{ rows: unlocks }, shop] = await Promise.all([
       readMyBuddyRows("buddy_unlocks", "kind, option_id, unlock_level"),
-      readMyBuddyRows("buddy_shop", "item_id, in_stock")]);
+      callRpc("load_my_shop_this_week")]);
     const unlockLevels = {};
     unlocks.forEach(row => { (unlockLevels[row.kind] = unlockLevels[row.kind] || {})[row.option_id] = row.unlock_level; });
-    return { unlockLevels, shopStock: Object.fromEntries(shop.map(row => [row.item_id, row.in_stock])) };
+    return { unlockLevels, shopThisWeek: shop.itemIds, shopRestocksOn: shop.restocksOn };
   },
   /** [{ id, displayName, petType, petLook, relationship, requestId }] */
   async searchPlayers(searchText) { return callRpc("search_players", { p_search_text: searchText }); },
