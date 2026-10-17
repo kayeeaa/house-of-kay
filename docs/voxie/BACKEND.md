@@ -8,6 +8,7 @@ Files:
 - `supabase/migrations/20261007110000_voxie_snap.sql`: Snap, and a 10 XP daily limit for each game. Run after the games migration.
 - `supabase/migrations/20261007120000_voxie_games_for_everyone.sql`: Games no longer need a feature flag (the flag tables stay for future features).
 - `supabase/migrations/20261008090000_voxie_buddy_inventories.sql`: every buddy has its own XP, items, house, place and gear, and its own shuffled unlock order and Shop (`buddy_unlocks`, `buddy_shop`, `option_catalogue`). Run it **before** deploying the app that reads those tables.
+- `supabase/migrations/20261015090000_voxie_school.sql`: the School tab (feature `school`): timetable and homework tables filled by the MCAS sync, the homework "days before" setting, and homework ticks (3 XP + 2 level points each). Test data: `supabase/snippets/voxie_school_sample_data.sql`.
 - `supabase/functions/_shared/voxie.ts` plus the `add-child`, `set-child-passcode` and `delete-child-account` folders.
 
 ## Calling conventions
@@ -72,6 +73,12 @@ Files:
 | saveGameResult | `save_game_result` | `p_game, p_my_points, p_bot_points, p_lose_points_on_loss` | `{ xpAwarded, won, hitDailyLimit }` |
 | saveSnapResult | `save_snap_result` | `p_mode, p_score, p_lose_points_on_loss` | `{ xpAwarded, won, hitDailyLimit }` |
 | loadMyGameXpToday | table `game_results` (today's rows) | none | XP from each game today, e.g. `{ "ping-pong": 4, snap: 3 }` |
+| loadMySchool | tables `school_sync`, `school_days`, `school_lessons`, `school_homework` (from this Monday; homework due in the last 14 days or later) | none | `{ linked, updatedAt, schoolDays, lessons, homework }` |
+| loadMySchoolSettings | table `school_settings` (`.maybeSingle()`, default 2) | none | `{ homeworkTaskDaysBefore }` |
+| saveMySchoolSettings | `save_my_school_settings` | `p_homework_task_days_before` | none |
+| loadMyHomeworkDone | table `homework_completions` | none | `[{ homeworkId, completedOn }]` |
+| markHomeworkDone | `mark_homework_done` | `p_homework_id` | `{ xpAwarded, levelPoints }` |
+| unmarkHomeworkDone | `unmark_homework_done` | `p_homework_id` | none |
 | signUpParent | `auth.signUp({ email, password, options: { data: { display_name }, emailRedirectTo } })`; the trigger makes the profile | none | profile from `my_profile` |
 | loadMyChildren | `load_my_children` | none | `[{ id, displayName, setupComplete, level, petName, look }]` |
 | loadChildOverview | `load_child_overview` | `p_child_id` | the fake's shape; see the streak note below |

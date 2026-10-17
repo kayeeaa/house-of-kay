@@ -463,6 +463,12 @@
         <h2>Today's tasks</h2>
         <p class="hint" id="taskSnackHint"></p>
         <p class="hint">Want tasks that come back every day, like brushing your teeth? <button type="button" class="linkish" id="goToScheduledTasks">Set them up in Settings</button></p>
+        <!-- Homework from the School tab, from N days before it's due (feature "school"). Not part of the 10 tasks a day. -->
+        <div class="homework-tasks" id="homeworkTaskArea" hidden>
+          <h3>Homework</h3>
+          <p class="hint" id="homeworkTaskHint"></p>
+          <ul class="homework-task-list" id="homeworkTaskList"></ul>
+        </div>
         <div id="choreArea"></div>
         <form class="addown" id="addOwnTaskForm" novalidate>
           <div class="field">
@@ -657,6 +663,30 @@
       </details>
     </section>
 
+    <!-- ===================== SCHOOL (timetable and homework from MyChildAtSchool; feature "school") ===================== -->
+    <section class="screen" id="screenSchool" hidden>
+      <div class="settings-row"><button type="button" class="stage-corner-button settings-button" aria-label="Settings"><svg viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="3" y="0" width="2" height="1"/><rect x="3" y="7" width="2" height="1"/><rect x="0" y="3" width="1" height="2"/><rect x="7" y="3" width="1" height="2"/><rect x="1" y="1" width="6" height="6"/><rect x="3" y="3" width="2" height="2" fill="var(--surface)"/></svg></button></div>
+      <section class="block">
+        <h2>School</h2>
+        <p class="hint" id="schoolUpdated"></p>
+      </section>
+      <p class="hint" id="schoolLoadError" role="alert" hidden>Couldn't load your school stuff. Check the internet and try again.</p>
+      <section class="block" id="schoolNotLinked" hidden>
+        <p>Your grown-up hasn't linked your school yet. When they do, your timetable and homework show up here.</p>
+      </section>
+      <section class="block" id="schoolTimetable" hidden>
+        <h3>Timetable</h3>
+        <!-- One button per school day, from today to the end of next week -->
+        <div class="school-days" id="schoolDays" role="group" aria-label="Pick a day"></div>
+        <ol class="school-lessons" id="schoolLessons" aria-live="polite"></ol>
+      </section>
+      <section class="block" id="schoolHomework" hidden>
+        <h3>Homework</h3>
+        <!-- Each piece of homework opens to show what to do and its links -->
+        <div class="school-homework-list" id="schoolHomeworkList"></div>
+      </section>
+    </section>
+
     <!-- ===================== FRIENDS (see how friends are getting on) ===================== -->
     <section class="screen" id="screenFriends" hidden>
       <div class="settings-row"><button type="button" class="stage-corner-button settings-button" aria-label="Settings"><svg viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="3" y="0" width="2" height="1"/><rect x="3" y="7" width="2" height="1"/><rect x="0" y="3" width="1" height="2"/><rect x="7" y="3" width="1" height="2"/><rect x="1" y="1" width="6" height="6"/><rect x="3" y="3" width="2" height="2" fill="var(--surface)"/></svg></button></div>
@@ -688,20 +718,6 @@
     <section class="screen" id="screenConfig" hidden>
       <div class="gamehead"><button type="button" class="btn small ghost" id="configBackButton">← Back</button></div>
       <p class="hint" id="configSignedInAs"></p>
-      <!-- The name friends see. Unique; changing it lets the child's grown-ups know. -->
-      <section class="block" aria-labelledby="gameNameHeading">
-        <h2 id="gameNameHeading">Your game name</h2>
-        <form class="login-pop-form" id="gameNameForm" novalidate>
-          <div class="field">
-            <label class="label" for="gameNameInput">The name friends see</label>
-            <input type="text" id="gameNameInput" maxlength="20" autocomplete="off">
-            <span class="hint">Make one up: don't use your real name. If you change it, we'll let your grown-up know.</span>
-          </div>
-          <p class="error" id="gameNameError" role="alert"></p>
-          <p class="hint" id="gameNameDone" role="status"></p>
-          <button class="btn small" type="submit" id="gameNameButton">Change my name</button>
-        </form>
-      </section>
       <section class="block">
         <h2>Settings</h2>
         <p class="settings-locked-note" id="settingsLockedNote" hidden></p>
@@ -724,16 +740,22 @@
         </div>
         <p class="error" id="settingsError" role="alert"></p>
       </section>
+      <!-- Feature "school": when homework turns into a task on Home -->
+      <section class="block" id="schoolSettingsSection" hidden>
+        <h2>School</h2>
+        <span class="label" id="homeworkDaysLabel">Put homework in Today's tasks</span>
+        <div class="stepper" role="group" aria-labelledby="homeworkDaysLabel">
+          <button type="button" id="homeworkDaysDown" aria-label="Fewer days">−</button>
+          <output id="homeworkDaysValue" aria-live="polite">2</output>
+          <button type="button" id="homeworkDaysUp" aria-label="More days">+</button>
+        </div>
+        <p class="hint" id="homeworkDaysHint"></p>
+        <p class="error" id="schoolSettingsError" role="alert"></p>
+      </section>
       <section class="block" id="linkGrownUpSection" aria-labelledby="linkGrownUpHeading">
         <h2 id="linkGrownUpHeading">Link a grown-up</h2>
         <ul class="grown-up-list" id="grownUpList" hidden></ul>
         <p class="hint" id="linkGrownUpText"></p>
-      </section>
-      <section class="block" id="installSection">
-        <h2>Get the Voxie app</h2>
-        <p class="hint" id="installSectionText">Put Voxie on your home screen so it opens like an app, with no web address bar.</p>
-        <button type="button" class="btn" id="installSettingsButton">Get the app</button>
-        <p class="hint" id="installHelp" role="status"></p>
       </section>
       <section class="block scheduled" id="scheduledSection">
         <h2>Scheduled tasks</h2>
@@ -761,6 +783,12 @@
           <button class="btn" type="submit" id="scheduleAddButton">Add scheduled task</button>
         </form>
       </section>
+      <section class="block" id="installSection"><!-- hidden once Voxie is installed -->
+        <h2>Get the Voxie app</h2>
+        <p class="hint" id="installSectionText">Put Voxie on your home screen so it opens like an app, with no web address bar.</p>
+        <button type="button" class="btn" id="installSettingsButton">Get the app</button>
+        <p class="hint" id="installHelp" role="status"></p>
+      </section>
       <button class="btn ghost" type="button" id="logOutButton">Log out</button>
     </section>
   </div>
@@ -775,6 +803,8 @@
     </div>
     <!-- More: the tabs that don't fit in the bar -->
     <div class="more-menu" id="moreMenu" hidden>
+        <!-- Only for users with the "school" feature (showScreen sets hidden) -->
+        <button type="button" class="tab" data-tab="school" id="schoolTab" hidden><svg viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="1" y="0" width="6" height="1"/><rect x="0" y="1" width="1" height="7"/><rect x="1" y="7" width="6" height="1"/><rect x="1" y="1" width="1" height="6"/><rect x="3" y="2" width="3" height="1"/><rect x="3" y="4" width="3" height="1"/><rect x="7" y="1" width="1" height="7"/></svg>School</button>
         <button type="button" class="tab" data-tab="buddies"><svg viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="2" y="0" width="4" height="1"/><rect x="1" y="1" width="6" height="1"/><rect x="0" y="2" width="8" height="4"/><rect x="1" y="6" width="6" height="1"/><rect x="2" y="7" width="2" height="1"/></svg>Buddies</button>
         <button type="button" class="tab" data-tab="friends"><svg viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="1" y="0" width="2" height="2"/><rect x="5" y="1" width="2" height="2"/><rect x="0" y="3" width="4" height="4"/><rect x="4" y="4" width="4" height="3"/></svg>Friends</button>
     </div>

@@ -256,6 +256,43 @@ const dataLayer = {
     return rows.reduce((totals, row) => ({ ...totals, [row.game]: (totals[row.game] || 0) + row.xp_awarded }), {});
   },
 
+  /* ---------- School (feature "school") ---------- */
+  /** The signed-in child's timetable and homework, synced from their grown-up's MyChildAtSchool account (school_* tables):
+      { linked, updatedAt, schoolDays: ["2026-10-15", ...], lessons: [{ date, start, end, subject, colour, teachers }],
+        homework: [{ id, source: "mcas" | "teams", subject, title, dueDate, dueTime, instructions, links: [{ label, url }], setBy, submitted }] }
+      Dates and times are UK school times. Lessons from this Monday on; homework due in the last 14 days or later. */
+  async loadMySchool() {
+    const today = getTodayInUk(), weekDay = new Date(`${today}T12:00:00Z`).getUTCDay(), monday = shiftDate(today, -((weekDay + 6) % 7));
+    const [sync, days, lessons, homework] = await Promise.all([
+      readMyRows("school_sync", "last_synced_at", query => query.maybeSingle()),
+      readMyRows("school_days", "school_day", query => query.gte("school_day", monday).order("school_day")),
+      readMyRows("school_lessons", "lesson_date, start_time, end_time, subject, colour, teachers", query => query.gte("lesson_date", monday).order("lesson_date").order("start_time")),
+      readMyRows("school_homework", "id, source, subject, title, due_date, due_time, instructions, links, set_by, submitted", query => query.gte("due_date", shiftDate(today, -14)).order("due_date")),
+    ]);
+    return {
+      linked: !!sync, updatedAt: sync && sync.last_synced_at,
+      schoolDays: days.map(row => row.school_day),
+      lessons: lessons.map(row => ({ date: row.lesson_date, start: row.start_time.slice(0, 5), end: row.end_time.slice(0, 5), subject: row.subject, colour: row.colour, teachers: row.teachers })),
+      homework: homework.map(row => ({ id: row.id, source: row.source, subject: row.subject, title: row.title, dueDate: row.due_date, dueTime: row.due_time.slice(0, 5),
+        instructions: row.instructions, links: Array.isArray(row.links) ? row.links : [], setBy: row.set_by, submitted: row.submitted })),
+    };
+  },
+  /** { homeworkTaskDaysBefore }: how many days before homework is due it shows up as a task on Home (0 = on the day). */
+  async loadMySchoolSettings() {
+    const row = await readMyRows("school_settings", "homework_task_days_before", query => query.maybeSingle());
+    return { homeworkTaskDaysBefore: row ? row.homework_task_days_before : 2 };
+  },
+  /** Throws Error("bad-days") outside 0–7. */
+  async saveMySchoolSettings({ homeworkTaskDaysBefore }) { await callRpc("save_my_school_settings", { p_homework_task_days_before: homeworkTaskDaysBefore }); },
+  /** Homework ticked off on Home: [{ homeworkId, completedOn }]. */
+  async loadMyHomeworkDone() {
+    return (await readMyRows("homework_completions", "homework_id, completed_on")).map(row => ({ homeworkId: row.homework_id, completedOn: row.completed_on }));
+  },
+  /** { xpAwarded, levelPoints } (3 and 2; 0 and 0 if it was already ticked). Throws Error("too-early") or Error("not-found"). */
+  async markHomeworkDone(homeworkId) { return callRpc("mark_homework_done", { p_homework_id: homeworkId }); },
+  /** Only on the day it was ticked: Error("not-today"); and only if its XP isn't spent: Error("xp-spent"). */
+  async unmarkHomeworkDone(homeworkId) { await callRpc("unmark_homework_done", { p_homework_id: homeworkId }); },
+
   /* ---------- Grown-up accounts ---------- */
   /** A grown-up signs up: { displayName, email, password }. With "Confirm email" on there's no session until they
       click the link, so this returns { needsEmailConfirmation: true }; otherwise their profile.
@@ -313,3 +350,4 @@ const dataLayer = {
   /** Only when another grown-up looks after them (Error("last-grown-up") otherwise). */
   async unlinkChild(childId) { return callRpc("unlink_child", { p_child_id: childId }); }
 };
+

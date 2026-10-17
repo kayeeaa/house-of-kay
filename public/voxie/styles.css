@@ -550,6 +550,44 @@ select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .snap-overlay-big{font-family:var(--f-logo);font-size:48px;line-height:1.1}
 .snap-overlay-text{max-width:300px;font-size:15px;color:#DCE2F5}
 @media (max-width:380px){.snap-number{font-size:52px}}
+/* School tab: day buttons, the day's lessons (a stripe in the subject's MCAS colour), then homework that opens up. */
+.school-days{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.school-day{flex:none;min-height:44px;padding:8px 12px;font-family:var(--f-display);font-size:14px;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-bottom-width:4px;cursor:pointer}
+.school-day[aria-pressed="true"]{background:var(--accent);border-color:var(--accent-dk);color:var(--on-accent)}
+.school-lessons{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.school-lesson{display:flex;gap:12px;align-items:center;padding:8px 10px;background:var(--bg);border:2px solid var(--line);border-left:8px solid var(--subject)}
+.school-lesson-time{flex:none;width:52px;display:flex;flex-direction:column;font-family:var(--f-display);font-size:15px;line-height:1.2;font-variant-numeric:tabular-nums}
+.school-lesson-time .hint,.school-lesson-what .hint{font-family:var(--f-body);font-size:13px}
+.school-lesson-what{display:flex;flex-direction:column;min-width:0;line-height:1.3}
+.school-homework-list{display:flex;flex-direction:column;gap:8px}
+.school-homework{background:var(--bg);border:2px solid var(--line);border-bottom-width:4px}
+.school-homework > summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;padding:10px 12px;cursor:pointer}
+.school-homework > summary::-webkit-details-marker{display:none}
+.school-homework-title{display:flex;flex-direction:column;min-width:0;line-height:1.3}
+.school-due{flex:none;font-family:var(--f-display);font-size:13px;padding:3px 8px;background:var(--sunk);border:2px solid var(--line);color:var(--muted)}
+.school-homework[data-due="soon"] .school-due{background:var(--gold);border-color:var(--dirt);color:#2A2100}
+.school-homework[data-due="late"] .school-due{background:var(--danger-bg);border-color:var(--danger);color:var(--danger)}
+.school-homework.done{opacity:.7}
+.school-homework.done .school-due{background:var(--accent);border-color:var(--accent-dk);color:var(--on-accent)}
+.school-homework-body{display:flex;flex-direction:column;gap:10px;padding:0 12px 12px}
+.school-instructions{margin:0;white-space:pre-line}
+.school-links{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.school-links .btn{display:inline-flex;align-items:center;text-decoration:none}
+/* Homework tasks on Home: the tick row, the buttons to the homework sites, then "What to do". */
+.homework-tasks{display:flex;flex-direction:column;gap:8px}
+.homework-tasks h3{font-size:17px}
+.homework-tasks > .hint{margin:0}
+.homework-task-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.homework-task{display:flex;flex-direction:column;gap:8px;padding:8px;background:var(--bg);border:2px solid var(--line);border-bottom-width:4px}
+.homework-task-title{display:flex;flex-direction:column;min-width:0;line-height:1.3}
+.homework-task .chore input:checked + .homework-task-title strong{text-decoration:line-through;color:var(--muted)}
+.homework-task .chore input:checked + span{text-decoration:none}
+.homework-task[data-due="soon"] .school-due{background:var(--gold);border-color:var(--dirt);color:#2A2100}
+.homework-task[data-due="late"] .school-due{background:var(--danger-bg);border-color:var(--danger);color:var(--danger)}
+.homework-task-more > summary{min-height:44px;display:flex;align-items:center;font-weight:700;color:var(--accent-dk);cursor:pointer}
+.homework-task-more[open] > summary{margin-bottom:4px}
+.homework-task-more{display:flex;flex-direction:column}
+.homework-task-more .school-instructions{margin:0 0 8px}
 @media (prefers-reduced-motion:reduce){.game-panel > summary::after,.snap-progress-fill{transition:none}.snap-arena[data-phase="warmup"] .snap-phase,.snap-number.pulse,.snap-overlay{animation:none}}
 
 /* tab bar */

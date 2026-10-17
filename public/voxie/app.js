@@ -4,10 +4,10 @@
    ====================================================================== */
 const element = id => document.getElementById(id);
 const escapeHtml = text => String(text).replace(/[&<>"]/g, character => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[character]));
-const ALL_SCREENS = ["screenLoading", "screenLogin", "screenParents", "screenParentHome", "screenSetupName", "screenSetupPet", "screenSetupLook", "screenGame", "screenInventory", "screenHouse", "screenLocations", "screenBuddies", "screenFriends", "screenConfig", "screenShop", "screenGames"];
-const TAB_SCREENS = ["screenGame", "screenInventory", "screenShop", "screenHouse", "screenLocations", "screenBuddies", "screenFriends", "screenConfig", "screenGames"];
+const ALL_SCREENS = ["screenLoading", "screenLogin", "screenParents", "screenParentHome", "screenSetupName", "screenSetupPet", "screenSetupLook", "screenGame", "screenInventory", "screenHouse", "screenLocations", "screenBuddies", "screenFriends", "screenConfig", "screenShop", "screenGames", "screenSchool"];
+const TAB_SCREENS = ["screenGame", "screenInventory", "screenShop", "screenHouse", "screenLocations", "screenBuddies", "screenFriends", "screenConfig", "screenGames", "screenSchool"];
 /* Which tab is lit for each screen. House and Locations share Places; Config is opened from Home. */
-const TAB_FOR_SCREEN = { screenGame: "home", screenConfig: "home", screenInventory: "inventory", screenShop: "inventory", screenHouse: "places", screenLocations: "places", screenBuddies: "buddies", screenFriends: "friends", screenGames: "games" };
+const TAB_FOR_SCREEN = { screenGame: "home", screenConfig: "home", screenInventory: "inventory", screenShop: "inventory", screenHouse: "places", screenLocations: "places", screenBuddies: "buddies", screenFriends: "friends", screenGames: "games", screenSchool: "school" };
 const LOCK_ICON = `<svg class="lock-icon" viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="2" y="0" width="4" height="1"/><rect x="1" y="1" width="1" height="3"/><rect x="6" y="1" width="1" height="3"/><rect x="0" y="3" width="8" height="5"/><rect x="3" y="5" width="2" height="2" fill="var(--sunk)"/></svg>`;
 
 let currentProfile = null;
@@ -39,6 +39,7 @@ function showScreen(screenId) {
   if (screenId === "screenLoading") drawLoadingBuddy(element("loadingScreenBuddy"));
   if (typeof startAngelAnimation === "function") startAngelAnimation();
   element("tabBar").hidden = !TAB_SCREENS.includes(screenId);
+  element("schoolTab").hidden = !featureOn("school");
   document.querySelectorAll(".tab[data-tab]").forEach(tab => tab.dataset.tab === TAB_FOR_SCREEN[screenId] ? tab.setAttribute("aria-current", "page") : tab.removeAttribute("aria-current"));
   // More lights up for the tabs inside it.
   if (element("moreMenu").querySelector(`[data-tab="${TAB_FOR_SCREEN[screenId]}"]`)) element("moreTab").setAttribute("aria-current", "page");
@@ -448,8 +449,213 @@ document.querySelectorAll(".tab[data-tab]").forEach(tab => tab.onclick = () => {
   if (tabName === "buddies") openBuddies();
   if (tabName === "friends") openFriends();
   if (tabName === "games") openGames();
+  if (tabName === "school") openSchool();
 });
 function openHome() { showScreen("screenGame"); renderHome(); showNewTaskNotifications(true); }
+/* ---------- School tab (feature "school") ----------
+   The timetable and homework the grown-up's MyChildAtSchool (MCAS) account syncs in. Times are UK school times,
+   so dates and times stay as "2026-10-15" / "08:50" strings and are compared with getTodayInUk(). */
+let mySchool = null;              // { linked, updatedAt, schoolDays, lessons, homework } from dataLayer.loadMySchool()
+let schoolPickedDay = null;       // the day the timetable is showing
+
+async function openSchool() {
+  if (!featureOn("school")) { openHome(); return; }
+  showScreen("screenSchool");
+  element("schoolLoadError").hidden = true;
+  if (mySchool) renderSchool();   // show what we had straight away, then refresh
+  try { mySchool = await dataLayer.loadMySchool(); }
+  catch (error) { if (!mySchool) element("schoolLoadError").hidden = false; return; }
+  renderSchool();
+}
+
+function renderSchool() {
+  const linked = !!(mySchool && mySchool.linked);
+  element("schoolNotLinked").hidden = linked;
+  element("schoolTimetable").hidden = !linked;
+  element("schoolHomework").hidden = !linked;
+  element("schoolUpdated").textContent = linked && mySchool.updatedAt ? `From MyChildAtSchool, updated ${schoolUpdatedLabel(mySchool.updatedAt)}.` : "";
+  if (!linked) return;
+  renderSchoolDays();
+  renderSchoolLessons();
+  renderSchoolHomework();
+}
+
+/* Today and the school days after it. Weekends and days off (INSET, holidays) aren't in schoolDays, so they're skipped. */
+function upcomingSchoolDays() { const today = getTodayInUk(); return mySchool.schoolDays.filter(day => day >= today); }
+function renderSchoolDays() {
+  const days = upcomingSchoolDays();
+  if (!days.includes(schoolPickedDay)) schoolPickedDay = days[0] || null;
+  element("schoolDays").innerHTML = days.map(day =>
+    `<button type="button" class="school-day" data-day="${day}" aria-pressed="${day === schoolPickedDay}">${escapeHtml(schoolDayLabel(day))}</button>`).join("");
+  element("schoolDays").querySelectorAll("[data-day]").forEach(button => button.onclick = () => {
+    schoolPickedDay = button.dataset.day;
+    element("schoolDays").querySelectorAll("[data-day]").forEach(other => other.setAttribute("aria-pressed", String(other === button)));
+    renderSchoolLessons();
+  });
+}
+function renderSchoolLessons() {
+  const lessons = mySchool.lessons.filter(lesson => lesson.date === schoolPickedDay);
+  element("schoolLessons").innerHTML = !schoolPickedDay ? `<li class="hint">No more school days coming up.</li>`
+    : !lessons.length ? `<li class="hint">No lessons on this day.</li>`
+    : lessons.map(lesson => `<li class="school-lesson" style="--subject:${safeColour(lesson.colour)}">
+        <span class="school-lesson-time">${escapeHtml(lesson.start)}<span class="hint">${escapeHtml(lesson.end)}</span></span>
+        <span class="school-lesson-what"><strong>${escapeHtml(lesson.subject)}</strong><span class="hint">${escapeHtml(lesson.teachers.join(" & "))}</span></span>
+      </li>`).join("");
+}
+
+/* Not handed in first, soonest due at the top. Overdue ones stay until MCAS says they're handed in. */
+function renderSchoolHomework() {
+  const homework = [...mySchool.homework].sort((a, b) => Number(a.submitted) - Number(b.submitted) || `${a.dueDate} ${a.dueTime}`.localeCompare(`${b.dueDate} ${b.dueTime}`));
+  element("schoolHomeworkList").innerHTML = !homework.length ? `<p class="hint">No homework right now. Nice!</p>`
+    : homework.map(item => {
+      const due = homeworkDueLabel(item);
+      return `<details class="school-homework${item.submitted ? " done" : ""}" data-due="${due.urgency}">
+        <summary>
+          <span class="school-homework-title"><strong>${escapeHtml(item.title)}</strong><span class="hint">${escapeHtml(item.subject || "From Teams")}</span></span>
+          <span class="school-due">${escapeHtml(item.submitted ? "Handed in" : due.text)}</span>
+        </summary>
+        <div class="school-homework-body">
+          ${item.instructions ? `<p class="school-instructions">${escapeHtml(item.instructions)}</p>` : ""}
+          ${homeworkLinksHtml(item)}
+          ${item.setBy ? `<p class="hint">Set by ${escapeHtml(item.setBy)}</p>` : ""}
+        </div>
+      </details>`;
+    }).join("");
+}
+
+/* A button for each link, to the site the homework is done on. */
+function homeworkLinksHtml(item) {
+  const links = item.links.filter(link => safeLink(link.url));
+  return links.length ? `<ul class="school-links">${links.map(link => `<li><a class="btn small ghost" href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(link.label || new URL(link.url).hostname)} ↗</a></li>`).join("")}</ul>` : "";
+}
+/* Teachers type these links, so only https links are shown. */
+function safeLink(url) { try { return new URL(url).protocol === "https:"; } catch (error) { return false; } }
+/* MCAS subject colours are 6-digit hex without the "#". */
+function safeColour(hex) { return /^[0-9a-f]{6}$/i.test(hex || "") ? `#${hex}` : "var(--line)"; }
+
+function schoolDayLabel(day) {
+  const today = getTodayInUk();
+  if (day === today) return "Today";
+  if (day === shiftDate(today, 1)) return "Tomorrow";
+  return new Date(`${day}T12:00:00Z`).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", timeZone: "UTC" });
+}
+/* { text: "Due tonight", urgency: "late" | "soon" | "later" }. "soon" is today or tomorrow. */
+function homeworkDueLabel(item) {
+  const today = getTodayInUk(), lateInDay = item.dueTime >= "18:00";
+  const nowTime = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/London", hour: "2-digit", minute: "2-digit" }).format(new Date());
+  if (item.dueDate < today || (item.dueDate === today && item.dueTime < nowTime)) return { text: "Late", urgency: "late" };
+  if (item.dueDate === today) return { text: lateInDay ? "Due tonight" : `Due today ${item.dueTime}`, urgency: "soon" };
+  if (item.dueDate === shiftDate(today, 1)) return { text: lateInDay ? "Due tomorrow" : `Due tomorrow ${item.dueTime}`, urgency: "soon" };
+  const date = new Date(`${item.dueDate}T12:00:00Z`).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
+  return { text: `Due ${date}`, urgency: "later" };
+}
+function schoolUpdatedLabel(isoTime) {
+  const minutes = Math.round((Date.now() - new Date(isoTime).getTime()) / 60000);
+  if (minutes < 2) return "just now";
+  if (minutes < 60) return `${minutes} minutes ago`;
+  const hours = Math.round(minutes / 60);
+  return hours < 24 ? `${hours} hour${hours === 1 ? "" : "s"} ago` : new Date(isoTime).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+}
+
+/* ---------- Homework tasks on Home (feature "school") ----------
+   Homework that isn't handed in shows up in Today's tasks from homeworkTaskDaysBefore days before it's due. It's not a
+   scheduled task and doesn't count towards MAX_TASKS_PER_DAY. Everything needed is on the task: what to do, who set it
+   and a button to the site it's done on. A ticked one stays (crossed out) until its due date, so a tick can be undone. */
+const MAX_HOMEWORK_TASK_DAYS_BEFORE = 7;
+const HOMEWORK_XP = 3, HOMEWORK_LEVEL_POINTS = 2;   // the server's numbers too (mark_homework_done): keep them the same
+let schoolSettings = null;        // { homeworkTaskDaysBefore } from dataLayer.loadMySchoolSettings()
+let homeworkDone = [];            // [{ homeworkId, completedOn }]: ticked off on Home
+const homeworkTick = homeworkId => homeworkDone.find(tick => tick.homeworkId === homeworkId);
+async function loadHomeworkTasks() {
+  if (!featureOn("school")) { renderHomeworkTasks(); return; }
+  try { [mySchool, schoolSettings, homeworkDone] = await Promise.all([dataLayer.loadMySchool(), dataLayer.loadMySchoolSettings(), dataLayer.loadMyHomeworkDone()]); }
+  catch (error) { return; }       // Home works without it; it comes back next time the game loads
+  renderHomeworkTasks();
+}
+function homeworkTasksToday() {
+  if (!featureOn("school") || !mySchool || !mySchool.linked || !schoolSettings) return [];
+  const today = getTodayInUk();
+  return mySchool.homework
+    .filter(item => !item.submitted && shiftDate(item.dueDate, -schoolSettings.homeworkTaskDaysBefore) <= today && (!homeworkTick(item.id) || item.dueDate >= today))
+    .sort((a, b) => `${a.dueDate} ${a.dueTime}`.localeCompare(`${b.dueDate} ${b.dueTime}`));
+}
+function renderHomeworkTasks() {
+  const tasks = homeworkTasksToday();
+  element("homeworkTaskArea").hidden = !tasks.length;
+  element("homeworkTaskHint").textContent = `Each homework done = ${HOMEWORK_XP} XP and ${HOMEWORK_LEVEL_POINTS} level points.`;
+  const today = getTodayInUk();
+  element("homeworkTaskList").innerHTML = tasks.map(item => {
+    const due = homeworkDueLabel(item), tick = homeworkTick(item.id);
+    // Like other tasks, a tick can only be undone on the day it was made.
+    const tickAttributes = tick ? `checked${tick.completedOn === today ? "" : " disabled"}` : "";
+    const about = [item.subject || "From Teams", item.setBy && `set by ${item.setBy}`].filter(Boolean).join(", ");
+    return `<li class="homework-task" data-due="${due.urgency}">
+      <div class="chore"><label><input type="checkbox" data-homework-id="${escapeHtml(item.id)}" ${tickAttributes}><span class="homework-task-title"><strong>${escapeHtml(item.title)}</strong><span class="hint">${escapeHtml(about)}</span></span><span class="school-due">${escapeHtml(due.text)}</span></label></div>
+      ${homeworkLinksHtml(item)}
+      <details class="homework-task-more">
+        <summary>What to do</summary>
+        <p class="school-instructions">${escapeHtml(item.instructions || "Your teacher didn't add any instructions. Ask them if you're not sure.")}</p>
+        <button type="button" class="linkish" data-open-school>See all your homework</button>
+      </details>
+    </li>`;
+  }).join("");
+  element("homeworkTaskList").querySelectorAll("input[data-homework-id]").forEach(checkbox => checkbox.onchange = () => toggleHomeworkTask(checkbox));
+  element("homeworkTaskList").querySelectorAll("[data-open-school]").forEach(button => button.onclick = openSchool);
+}
+/* Ticking gives HOMEWORK_XP to spend and HOMEWORK_LEVEL_POINTS to the playing buddy (worked out on the server).
+   Unticking reloads progress from the server, like other tasks. */
+async function toggleHomeworkTask(checkbox) {
+  const homeworkId = checkbox.dataset.homeworkId, nowDone = checkbox.checked;
+  checkbox.disabled = true;
+  try {
+    if (nowDone) {
+      const { xpAwarded, levelPoints } = await dataLayer.markHomeworkDone(homeworkId);
+      homeworkDone = [...homeworkDone.filter(tick => tick.homeworkId !== homeworkId), { homeworkId, completedOn: getTodayInUk() }];
+      currentProgress.xpEarned += xpAwarded;
+      if (levelPoints) addLevelPoints(levelPoints);
+    } else {
+      await dataLayer.unmarkHomeworkDone(homeworkId);
+      homeworkDone = homeworkDone.filter(tick => tick.homeworkId !== homeworkId);
+      try { currentProgress = await dataLayer.loadProgressSummary(); } catch (error) {}
+    }
+    hideSaveError();
+    renderProgress();
+    renderHomeworkTasks();
+  } catch (error) {
+    checkbox.checked = !nowDone;
+    checkbox.disabled = false;
+    if (error.message === "xp-spent") { showSaveError("You've already spent that XP, so this homework stays ticked."); return; }
+    if (error.message === "not-today") { showSaveError("You ticked this on another day, so it stays ticked."); return; }
+    if (error.message === "too-early") { loadHomeworkTasks(); return; }
+    showSaveError("Couldn't save that. Check your internet and try again.", () => { checkbox.checked = nowDone; toggleHomeworkTask(checkbox); });
+  }
+}
+
+/* Settings: how many days before it's due homework goes in Today's tasks (0 = on the day). */
+async function renderSchoolSettings() {
+  element("schoolSettingsSection").hidden = !featureOn("school");
+  element("schoolSettingsError").textContent = "";
+  if (!featureOn("school")) return;
+  if (!schoolSettings) { try { schoolSettings = await dataLayer.loadMySchoolSettings(); } catch (error) { element("schoolSettingsSection").hidden = true; return; } }
+  const days = schoolSettings.homeworkTaskDaysBefore;
+  element("homeworkDaysValue").textContent = days;
+  element("homeworkDaysDown").disabled = days <= 0;
+  element("homeworkDaysUp").disabled = days >= MAX_HOMEWORK_TASK_DAYS_BEFORE;
+  element("homeworkDaysHint").textContent = days === 0 ? "On the day it's due." : `${days} day${days === 1 ? "" : "s"} before it's due, so there's time to get it done.`;
+}
+async function changeHomeworkTaskDays(change) {
+  if (!schoolSettings) return;
+  const days = Math.min(MAX_HOMEWORK_TASK_DAYS_BEFORE, Math.max(0, schoolSettings.homeworkTaskDaysBefore + change));
+  if (days === schoolSettings.homeworkTaskDaysBefore) return;
+  const before = schoolSettings;
+  schoolSettings = { ...schoolSettings, homeworkTaskDaysBefore: days };
+  renderSchoolSettings();
+  try { await dataLayer.saveMySchoolSettings(schoolSettings); }
+  catch (error) { schoolSettings = before; renderSchoolSettings(); element("schoolSettingsError").textContent = "Couldn't save that. Check your internet and try again."; }
+}
+element("homeworkDaysDown").onclick = () => changeHomeworkTaskDays(-1);
+element("homeworkDaysUp").onclick = () => changeHomeworkTaskDays(1);
+
 /* ---------- Games tab ----------
    Mini-games to play with your buddy.
    Each game saves its result through the dataLayer; the server gives the XP, at most MAX_GAME_XP_PER_DAY a day from EACH game. */
@@ -660,7 +866,7 @@ document.querySelectorAll("[data-places]").forEach(button => button.onclick = ()
 });
 /* Settings can be opened from every tab (the ⚙ button). Back returns to the tab you came from. */
 const REOPEN_SCREEN = { screenGame: () => openHome(), screenInventory: () => openInventory(), screenShop: () => openShop(), screenHouse: () => openHouse(),
-  screenLocations: () => openLocations(), screenBuddies: () => openBuddies(), screenFriends: () => openFriends(), screenGames: () => openGames() };
+  screenLocations: () => openLocations(), screenBuddies: () => openBuddies(), screenFriends: () => openFriends(), screenGames: () => openGames(), screenSchool: () => openSchool() };
 let screenBeforeSettings = "screenGame";
 document.querySelectorAll(".settings-button").forEach(button => button.onclick = () => {
   const openScreen = ALL_SCREENS.find(id => !element(id).hidden);
@@ -712,6 +918,7 @@ async function openGame() {
   levelsSeen = {};
   showScreen("screenGame");
   renderHome();
+  loadHomeworkTasks();
   refreshFriendRequests();
   showNewTaskNotifications(false);
 }
@@ -750,6 +957,7 @@ function renderHome() {
   maybeShowInstallBanner();
   renderProgress();
   renderChores();
+  renderHomeworkTasks();
   renderMissions();
 }
 
@@ -832,9 +1040,9 @@ element("claimMilestoneButton").onclick = () => { const next = unclaimedMileston
 /* ---------- Get the app (install to the home screen) ----------
    On Android / Chrome / Edge the browser offers an install prompt we can trigger. On iPhone and iPad there isn't one,
    so we show the steps instead. Needs a web app manifest + icons + service worker in the real app (Claude Code).
-   The banner shows at most once every INSTALL_BANNER_EVERY_DAYS days, never once installed. Remembered per device. */
-const INSTALL_BANNER_EVERY_DAYS = 3;
-const INSTALL_BANNER_STORAGE_KEY = "voxie-install-banner-last-shown";
+   The banner shows once, the first time someone logs in on this device, and never again (Get the app in Settings is
+   there after that). Remembered per device. */
+const INSTALL_BANNER_STORAGE_KEY = "voxie-install-banner-shown";
 let deferredInstallPrompt = null;
 window.addEventListener("beforeinstallprompt", event => { event.preventDefault(); deferredInstallPrompt = event; });
 window.addEventListener("appinstalled", () => { deferredInstallPrompt = null; element("installBanner").hidden = true; renderInstallSection(); });
@@ -862,9 +1070,8 @@ function maybeShowInstallBanner() {
   const banner = element("installBanner");
   if (isInstalledApp()) { banner.hidden = true; return; }
   if (!banner.hidden || installBannerShownThisVisit) return;
-  const lastShown = Number(readStorage(INSTALL_BANNER_STORAGE_KEY) || 0);
-  if (Date.now() - lastShown < INSTALL_BANNER_EVERY_DAYS * 864e5) return;
-  writeStorage(INSTALL_BANNER_STORAGE_KEY, String(Date.now()));
+  if (readStorage(INSTALL_BANNER_STORAGE_KEY) || readStorage("voxie-install-banner-last-shown")) return;   // the old key: already seen it
+  writeStorage(INSTALL_BANNER_STORAGE_KEY, "yes");
   installBannerShownThisVisit = true;
   banner.querySelector(".install-text span").textContent = "Add it to your home screen. It opens straight into the game.";
   element("installBannerButton").hidden = false;
@@ -879,9 +1086,7 @@ element("installBannerButton").onclick = async () => {
 };
 element("installBannerLater").onclick = () => { element("installBanner").hidden = true; };
 function renderInstallSection() {
-  const installed = isInstalledApp();
-  element("installSectionText").textContent = installed ? "You're using the Voxie app. Nice!" : "Put Voxie on your home screen so it opens like an app, with no web address bar.";
-  element("installSettingsButton").hidden = installed;
+  element("installSection").hidden = isInstalledApp();
   element("installHelp").textContent = "";
 }
 element("installSettingsButton").onclick = () => installApp("installHelp");
@@ -2345,11 +2550,9 @@ function openConfigScreen() {
   element("scheduleError").textContent = "";
   renderScheduledTasks();
   element("configSignedInAs").textContent = `Logged in as ${currentProfile.username || currentProfile.display_name}.`;
-  element("gameNameInput").value = currentProfile.display_name || "";
-  ["gameNameError", "gameNameDone"].forEach(id => element(id).textContent = "");
-  element("gameNameInput").removeAttribute("aria-invalid");
   renderChildSettings();
   renderGamesSetting();
+  renderSchoolSettings();
   element("settingsError").textContent = "";
   // A grown-up may have changed these since the game loaded, so check again.
   dataLayer.getSignedInProfile().then(fresh => {
@@ -2359,26 +2562,6 @@ function openConfigScreen() {
     renderChildSettings();
   }).catch(() => {});
 }
-/* Changing your game name (the name friends see). It must not be taken, and your grown-ups are told. */
-element("gameNameForm").onsubmit = async event => {
-  event.preventDefault();
-  element("gameNameDone").textContent = "";
-  const { name, error } = validateName(element("gameNameInput").value, MAX_GAME_NAME_LENGTH);
-  showFieldError("gameNameInput", "gameNameError", error);
-  if (error || name === currentProfile.display_name) return;
-  element("gameNameButton").disabled = true;
-  const takenError = await gameNameError(name);
-  showFieldError("gameNameInput", "gameNameError", takenError);
-  if (!takenError) {
-    try {
-      currentProfile = await dataLayer.updateMyProfile({ ...lookFromProfile(currentProfile), displayName: name });
-      element("gameNameDone").textContent = `Done! Friends now see you as ${name}. We've let ${myGrownUpsLabel()} know.`;
-    } catch (saveError) {
-      showFieldError("gameNameInput", "gameNameError", saveError.message === "name-taken" ? NAME_TAKEN_MESSAGE : "Couldn't change it. Check your internet and try again.");
-    }
-  }
-  element("gameNameButton").disabled = false;
-};
 /* "Alex", "Alex or Sam", or "your grown-up" if nobody's linked. */
 function myGrownUpsLabel() {
   const names = (currentProfile && currentProfile.grown_up_names) || [];
