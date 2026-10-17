@@ -1,7 +1,7 @@
 /* TEST ONLY: made-up school data for one child, until the MCAS sync fills these tables for real.
    Paste into the Supabase SQL Editor, change the username on the first line, and run. Dates are from today, so run
    it again whenever you want fresh data. Running it again clears that child's school data first, including any
-   homework they've ticked (and the XP and level points it gave). Never run it for a real child linked to MCAS. */
+   homework they've ticked (and the XP and level points it gave). Never run it for a child linked to MCAS (school_links): the next sync would mix real and made-up homework. */
 do $$
 declare
   test_username constant text := 'kaytest';
@@ -17,8 +17,8 @@ begin
   delete from public.school_homework where child_id = kid;
   delete from public.school_lessons where child_id = kid;
   delete from public.school_days where child_id = kid;
-  insert into public.school_sync (child_id, school_name, last_synced_at) values (kid, 'Sample School', now() - interval '25 minutes')
-  on conflict (child_id) do update set school_name = excluded.school_name, last_synced_at = excluded.last_synced_at;
+  insert into public.school_sync (child_id, last_synced_at) values (kid, now() - interval '25 minutes')
+  on conflict (child_id) do update set last_synced_at = excluded.last_synced_at;
 
   -- This week and next, with next Friday off (like an INSET day).
   foreach day in array array[monday, monday + 1, monday + 2, monday + 3, monday + 4, monday + 7, monday + 8, monday + 9, monday + 10] loop
@@ -54,5 +54,5 @@ begin
      'Answer questions until the bar at the top is full.', '[{"label": "Open Tassomai", "url": "https://www.tassomai.co.uk"}]', 'Ms Ray', false),
     (kid, 'mcas', 'sample-4', 'Maths', 'Sparx homework', today + 6, '09:00', '', '[{"label": "Open Sparx Maths", "url": "https://www.sparxmaths.uk"}]', 'Mr Sum', false),
     (kid, 'teams', 'sample-5', '', 'Code challenge', today - 1, '23:59', 'Finish the three challenges to get the secret code.', '[]', '', false),
-    (kid, 'mcas', 'sample-6', 'English', 'Sparx Reader', today - 2, '23:59', '', '[]', 'Miss Page', true);
+    (kid, 'mcas', 'sample-6', 'English', 'SAMPLE: handed-in homework (made up)', today - 2, '23:59', 'Made-up test item that MCAS says is handed in.', '[]', 'Miss Page', true);
 end $$;

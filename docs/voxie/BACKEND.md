@@ -9,6 +9,12 @@ Files:
 - `supabase/migrations/20261007120000_voxie_games_for_everyone.sql`: Games no longer need a feature flag (the flag tables stay for future features).
 - `supabase/migrations/20261008090000_voxie_buddy_inventories.sql`: every buddy has its own XP, items, house, place and gear, and its own shuffled unlock order and Shop (`buddy_unlocks`, `buddy_shop`, `option_catalogue`). Run it **before** deploying the app that reads those tables.
 - `supabase/migrations/20261015090000_voxie_school.sql`: the School tab (feature `school`): timetable and homework tables filled by the MCAS sync, the homework "days before" setting, and homework ticks (3 XP + 2 level points each). Test data: `supabase/snippets/voxie_school_sample_data.sql`.
+- `supabase/migrations/20261016090000_voxie_mcas_sync.sql`: `school_links` (which child gets which MCAS pupil, service role only), sync status, and `save_school_sync` for the sync.
+- `supabase/functions/mcas-sync`: copies each linked child's timetable and homework from MyChildAtSchool. Secrets `MCAS_EMAIL`, `MCAS_PASSWORD` and `MCAS_SYNC_SECRET`; deploy with `npx supabase functions deploy mcas-sync --no-verify-jwt`. Link a child with `supabase/snippets/voxie_mcas_link_child.sql`, schedule it with `supabase/snippets/voxie_mcas_sync_schedule.sql`.
+- `supabase/migrations/20261016100000_voxie_push_reminders.sql` and `supabase/functions/send-reminders`: homework reminders as push notifications, one a day at 4pm UK for each child with reminders on. Secrets `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (+ `MCAS_SYNC_SECRET`); the public key also goes in `public/voxie/data/supabase-config.js`. Deploy with `--no-verify-jwt`; schedule with `supabase/snippets/voxie_push_reminders_schedule.sql`. The app side is `public/voxie/sw.js` and `manifest.webmanifest`.
+- `supabase/migrations/20261016110000_voxie_school_reminder_time_and_handed_in.sql`: the child picks their reminder time (`school_settings.reminder_hour`); homework MCAS says is handed in can be collected for the same XP (`collect_handed_in_homework`). Ticks and collections share `homework_completions`, unique per homework, so XP is only given once.
+- `supabase/migrations/20261016120000_voxie_homework_late_ticks.sql`: late homework can be ticked (a teacher may give more time). It leaves Home once late and is ticked in the School tab.
+- `supabase/migrations/20261017090000_voxie_lesson_reminders.sql`: lesson reminders set by grown-ups on the child's tab (night before and/or morning of a lesson, to the child and/or grown-ups, at two times per child), and grown-ups get a copy of homework reminders. Sent by `send-reminders`.
 - `supabase/functions/_shared/voxie.ts` plus the `add-child`, `set-child-passcode` and `delete-child-account` folders.
 
 ## Calling conventions
@@ -74,11 +80,18 @@ Files:
 | saveSnapResult | `save_snap_result` | `p_mode, p_score, p_lose_points_on_loss` | `{ xpAwarded, won, hitDailyLimit }` |
 | loadMyGameXpToday | table `game_results` (today's rows) | none | XP from each game today, e.g. `{ "ping-pong": 4, snap: 3 }` |
 | loadMySchool | tables `school_sync`, `school_days`, `school_lessons`, `school_homework` (from this Monday; homework due in the last 14 days or later) | none | `{ linked, updatedAt, schoolDays, lessons, homework }` |
-| loadMySchoolSettings | table `school_settings` (`.maybeSingle()`, default 2) | none | `{ homeworkTaskDaysBefore }` |
-| saveMySchoolSettings | `save_my_school_settings` | `p_homework_task_days_before` | none |
+| loadMySchoolSettings | table `school_settings` (`.maybeSingle()`, defaults 2 and 16) | none | `{ homeworkTaskDaysBefore, reminderHour }` |
+| saveMySchoolSettings | `save_my_school_settings` | `p_homework_task_days_before, p_reminder_hour` (null keeps it) | none |
 | loadMyHomeworkDone | table `homework_completions` | none | `[{ homeworkId, completedOn }]` |
 | markHomeworkDone | `mark_homework_done` | `p_homework_id` | `{ xpAwarded, levelPoints }` |
 | unmarkHomeworkDone | `unmark_homework_done` | `p_homework_id` | none |
+| collectHandedInHomework | `collect_handed_in_homework` | none | `{ homework: [{ id, title, subject }], xpAwarded, levelPoints }` |
+| savePushSubscription | `save_my_push_subscription` | `p_endpoint, p_p256dh, p_auth` | none |
+| removePushSubscription | `remove_my_push_subscription` | `p_endpoint` | none |
+| loadChildLessonReminders | tables `lesson_reminders`, `school_settings`, `school_lessons` (subjects) for the child | `childId` | `{ reminders, subjects, eveningHour, morningHour }` |
+| addLessonReminder | `add_lesson_reminder` | `p_child_id, p_subject, p_note, p_night_before, p_morning_of, p_to_child, p_to_grown_ups` | the reminder |
+| removeLessonReminder | `remove_lesson_reminder` | `p_child_id, p_reminder_id` | none |
+| setLessonReminderTimes | `set_lesson_reminder_times` | `p_child_id, p_evening_hour, p_morning_hour` | none |
 | signUpParent | `auth.signUp({ email, password, options: { data: { display_name }, emailRedirectTo } })`; the trigger makes the profile | none | profile from `my_profile` |
 | loadMyChildren | `load_my_children` | none | `[{ id, displayName, setupComplete, level, petName, look }]` |
 | loadChildOverview | `load_child_overview` | `p_child_id` | the fake's shape; see the streak note below |

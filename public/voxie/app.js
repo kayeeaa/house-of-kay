@@ -463,7 +463,7 @@ async function openSchool() {
   showScreen("screenSchool");
   element("schoolLoadError").hidden = true;
   if (mySchool) renderSchool();   // show what we had straight away, then refresh
-  try { mySchool = await dataLayer.loadMySchool(); }
+  try { [mySchool, schoolSettings, homeworkDone] = await Promise.all([dataLayer.loadMySchool(), dataLayer.loadMySchoolSettings(), dataLayer.loadMyHomeworkDone()]); }
   catch (error) { if (!mySchool) element("schoolLoadError").hidden = false; return; }
   renderSchool();
 }
@@ -508,19 +508,44 @@ function renderSchoolHomework() {
   const homework = [...mySchool.homework].sort((a, b) => Number(a.submitted) - Number(b.submitted) || `${a.dueDate} ${a.dueTime}`.localeCompare(`${b.dueDate} ${b.dueTime}`));
   element("schoolHomeworkList").innerHTML = !homework.length ? `<p class="hint">No homework right now. Nice!</p>`
     : homework.map(item => {
-      const due = homeworkDueLabel(item);
-      return `<details class="school-homework${item.submitted ? " done" : ""}" data-due="${due.urgency}">
+      const due = homeworkDueLabel(item), tick = homeworkTick(item.id), finished = item.submitted || !!tick;
+      const status = item.submitted ? "Handed in" : tick ? "Done" : due.text;
+      return `<details class="school-homework${finished ? " done" : ""}" data-due="${due.urgency}">
         <summary>
           <span class="school-homework-title"><strong>${escapeHtml(item.title)}</strong><span class="hint">${escapeHtml(item.subject || "From Teams")}</span></span>
-          <span class="school-due">${escapeHtml(item.submitted ? "Handed in" : due.text)}</span>
+          <span class="school-due">${escapeHtml(status)}</span>
         </summary>
         <div class="school-homework-body">
           ${item.instructions ? `<p class="school-instructions">${escapeHtml(item.instructions)}</p>` : ""}
           ${homeworkLinksHtml(item)}
           ${item.setBy ? `<p class="hint">Set by ${escapeHtml(item.setBy)}</p>` : ""}
+          ${canTickInSchool(item) ? `<button type="button" class="btn small" data-tick-homework="${escapeHtml(item.id)}">I've done it: +${HOMEWORK_XP} XP</button>` : ""}
+          ${tick && !item.submitted ? `<p class="hint">Ticked off${tick.completedOn === getTodayInUk() ? " today" : ""}.</p>` : ""}
         </div>
       </details>`;
     }).join("");
+  element("schoolHomeworkList").querySelectorAll("[data-tick-homework]").forEach(button => button.onclick = () => tickHomeworkInSchool(button));
+}
+/* Not handed in, not ticked, and on Home already or late (a teacher may give more time without changing MCAS). */
+function canTickInSchool(item) {
+  return !item.submitted && !homeworkTick(item.id) && !!schoolSettings
+    && shiftDate(item.dueDate, -schoolSettings.homeworkTaskDaysBefore) <= getTodayInUk();
+}
+async function tickHomeworkInSchool(button) {
+  const homeworkId = button.dataset.tickHomework;
+  button.disabled = true;
+  try {
+    const { xpAwarded, levelPoints } = await dataLayer.markHomeworkDone(homeworkId);
+    homeworkDone = [...homeworkDone.filter(tick => tick.homeworkId !== homeworkId), { homeworkId, completedOn: getTodayInUk() }];
+    currentProgress.xpEarned += xpAwarded;
+    if (levelPoints) addLevelPoints(levelPoints);
+    hideSaveError();
+    renderSchoolHomework();
+    renderHomeworkTasks();
+  } catch (error) {
+    button.disabled = false;
+    showSaveError("Couldn't save that. Check your internet and try again.", () => tickHomeworkInSchool(button));
+  }
 }
 
 /* A button for each link, to the site the homework is done on. */
@@ -560,7 +585,9 @@ function schoolUpdatedLabel(isoTime) {
 /* ---------- Homework tasks on Home (feature "school") ----------
    Homework that isn't handed in shows up in Today's tasks from homeworkTaskDaysBefore days before it's due. It's not a
    scheduled task and doesn't count towards MAX_TASKS_PER_DAY. Everything needed is on the task: what to do, who set it
-   and a button to the site it's done on. A ticked one stays (crossed out) until its due date, so a tick can be undone. */
+   and a button to the site it's done on. A ticked one stays (crossed out) until it's due, so a tick can be undone.
+   Once its due time has passed it comes off Home, ticked or not (there'd be no way to clear it otherwise). The
+   School tab still shows it as Late, with "I've done it" in case the teacher gave more time. */
 const MAX_HOMEWORK_TASK_DAYS_BEFORE = 7;
 const HOMEWORK_XP = 3, HOMEWORK_LEVEL_POINTS = 2;   // the server's numbers too (mark_homework_done): keep them the same
 let schoolSettings = null;        // { homeworkTaskDaysBefore } from dataLayer.loadMySchoolSettings()
@@ -571,12 +598,54 @@ async function loadHomeworkTasks() {
   try { [mySchool, schoolSettings, homeworkDone] = await Promise.all([dataLayer.loadMySchool(), dataLayer.loadMySchoolSettings(), dataLayer.loadMyHomeworkDone()]); }
   catch (error) { return; }       // Home works without it; it comes back next time the game loads
   renderHomeworkTasks();
+  showHandedInHomework();
 }
+
+/* Homework MCAS says is handed in (the overnight sync), due in the last 7 days or later, that wasn't ticked here:
+   one pop-up to collect its XP and level points. The server works out what's collectable and gives each one only
+   once, whether it was ticked or collected. Closing without collecting shows it again next time. */
+let handedInToCollect = [];
+function showHandedInHomework() {
+  if (!featureOn("school") || !mySchool || !mySchool.linked || element("screenGame").hidden) return;
+  if (!element("childNoticeSheet").hidden || !element("handedInSheet").hidden) return;   // one pop-up at a time
+  const today = getTodayInUk();
+  handedInToCollect = mySchool.homework.filter(item => item.submitted && !homeworkTick(item.id) && item.dueDate >= shiftDate(today, -7));
+  if (!handedInToCollect.length) return;
+  const count = handedInToCollect.length;
+  element("handedInTitle").textContent = count === 1 ? "You handed in homework!" : `You handed in ${count} homeworks!`;
+  element("handedInText").textContent = `MyChildAtSchool says ${count === 1 ? "this is" : "these are"} done. Nice work!`;
+  element("handedInList").innerHTML = handedInToCollect.map(item =>
+    `<li><span class="power-text"><b>${escapeHtml(item.title)}</b><span>${escapeHtml(item.subject || "From Teams")}</span></span></li>`).join("");
+  element("handedInError").textContent = "";
+  setButtonText(element("handedInCollect"), `Collect ${count * HOMEWORK_XP} XP`);
+  element("handedInCollect").disabled = false;
+  element("handedInSheet").hidden = false;
+  element("handedInCollect").focus();
+}
+function closeHandedInHomework() { element("handedInSheet").hidden = true; handedInToCollect = []; }
+element("handedInCollect").onclick = async () => {
+  element("handedInCollect").disabled = true;
+  try {
+    const { homework, xpAwarded, levelPoints } = await dataLayer.collectHandedInHomework();
+    homeworkDone = [...homeworkDone.filter(tick => !homework.some(item => item.id === tick.homeworkId)),
+      ...homework.map(item => ({ homeworkId: item.id, completedOn: getTodayInUk() }))];
+    closeHandedInHomework();
+    currentProgress.xpEarned += xpAwarded;
+    if (levelPoints) addLevelPoints(levelPoints);
+    renderProgress();
+    renderHomeworkTasks();
+  } catch (error) {
+    element("handedInError").textContent = "Couldn't collect it. Check your internet and try again.";
+    element("handedInCollect").disabled = false;
+  }
+};
+element("handedInSheet").addEventListener("click", event => { if (event.target === element("handedInSheet")) closeHandedInHomework(); });
+document.addEventListener("keydown", event => { if (event.key === "Escape" && !element("handedInSheet").hidden) closeHandedInHomework(); });
 function homeworkTasksToday() {
   if (!featureOn("school") || !mySchool || !mySchool.linked || !schoolSettings) return [];
   const today = getTodayInUk();
   return mySchool.homework
-    .filter(item => !item.submitted && shiftDate(item.dueDate, -schoolSettings.homeworkTaskDaysBefore) <= today && (!homeworkTick(item.id) || item.dueDate >= today))
+    .filter(item => !item.submitted && shiftDate(item.dueDate, -schoolSettings.homeworkTaskDaysBefore) <= today && homeworkDueLabel(item).urgency !== "late")
     .sort((a, b) => `${a.dueDate} ${a.dueTime}`.localeCompare(`${b.dueDate} ${b.dueTime}`));
 }
 function renderHomeworkTasks() {
@@ -627,6 +696,7 @@ async function toggleHomeworkTask(checkbox) {
     if (error.message === "xp-spent") { showSaveError("You've already spent that XP, so this homework stays ticked."); return; }
     if (error.message === "not-today") { showSaveError("You ticked this on another day, so it stays ticked."); return; }
     if (error.message === "too-early") { loadHomeworkTasks(); return; }
+    if (error.message === "handed-in") { showSaveError("MCAS says you handed this in, so it stays ticked."); return; }
     showSaveError("Couldn't save that. Check your internet and try again.", () => { checkbox.checked = nowDone; toggleHomeworkTask(checkbox); });
   }
 }
@@ -642,6 +712,7 @@ async function renderSchoolSettings() {
   element("homeworkDaysDown").disabled = days <= 0;
   element("homeworkDaysUp").disabled = days >= MAX_HOMEWORK_TASK_DAYS_BEFORE;
   element("homeworkDaysHint").textContent = days === 0 ? "On the day it's due." : `${days} day${days === 1 ? "" : "s"} before it's due, so there's time to get it done.`;
+  renderReminderSetting();
 }
 async function changeHomeworkTaskDays(change) {
   if (!schoolSettings) return;
@@ -650,11 +721,119 @@ async function changeHomeworkTaskDays(change) {
   const before = schoolSettings;
   schoolSettings = { ...schoolSettings, homeworkTaskDaysBefore: days };
   renderSchoolSettings();
-  try { await dataLayer.saveMySchoolSettings(schoolSettings); }
+  try { await dataLayer.saveMySchoolSettings({ homeworkTaskDaysBefore: days }); }
   catch (error) { schoolSettings = before; renderSchoolSettings(); element("schoolSettingsError").textContent = "Couldn't save that. Check your internet and try again."; }
 }
 element("homeworkDaysDown").onclick = () => changeHomeworkTaskDays(-1);
 element("homeworkDaysUp").onclick = () => changeHomeworkTaskDays(1);
+
+/* ---------- Homework reminders (push notifications, feature "school") ----------
+   Turned on per device. The browser makes a push address for this device (sw.js shows what arrives) and it's saved
+   to the child's account; the send-reminders Edge Function sends at most one a day, at the time the child picks (Reminder time).
+   On iPhone and iPad, notifications only work once Voxie is added to the home screen. */
+const REMINDER_HOURS = Array.from({ length: 15 }, (_, index) => index + 7);   // 7am to 9pm, the server's limits too
+const hourText = hour => hour === 12 ? "12 noon" : hour < 12 ? `${hour}am` : `${hour - 12}pm`;
+const reminderTimeText = () => hourText(schoolSettings ? schoolSettings.reminderHour : 16);
+element("reminderTimeSelect").innerHTML = REMINDER_HOURS.map(hour => `<option value="${hour}">${hourText(hour)}</option>`).join("");
+element("reminderTimeSelect").onchange = async event => {
+  const reminderHour = Number(event.target.value), before = schoolSettings;
+  schoolSettings = { ...schoolSettings, reminderHour };
+  renderReminderSetting();
+  try { await dataLayer.saveMySchoolSettings({ reminderHour }); }
+  catch (error) { schoolSettings = before; renderSchoolSettings(); element("schoolSettingsError").textContent = "Couldn't save that. Check your internet and try again."; }
+};
+const voxieServiceWorker = "serviceWorker" in navigator ? navigator.serviceWorker.register("/voxie/sw.js", { scope: "/voxie/" }).catch(() => null) : Promise.resolve(null);
+function pushPossible() {
+  return "serviceWorker" in navigator && "PushManager" in window && "Notification" in window && typeof VOXIE_VAPID_PUBLIC_KEY === "string" && !!VOXIE_VAPID_PUBLIC_KEY;
+}
+/* Subscribing needs the service worker running, and the first time it can still be starting up. */
+async function activeServiceWorker() {
+  const registration = await voxieServiceWorker;
+  if (!registration || registration.active) return registration;
+  const worker = registration.installing || registration.waiting;
+  if (worker) await new Promise(resolve => { const check = () => { if (worker.state === "activated") resolve(); }; worker.addEventListener("statechange", check); check(); });
+  return registration;
+}
+async function currentPushSubscription() {
+  const registration = await voxieServiceWorker;
+  return registration ? registration.pushManager.getSubscription() : null;
+}
+/* A "reminders on this device" switch. The child's is in Settings → School; a grown-up's is in Lesson reminders. */
+const CHILD_REMINDER_SWITCH = { toggle: "settingReminders", hint: "remindersHint", error: "schoolSettingsError",
+  onText: () => `On for this device. You'll get one at ${reminderTimeText()} when homework is due tonight or tomorrow, or has just come onto Home.`,
+  offText: () => `Get a notification on this device at ${reminderTimeText()} when homework is due soon.` };
+const GROWN_UP_REMINDER_SWITCH = { toggle: "parentRemindersSwitch", hint: "parentRemindersHint", error: "parentLessonError",
+  onText: () => "On for this device: the lesson reminders below, and a copy of homework reminders.",
+  offText: () => "Turn on to get lesson reminders and a copy of homework reminders on this device." };
+async function renderReminderSetting() {
+  if (schoolSettings) element("reminderTimeSelect").value = String(schoolSettings.reminderHour);
+  await renderPushSwitch(CHILD_REMINDER_SWITCH);
+}
+async function renderPushSwitch(config) {
+  const toggle = element(config.toggle), hint = element(config.hint);
+  toggle.disabled = true;
+  if (!pushPossible()) {
+    toggle.checked = false;
+    hint.textContent = isAppleDevice() && !isInstalledApp() ? "Add Voxie to your home screen first, then turn this on there."
+      : "This browser can't do notifications.";
+    return;
+  }
+  if (Notification.permission === "denied") {
+    toggle.checked = false;
+    hint.textContent = "Notifications are blocked for Voxie. Allow them in this browser's site settings, then come back.";
+    return;
+  }
+  const subscription = Notification.permission === "granted" ? await currentPushSubscription().catch(() => null) : null;
+  toggle.checked = !!subscription;
+  toggle.disabled = false;
+  hint.textContent = subscription ? config.onText() : config.offText();
+}
+/* The browser's push key has to be bytes, not the base64url text it's shared as. */
+function vapidKeyBytes(base64Url) {
+  const base64 = (base64Url + "=".repeat((4 - base64Url.length % 4) % 4)).replace(/-/g, "+").replace(/_/g, "/");
+  return Uint8Array.from(atob(base64), character => character.charCodeAt(0));
+}
+function wirePushSwitch(config) {
+  element(config.toggle).onchange = async event => {
+    const turningOn = event.target.checked;
+    element(config.toggle).disabled = true;
+    element(config.error).textContent = "";
+    try {
+      if (turningOn) {
+        // Asked for here, straight after the tap: browsers only ask when the person has just pressed something.
+        const permission = await Notification.requestPermission();
+        if (permission !== "granted") {
+          await renderPushSwitch(config);
+          if (permission === "default") element(config.error).textContent = "Notifications weren't allowed. Look for a bell icon at the end of the address bar, click it and choose Allow, then try again.";
+          return;
+        }
+        const registration = await activeServiceWorker();
+        if (!registration) throw new Error("no-service-worker");
+        const subscription = await registration.pushManager.getSubscription()
+          || await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: vapidKeyBytes(VOXIE_VAPID_PUBLIC_KEY) });
+        const { endpoint, keys } = subscription.toJSON();
+        await dataLayer.savePushSubscription({ endpoint, p256dh: keys.p256dh, auth: keys.auth });
+      } else {
+        await turnOffRemindersHere();
+      }
+    } catch (error) {
+      console.error("Reminders:", error);
+      // The bit in brackets says what went wrong, for whoever's fixing it.
+      element(config.error).textContent = error.message === "too-many-devices" ? "Reminders are already on for 10 devices. Turn them off on one first."
+        : `Couldn't change reminders. Check your internet and try again. (${error.name && error.name !== "Error" ? `${error.name}: ` : ""}${error.message})`;
+    }
+    await renderPushSwitch(config);
+  };
+}
+wirePushSwitch(CHILD_REMINDER_SWITCH);
+wirePushSwitch(GROWN_UP_REMINDER_SWITCH);
+/* Also on log out, so a shared tablet doesn't keep getting the last child's reminders. */
+async function turnOffRemindersHere() {
+  const subscription = await currentPushSubscription().catch(() => null);
+  if (!subscription) return;
+  await dataLayer.removePushSubscription(subscription.endpoint);
+  await subscription.unsubscribe();
+}
 
 /* ---------- Games tab ----------
    Mini-games to play with your buddy.
@@ -948,6 +1127,7 @@ function closeNewTaskNotifications() {
   element("childNoticeSheet").hidden = true;
   dataLayer.markMyTaskNotificationsSeen(shownChildNotificationIds).catch(() => {});   // if this fails, they'll see it again next time
   shownChildNotificationIds = [];
+  if (typeof showHandedInHomework === "function") showHandedInHomework();
 }
 element("childNoticeOk").onclick = closeNewTaskNotifications;
 element("childNoticeSheet").addEventListener("click", event => { if (event.target === element("childNoticeSheet")) closeNewTaskNotifications(); });
@@ -2603,6 +2783,7 @@ element("settingTimedMissions").onchange = saveSettings;
 element("settingResetStreak").onchange = saveSettings;
 element("settingChanceFeatures").onchange = saveSettings;
 element("logOutButton").onclick = async () => {
+  try { await turnOffRemindersHere(); } catch (error) {}   // while still signed in, so the server forgets this device
   try { await dataLayer.signOut(); } catch (error) {}
   resetSessionState();
   openLogin();
@@ -2759,7 +2940,84 @@ async function openParentTab(tabId) {
   element("parentInviteCode").hidden = element("parentInviteHint").hidden = true;
   renderParentChild();
   element("parentChildPanel").hidden = false;
+  loadParentLessonReminders(tabId);
 }
+
+/* ---------- Grown-ups: lesson reminders (feature "school") ----------
+   On the child's tab: a notification the night before and/or the morning of a lesson (e.g. Core PE → "Get the PE kit
+   and key ready"), to the grown-ups and/or the child. Lessons come from the child's MCAS timetable, so the subject is
+   picked from it. send-reminders sends them at the two times set here; a day's lessons come in one notification. */
+const LESSON_EVENING_HOURS = [15, 16, 17, 18, 19, 20, 21, 22], LESSON_MORNING_HOURS = [5, 6, 7, 8, 9, 10];   // the server's limits too
+let parentLessons = null;   // { childId, reminders, subjects, eveningHour, morningHour }
+async function loadParentLessonReminders(childId) {
+  element("parentLessonSection").hidden = true;
+  if (!featureOn("school")) return;
+  let data;
+  try { data = await dataLayer.loadChildLessonReminders(childId); } catch (error) { return; }
+  if (parentOpenChildId !== childId) return;   // they've moved to another tab
+  parentLessons = { childId, ...data };
+  ["parentLessonError"].forEach(id => element(id).textContent = "");
+  element("parentLessonNote").value = "";
+  renderParentLessons();
+  renderPushSwitch(GROWN_UP_REMINDER_SWITCH);
+  element("parentLessonSection").hidden = false;
+}
+function renderParentLessons() {
+  const { reminders, subjects, eveningHour, morningHour } = parentLessons, name = parentOverview.child.displayName;
+  element("parentLessonIntro").textContent = `A notification before ${name}'s lessons, from their school timetable. You'll also get a copy of ${name}'s homework reminders.`;
+  element("parentLessonChildName").textContent = name;
+  element("parentLessonEvening").innerHTML = LESSON_EVENING_HOURS.map(hour => `<option value="${hour}"${hour === eveningHour ? " selected" : ""}>${hourText(hour)}</option>`).join("");
+  element("parentLessonMorning").innerHTML = LESSON_MORNING_HOURS.map(hour => `<option value="${hour}"${hour === morningHour ? " selected" : ""}>${hourText(hour)}</option>`).join("");
+  const subjectPicker = element("parentLessonSubject");
+  subjectPicker.innerHTML = subjects.length ? subjects.map(subject => `<option>${escapeHtml(subject)}</option>`).join("") : `<option value="">No timetable yet</option>`;
+  subjectPicker.disabled = element("parentLessonAddButton").disabled = !subjects.length;
+  const list = element("parentLessonList");
+  list.innerHTML = reminders.length ? reminders.map(reminder => {
+    const when = [reminder.nightBefore && "night before", reminder.morningOf && "that morning"].filter(Boolean).join(" and ");
+    const who = [reminder.toGrownUps && "grown-ups", reminder.toChild && name].filter(Boolean).join(" and ");
+    return `<li><span class="what"><strong>${escapeHtml(reminder.subject)}</strong><span class="hint">${escapeHtml(reminder.note || "No note")}</span>`
+      + `<span class="hint">${escapeHtml(`${when.charAt(0).toUpperCase()}${when.slice(1)}, to ${who}`)}</span></span>`
+      + `<button type="button" class="remove" data-remove-lesson-reminder="${reminder.id}" aria-label="Remove the ${escapeHtml(reminder.subject)} reminder">✕</button></li>`;
+  }).join("") : `<li class="empty" style="flex-direction:column;align-items:flex-start"><strong>None yet</strong><span class="hint">${subjects.length ? "Add one below." : `They show up once ${escapeHtml(name)}'s school timetable has synced.`}</span></li>`;
+  list.querySelectorAll("[data-remove-lesson-reminder]").forEach(button => button.onclick = () => removeParentLessonReminder(button.dataset.removeLessonReminder));
+}
+element("parentLessonForm").onsubmit = async event => {
+  event.preventDefault();
+  const childId = parentLessons.childId;
+  const reminder = { subject: element("parentLessonSubject").value, note: element("parentLessonNote").value.trim(),
+    nightBefore: element("parentLessonNight").checked, morningOf: element("parentLessonMorningOf").checked,
+    toChild: element("parentLessonToChild").checked, toGrownUps: element("parentLessonToMe").checked };
+  const problem = !reminder.subject ? "Pick a lesson first." : !(reminder.nightBefore || reminder.morningOf) ? "Tick the night before, that morning, or both."
+    : !(reminder.toChild || reminder.toGrownUps) ? "Tick who it goes to." : "";
+  element("parentLessonError").textContent = problem;
+  if (problem) return;
+  element("parentLessonAddButton").disabled = true;
+  try {
+    const added = await dataLayer.addLessonReminder(childId, reminder);
+    if (parentLessons.childId === childId) { parentLessons.reminders = [...parentLessons.reminders, added]; element("parentLessonNote").value = ""; renderParentLessons(); }
+  } catch (error) {
+    element("parentLessonError").textContent = error.message === "too-many" ? "That's 20 lesson reminders, the most for one child. Remove one first."
+      : "Couldn't add that. Check your internet and try again.";
+  }
+  element("parentLessonAddButton").disabled = !parentLessons.subjects.length;
+};
+async function removeParentLessonReminder(reminderId) {
+  const childId = parentLessons.childId;
+  try {
+    await dataLayer.removeLessonReminder(childId, reminderId);
+    if (parentLessons.childId === childId) { parentLessons.reminders = parentLessons.reminders.filter(reminder => reminder.id !== reminderId); renderParentLessons(); }
+  } catch (error) { element("parentLessonError").textContent = "Couldn't remove that. Check your internet and try again."; }
+}
+async function saveParentLessonTimes() {
+  const childId = parentLessons.childId, before = { ...parentLessons };
+  parentLessons.eveningHour = Number(element("parentLessonEvening").value);
+  parentLessons.morningHour = Number(element("parentLessonMorning").value);
+  element("parentLessonError").textContent = "";
+  try { await dataLayer.setLessonReminderTimes(childId, parentLessons.eveningHour, parentLessons.morningHour); }
+  catch (error) { parentLessons = before; renderParentLessons(); element("parentLessonError").textContent = "Couldn't save that. Check your internet and try again."; }
+}
+element("parentLessonEvening").onchange = saveParentLessonTimes;
+element("parentLessonMorning").onchange = saveParentLessonTimes;
 /* Rounds down, so 199 of 200 shows 99% (only all of them shows 100%). */
 /* Another grown-up or device unlinked this child: reload the tabs instead of showing an internet error. */
 function handledNoLongerLinked(error, childId) {
@@ -3092,6 +3350,7 @@ element("parentLinkForm").onsubmit = async event => {
   element("parentLinkButton").disabled = false;
 };
 element("parentLogOutButton").onclick = async () => {
+  try { await turnOffRemindersHere(); } catch (error) {}   // while still signed in, so the server forgets this device
   try { await dataLayer.signOut(); } catch (error) {}
   resetSessionState();
   openLogin();

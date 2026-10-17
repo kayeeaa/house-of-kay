@@ -573,6 +573,12 @@ select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .school-instructions{margin:0;white-space:pre-line}
 .school-links{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
 .school-links .btn{display:inline-flex;align-items:center;text-decoration:none}
+/* Grown-ups: lesson reminders on the child's tab */
+.lesson-times{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.check-group{border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.check-group legend{padding:0;margin-bottom:4px}
+.check-group label{display:flex;align-items:center;gap:10px;min-height:44px;cursor:pointer}
+.check-group input{width:22px;height:22px;margin:0;accent-color:var(--accent-dk)}
 /* Homework tasks on Home: the tick row, the buttons to the homework sites, then "What to do". */
 .homework-tasks{display:flex;flex-direction:column;gap:8px}
 .homework-tasks h3{font-size:17px}

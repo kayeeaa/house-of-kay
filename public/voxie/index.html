@@ -8,6 +8,8 @@
   <link rel="canonical" href="https://www.house-of-kay.co.uk/voxie" />
   <link rel="icon" href="/voxie/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/voxie/apple-touch-icon.png" />
+  <link rel="manifest" href="/voxie/manifest.webmanifest" />
+  <meta name="theme-color" content="#4E8A4F" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="House of Kay" />
   <meta property="og:title" content="Voxie – a chore and life-skills game for kids" />
@@ -249,6 +251,42 @@
                 <input type="checkbox" class="switch" id="parentSettingChildCanChange" role="switch">
               </div>
               <p class="error" id="parentSettingsError" role="alert"></p>
+            </section>
+            <!-- Feature "school": notifications before lessons on the child's MCAS timetable -->
+            <section class="block" id="parentLessonSection" aria-labelledby="parentLessonHeading" hidden>
+              <h2 id="parentLessonHeading">Lesson reminders</h2>
+              <p class="hint" id="parentLessonIntro"></p>
+              <div class="setting">
+                <div class="text"><strong><label for="parentRemindersSwitch">Notifications on this device</label></strong><span class="hint" id="parentRemindersHint"></span></div>
+                <input type="checkbox" class="switch" id="parentRemindersSwitch" role="switch">
+              </div>
+              <div class="lesson-times">
+                <div class="field"><label class="label" for="parentLessonEvening">The night before at</label><select id="parentLessonEvening"></select></div>
+                <div class="field"><label class="label" for="parentLessonMorning">That morning at</label><select id="parentLessonMorning"></select></div>
+              </div>
+              <ul class="schedule-list" id="parentLessonList"></ul>
+              <form class="schedule-form" id="parentLessonForm" novalidate>
+                <div class="field">
+                  <label class="label" for="parentLessonSubject">Lesson</label>
+                  <select id="parentLessonSubject"></select>
+                </div>
+                <div class="field">
+                  <label class="label" for="parentLessonNote">Reminder</label>
+                  <input type="text" id="parentLessonNote" maxlength="120" autocomplete="off" placeholder="e.g. Get the PE kit and key ready">
+                </div>
+                <fieldset class="check-group">
+                  <legend class="label">When</legend>
+                  <label><input type="checkbox" id="parentLessonNight" checked> The night before</label>
+                  <label><input type="checkbox" id="parentLessonMorningOf" checked> That morning</label>
+                </fieldset>
+                <fieldset class="check-group">
+                  <legend class="label">Send to</legend>
+                  <label><input type="checkbox" id="parentLessonToMe" checked> Me and other grown-ups</label>
+                  <label><input type="checkbox" id="parentLessonToChild" checked> <span id="parentLessonChildName">Them</span></label>
+                </fieldset>
+                <p class="error" id="parentLessonError" role="alert"></p>
+                <button class="btn" type="submit" id="parentLessonAddButton">Add reminder</button>
+              </form>
             </section>
             <section class="block" aria-labelledby="parentLoginHeading">
               <h2 id="parentLoginHeading">Login</h2>
@@ -750,6 +788,15 @@
           <button type="button" id="homeworkDaysUp" aria-label="More days">+</button>
         </div>
         <p class="hint" id="homeworkDaysHint"></p>
+        <!-- Push notifications on THIS device (each device is turned on separately) -->
+        <div class="setting">
+          <div class="text"><strong><label for="settingReminders">Homework reminders</label></strong><span class="hint" id="remindersHint"></span></div>
+          <input type="checkbox" class="switch" id="settingReminders" role="switch">
+        </div>
+        <div class="field">
+          <label class="label" for="reminderTimeSelect">Reminder time</label>
+          <select id="reminderTimeSelect"></select>
+        </div>
         <p class="error" id="schoolSettingsError" role="alert"></p>
       </section>
       <section class="block" id="linkGrownUpSection" aria-labelledby="linkGrownUpHeading">
@@ -945,6 +992,17 @@
       <ul class="ability-list" id="childNoticeList"></ul>
       <p class="hint">Find them in Today's tasks on the days they're set for.</p>
       <button type="button" class="btn" id="childNoticeOk">Let's do it!</button>
+    </section>
+  </div>
+
+  <!-- Homework MCAS says is handed in but wasn't ticked off in Voxie: collect its XP (feature "school") -->
+  <div class="sheet-backdrop" id="handedInSheet" hidden>
+    <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="handedInTitle">
+      <h2 id="handedInTitle">You handed in homework!</h2>
+      <p class="hint" id="handedInText"></p>
+      <ul class="ability-list" id="handedInList"></ul>
+      <p class="error" id="handedInError" role="alert"></p>
+      <button type="button" class="btn" id="handedInCollect">Collect</button>
     </section>
   </div>
 

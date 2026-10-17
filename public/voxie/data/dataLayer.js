@@ -270,28 +270,69 @@ const dataLayer = {
       readMyRows("school_homework", "id, source, subject, title, due_date, due_time, instructions, links, set_by, submitted", query => query.gte("due_date", shiftDate(today, -14)).order("due_date")),
     ]);
     return {
-      linked: !!sync, updatedAt: sync && sync.last_synced_at,
+      // Linked once the first sync has worked (a failed first try leaves a row with no last_synced_at).
+      linked: !!(sync && sync.last_synced_at), updatedAt: sync && sync.last_synced_at,
       schoolDays: days.map(row => row.school_day),
       lessons: lessons.map(row => ({ date: row.lesson_date, start: row.start_time.slice(0, 5), end: row.end_time.slice(0, 5), subject: row.subject, colour: row.colour, teachers: row.teachers })),
       homework: homework.map(row => ({ id: row.id, source: row.source, subject: row.subject, title: row.title, dueDate: row.due_date, dueTime: row.due_time.slice(0, 5),
         instructions: row.instructions, links: Array.isArray(row.links) ? row.links : [], setBy: row.set_by, submitted: row.submitted })),
     };
   },
-  /** { homeworkTaskDaysBefore }: how many days before homework is due it shows up as a task on Home (0 = on the day). */
+  /** { homeworkTaskDaysBefore, reminderHour }: how many days before homework is due it shows up as a task on Home
+      (0 = on the day), and the hour (7–21, UK time) the day's homework reminder comes. */
   async loadMySchoolSettings() {
-    const row = await readMyRows("school_settings", "homework_task_days_before", query => query.maybeSingle());
-    return { homeworkTaskDaysBefore: row ? row.homework_task_days_before : 2 };
+    const row = await readMyRows("school_settings", "homework_task_days_before, reminder_hour", query => query.maybeSingle());
+    return { homeworkTaskDaysBefore: row ? row.homework_task_days_before : 2, reminderHour: row ? row.reminder_hour : 16 };
   },
-  /** Throws Error("bad-days") outside 0–7. */
-  async saveMySchoolSettings({ homeworkTaskDaysBefore }) { await callRpc("save_my_school_settings", { p_homework_task_days_before: homeworkTaskDaysBefore }); },
+  /** Either can be left out to keep it. Throws Error("bad-days") outside 0–7, Error("bad-hour") outside 7–21. */
+  async saveMySchoolSettings({ homeworkTaskDaysBefore, reminderHour }) {
+    await callRpc("save_my_school_settings", { p_homework_task_days_before: homeworkTaskDaysBefore ?? null, p_reminder_hour: reminderHour ?? null });
+  },
   /** Homework ticked off on Home: [{ homeworkId, completedOn }]. */
   async loadMyHomeworkDone() {
     return (await readMyRows("homework_completions", "homework_id, completed_on")).map(row => ({ homeworkId: row.homework_id, completedOn: row.completed_on }));
   },
-  /** { xpAwarded, levelPoints } (3 and 2; 0 and 0 if it was already ticked). Throws Error("too-early") or Error("not-found"). */
+  /** { xpAwarded, levelPoints } (3 and 2; 0 and 0 if it was already ticked). Late homework can be ticked.
+      Throws Error("too-early") or Error("not-found"). */
   async markHomeworkDone(homeworkId) { return callRpc("mark_homework_done", { p_homework_id: homeworkId }); },
-  /** Only on the day it was ticked: Error("not-today"); and only if its XP isn't spent: Error("xp-spent"). */
+  /** Only on the day it was ticked: Error("not-today"); only if its XP isn't spent: Error("xp-spent"); never one collected
+      from MCAS: Error("handed-in"). */
   async unmarkHomeworkDone(homeworkId) { await callRpc("unmark_homework_done", { p_homework_id: homeworkId }); },
+  /** Homework MCAS says is handed in (due in the last 7 days or later) that wasn't ticked: collects the same XP and
+      level points as ticking it. { homework: [{ id, title, subject }], xpAwarded, levelPoints }. */
+  async collectHandedInHomework() { return callRpc("collect_handed_in_homework"); },
+  /** This device's push subscription ({ endpoint, p256dh, auth } from PushSubscription.toJSON()), for homework reminders.
+      Throws Error("too-many-devices") or Error("bad-subscription"). */
+  async savePushSubscription({ endpoint, p256dh, auth }) {
+    await callRpc("save_my_push_subscription", { p_endpoint: endpoint, p_p256dh: p256dh, p_auth: auth });
+  },
+  async removePushSubscription(endpoint) { await callRpc("remove_my_push_subscription", { p_endpoint: endpoint }); },
+  /** Grown-ups: a child's lesson reminders. { reminders: [{ id, subject, note, nightBefore, morningOf, toChild, toGrownUps }],
+      subjects: the lessons on their synced timetable, eveningHour, morningHour }. */
+  async loadChildLessonReminders(childId) {
+    const [reminders, settings, lessons] = await Promise.all([
+      supabaseClient.from("lesson_reminders").select("id, subject, note, night_before, morning_of, to_child, to_grown_ups").eq("child_id", childId).order("created_at"),
+      supabaseClient.from("school_settings").select("lesson_evening_hour, lesson_morning_hour").eq("child_id", childId).maybeSingle(),
+      supabaseClient.from("school_lessons").select("subject").eq("child_id", childId),
+    ]);
+    const failed = reminders.error || settings.error || lessons.error;
+    if (failed) throw new Error(failed.message || "load-failed");
+    return {
+      reminders: reminders.data.map(row => ({ id: row.id, subject: row.subject, note: row.note, nightBefore: row.night_before, morningOf: row.morning_of, toChild: row.to_child, toGrownUps: row.to_grown_ups })),
+      subjects: [...new Set(lessons.data.map(row => row.subject))].sort((a, b) => a.localeCompare(b)),
+      eveningHour: settings.data ? settings.data.lesson_evening_hour : 20, morningHour: settings.data ? settings.data.lesson_morning_hour : 7,
+    };
+  },
+  /** Returns the reminder. Throws Error("too-many") (20 a child), Error("needs-when") or Error("needs-who"). */
+  async addLessonReminder(childId, { subject, note, nightBefore, morningOf, toChild, toGrownUps }) {
+    return callRpc("add_lesson_reminder", { p_child_id: childId, p_subject: subject, p_note: note, p_night_before: nightBefore,
+      p_morning_of: morningOf, p_to_child: toChild, p_to_grown_ups: toGrownUps });
+  },
+  async removeLessonReminder(childId, reminderId) { await callRpc("remove_lesson_reminder", { p_child_id: childId, p_reminder_id: reminderId }); },
+  /** eveningHour 15–22, morningHour 5–10 (UK time). */
+  async setLessonReminderTimes(childId, eveningHour, morningHour) {
+    await callRpc("set_lesson_reminder_times", { p_child_id: childId, p_evening_hour: eveningHour, p_morning_hour: morningHour });
+  },
 
   /* ---------- Grown-up accounts ---------- */
   /** A grown-up signs up: { displayName, email, password }. With "Confirm email" on there's no session until they

@@ -1,0 +1,14 @@
+{
+  "name": "Voxie",
+  "short_name": "Voxie",
+  "description": "Tick off your jobs, smash your daily missions and grow a pixel buddy that's all yours.",
+  "start_url": "/voxie",
+  "scope": "/voxie",
+  "display": "standalone",
+  "background_color": "#E6EEE6",
+  "theme_color": "#4E8A4F",
+  "icons": [
+    { "src": "/voxie/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/voxie/apple-touch-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any" }
+  ]
+}
