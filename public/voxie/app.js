@@ -7,7 +7,7 @@ const escapeHtml = text => String(text).replace(/[&<>"]/g, character => ({ "&":"
 const ALL_SCREENS = ["screenLoading", "screenLogin", "screenParents", "screenParentHome", "screenSetupName", "screenSetupPet", "screenSetupLook", "screenGame", "screenInventory", "screenHouse", "screenLocations", "screenBuddies", "screenFriends", "screenConfig", "screenShop", "screenGames", "screenSchool"];
 const TAB_SCREENS = ["screenGame", "screenInventory", "screenShop", "screenHouse", "screenLocations", "screenBuddies", "screenFriends", "screenConfig", "screenGames", "screenSchool"];
 /* Which tab is lit for each screen. House and Locations share Places; Config is opened from Home. */
-const TAB_FOR_SCREEN = { screenGame: "home", screenConfig: "home", screenInventory: "inventory", screenShop: "inventory", screenHouse: "places", screenLocations: "places", screenBuddies: "buddies", screenFriends: "friends", screenGames: "games", screenSchool: "school" };
+const TAB_FOR_SCREEN = { screenGame: "home", screenConfig: "admin", screenInventory: "inventory", screenShop: "inventory", screenHouse: "places", screenLocations: "places", screenBuddies: "buddies", screenFriends: "friends", screenGames: "games", screenSchool: "school" };
 const LOCK_ICON = `<svg class="lock-icon" viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="2" y="0" width="4" height="1"/><rect x="1" y="1" width="1" height="3"/><rect x="6" y="1" width="1" height="3"/><rect x="0" y="3" width="8" height="5"/><rect x="3" y="5" width="2" height="2" fill="var(--sunk)"/></svg>`;
 
 let currentProfile = null;
@@ -450,6 +450,7 @@ document.querySelectorAll(".tab[data-tab]").forEach(tab => tab.onclick = () => {
   if (tabName === "friends") openFriends();
   if (tabName === "games") openGames();
   if (tabName === "school") openSchool();
+  if (tabName === "admin") openConfigScreen();
 });
 function openHome() { showScreen("screenGame"); renderHome(); showNewTaskNotifications(true); }
 /* ---------- School tab (feature "school") ----------
@@ -1043,17 +1044,6 @@ let lastPlacesScreen = "screenHouse";
 document.querySelectorAll("[data-places]").forEach(button => button.onclick = () => {
   if (button.dataset.places === "screenLocations") openLocations(); else openHouse();
 });
-/* Settings can be opened from every tab (the ⚙ button). Back returns to the tab you came from. */
-const REOPEN_SCREEN = { screenGame: () => openHome(), screenInventory: () => openInventory(), screenShop: () => openShop(), screenHouse: () => openHouse(),
-  screenLocations: () => openLocations(), screenBuddies: () => openBuddies(), screenFriends: () => openFriends(), screenGames: () => openGames(), screenSchool: () => openSchool() };
-let screenBeforeSettings = "screenGame";
-document.querySelectorAll(".settings-button").forEach(button => button.onclick = () => {
-  const openScreen = ALL_SCREENS.find(id => !element(id).hidden);
-  screenBeforeSettings = REOPEN_SCREEN[openScreen] ? openScreen : "screenGame";
-  TAB_FOR_SCREEN.screenConfig = TAB_FOR_SCREEN[screenBeforeSettings];
-  openConfigScreen();
-});
-element("configBackButton").onclick = () => REOPEN_SCREEN[screenBeforeSettings]();
 
 /* ---------- home ---------- */
 function gameLook() {
@@ -1220,7 +1210,7 @@ element("claimMilestoneButton").onclick = () => { const next = unclaimedMileston
 /* ---------- Get the app (install to the home screen) ----------
    On Android / Chrome / Edge the browser offers an install prompt we can trigger. On iPhone and iPad there isn't one,
    so we show the steps instead. Needs a web app manifest + icons + service worker in the real app (Claude Code).
-   The banner shows once, the first time someone logs in on this device, and never again (Get the app in Settings is
+   The banner shows once, the first time someone logs in on this device, and never again (Get the app in the Admin tab is
    there after that). Remembered per device. */
 const INSTALL_BANNER_STORAGE_KEY = "voxie-install-banner-shown";
 let deferredInstallPrompt = null;
@@ -1405,7 +1395,7 @@ async function toggleScheduledTask(checkbox) {
   }
   checkbox.disabled = false;
 }
-element("goToScheduledTasks").onclick = () => { openConfigScreen(); element("scheduledSection").scrollIntoView({ block: "start" }); };
+element("goToScheduledTasks").onclick = () => { openConfigScreen(); element("scheduledSection").open = true; element("scheduledSection").scrollIntoView({ block: "start" }); };
 async function removeOwnTask(taskId) {
   try {
     await dataLayer.removeMyOwnTask(taskId);
@@ -2726,6 +2716,10 @@ async function removeScheduledTask(scheduledTaskId) {
     showSaveError("Couldn't remove that. Check your internet and try again.", () => removeScheduledTask(scheduledTaskId));
   }
 }
+/* The Admin groups start closed on phones (less to scroll past) and open on bigger screens. Only set when the game
+   loads, so a group someone opens or closes stays that way while they use it. */
+const ADMIN_GROUPS_OPEN_FROM = "(min-width: 820px)";   // the same width the wider layouts in styles.css start at
+document.querySelectorAll(".admin-group").forEach(group => group.open = window.matchMedia(ADMIN_GROUPS_OPEN_FROM).matches);
 function openConfigScreen() {
   showScreen("screenConfig");
   renderInstallSection();

@@ -400,7 +400,7 @@
           <input type="text" id="setupNameInput" maxlength="20" autocomplete="off">
         </div>
         <p class="error" id="setupNameError" role="alert"></p>
-        <p class="hint">This is your username to start with. Keep it, or make up a new one: just don't use your real name. Friends find you by this name, and nobody else can have it. You can change it later in Settings.</p>
+        <p class="hint">This is your username to start with. Keep it, or make up a new one: just don't use your real name. Friends find you by this name, and nobody else can have it.</p>
         <button class="btn" type="submit">Next</button>
       </form>
     </section>
@@ -462,7 +462,6 @@
       <div class="stage compact" id="gameStage">
         <canvas class="stage-bg"></canvas>
         <span class="nameplate"></span>
-        <button type="button" class="stage-corner-button settings-button" id="openConfigButton" aria-label="Settings"><svg viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="3" y="0" width="2" height="1"/><rect x="3" y="7" width="2" height="1"/><rect x="0" y="3" width="1" height="2"/><rect x="7" y="3" width="1" height="2"/><rect x="1" y="1" width="6" height="6"/><rect x="3" y="3" width="2" height="2" fill="var(--surface)"/></svg></button>
         <div class="stage-petbox"><canvas class="stage-pet" width="280" height="200" aria-label="Your pet"></canvas></div>
         <!-- Pokémon-style message box: appears across the bottom when a task is ticked, then goes away by itself (tap to skip). -->
         <div class="pet-message" id="petMessage" role="status" aria-live="polite" hidden><b id="petMessageName"></b><span id="petMessageText"></span><span class="pet-message-arrow" aria-hidden="true">▼</span></div>
@@ -500,7 +499,7 @@
       <section class="block">
         <h2>Today's tasks</h2>
         <p class="hint" id="taskSnackHint"></p>
-        <p class="hint">Want tasks that come back every day, like brushing your teeth? <button type="button" class="linkish" id="goToScheduledTasks">Set them up in Settings</button></p>
+        <p class="hint">Want tasks that come back every day, like brushing your teeth? <button type="button" class="linkish" id="goToScheduledTasks">Set them up in Admin</button></p>
         <!-- Homework from the School tab, from N days before it's due (feature "school"). Not part of the 10 tasks a day. -->
         <div class="homework-tasks" id="homeworkTaskArea" hidden>
           <h3>Homework</h3>
@@ -530,7 +529,7 @@
         <button type="button" data-stuff="screenInventory" aria-pressed="true">My stuff</button>
         <button type="button" data-stuff="screenShop" aria-pressed="false">Shop</button>
       </div>
-      <div class="stage compact" id="inventoryStage"><canvas class="stage-bg"></canvas><span class="nameplate"></span><button type="button" class="stage-corner-button settings-button" aria-label="Settings"><svg viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="3" y="0" width="2" height="1"/><rect x="3" y="7" width="2" height="1"/><rect x="0" y="3" width="1" height="2"/><rect x="7" y="3" width="1" height="2"/><rect x="1" y="1" width="6" height="6"/><rect x="3" y="3" width="2" height="2" fill="var(--surface)"/></svg></button><div class="stage-petbox"><canvas class="stage-pet" width="280" height="200" aria-label="Your pet with your items"></canvas></div></div>
+      <div class="stage compact" id="inventoryStage"><canvas class="stage-bg"></canvas><span class="nameplate"></span><div class="stage-petbox"><canvas class="stage-pet" width="280" height="200" aria-label="Your pet with your items"></canvas></div></div>
       <div class="sortbar" role="group" aria-label="Sort by">
         <span class="label">Sort by</span>
         <button type="button" id="inventorySortByType" aria-pressed="true">Type</button>
@@ -544,7 +543,6 @@
 
     <!-- ===================== SHOP (buy things with XP instead of levelling up) ===================== -->
     <section class="screen" id="screenShop" hidden>
-      <div class="settings-row"><button type="button" class="stage-corner-button settings-button" aria-label="Settings"><svg viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="3" y="0" width="2" height="1"/><rect x="3" y="7" width="2" height="1"/><rect x="0" y="3" width="1" height="2"/><rect x="7" y="3" width="1" height="2"/><rect x="1" y="1" width="6" height="6"/><rect x="3" y="3" width="2" height="2" fill="var(--surface)"/></svg></button></div>
       <div class="switcher" role="group" aria-label="Inventory or Shop">
         <button type="button" data-stuff="screenInventory" aria-pressed="false">My stuff</button>
         <button type="button" data-stuff="screenShop" aria-pressed="true">Shop</button>
@@ -556,7 +554,7 @@
     <!-- ===================== BUDDIES (your pets + customising the one that's out) ===================== -->
     <section class="screen" id="screenBuddies" hidden>
       <div class="customise-preview">
-        <div class="stage compact" id="customiseStage"><canvas class="stage-bg"></canvas><span class="nameplate"></span><button type="button" class="stage-corner-button settings-button" aria-label="Settings"><svg viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="3" y="0" width="2" height="1"/><rect x="3" y="7" width="2" height="1"/><rect x="0" y="3" width="1" height="2"/><rect x="7" y="3" width="1" height="2"/><rect x="1" y="1" width="6" height="6"/><rect x="3" y="3" width="2" height="2" fill="var(--surface)"/></svg></button><div class="stage-petbox"><canvas class="stage-pet" width="280" height="200" aria-label="Your pet"></canvas></div></div>
+        <div class="stage compact" id="customiseStage"><canvas class="stage-bg"></canvas><span class="nameplate"></span><div class="stage-petbox"><canvas class="stage-pet" width="280" height="200" aria-label="Your pet"></canvas></div></div>
       </div>
       <section class="block">
         <div class="section-head"><h2>Your buddies</h2><span class="collected" id="buddiesLevelAndXp"></span></div>
@@ -608,7 +606,7 @@
         <button type="button" data-places="screenHouse" aria-pressed="false">House</button>
         <button type="button" data-places="screenLocations" aria-pressed="true">Locations</button>
       </div>
-      <div class="stage compact" id="locationsStage"><canvas class="stage-bg"></canvas><span class="nameplate"></span><button type="button" class="stage-corner-button settings-button" aria-label="Settings"><svg viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="3" y="0" width="2" height="1"/><rect x="3" y="7" width="2" height="1"/><rect x="0" y="3" width="1" height="2"/><rect x="7" y="3" width="1" height="2"/><rect x="1" y="1" width="6" height="6"/><rect x="3" y="3" width="2" height="2" fill="var(--surface)"/></svg></button><div class="stage-petbox"><canvas class="stage-pet" width="280" height="200" aria-label="Your pet where it is now"></canvas></div></div>
+      <div class="stage compact" id="locationsStage"><canvas class="stage-bg"></canvas><span class="nameplate"></span><div class="stage-petbox"><canvas class="stage-pet" width="280" height="200" aria-label="Your pet where it is now"></canvas></div></div>
       <div class="sortbar" role="group" aria-label="Sort by">
         <span class="label">Sort by</span>
         <button type="button" id="locationsSortByAll" aria-pressed="true">All</button>
@@ -624,7 +622,7 @@
         <button type="button" data-places="screenHouse" aria-pressed="true">House</button>
         <button type="button" data-places="screenLocations" aria-pressed="false">Locations</button>
       </div>
-      <div class="stage compact" id="houseStage"><canvas class="stage-bg"></canvas><span class="nameplate"></span><button type="button" class="stage-corner-button settings-button" aria-label="Settings"><svg viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="3" y="0" width="2" height="1"/><rect x="3" y="7" width="2" height="1"/><rect x="0" y="3" width="1" height="2"/><rect x="7" y="3" width="1" height="2"/><rect x="1" y="1" width="6" height="6"/><rect x="3" y="3" width="2" height="2" fill="var(--surface)"/></svg></button><div class="stage-petbox"><canvas class="stage-pet" width="280" height="200" aria-label="Your pet at home"></canvas></div></div>
+      <div class="stage compact" id="houseStage"><canvas class="stage-bg"></canvas><span class="nameplate"></span><div class="stage-petbox"><canvas class="stage-pet" width="280" height="200" aria-label="Your pet at home"></canvas></div></div>
       <div class="sortbar" role="group" aria-label="Sort by">
         <span class="label">Sort by</span>
         <button type="button" id="houseSortByType" aria-pressed="true">Type</button>
@@ -638,10 +636,9 @@
 
     <!-- ===================== GAMES ===================== -->
     <section class="screen" id="screenGames" hidden>
-      <div class="settings-row"><button type="button" class="stage-corner-button settings-button" aria-label="Settings"><svg viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="3" y="0" width="2" height="1"/><rect x="3" y="7" width="2" height="1"/><rect x="0" y="3" width="1" height="2"/><rect x="7" y="3" width="1" height="2"/><rect x="1" y="1" width="6" height="6"/><rect x="3" y="3" width="2" height="2" fill="var(--surface)"/></svg></button></div>
       <section class="block">
-        <h2>Games</h2>
-        <!-- "Lose my points if I lose" is in Settings with the rest of the settings -->
+        <h2>Creative</h2>
+        <!-- "Lose my points if I lose" is in the Admin tab with the rest of the settings -->
         <p class="hint">Play as much as you like. Each game gives up to 10 XP a day.</p>
       </section>
       <!-- Each game is a drop-down under its own header -->
@@ -703,7 +700,6 @@
 
     <!-- ===================== SCHOOL (timetable and homework from MyChildAtSchool; feature "school") ===================== -->
     <section class="screen" id="screenSchool" hidden>
-      <div class="settings-row"><button type="button" class="stage-corner-button settings-button" aria-label="Settings"><svg viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="3" y="0" width="2" height="1"/><rect x="3" y="7" width="2" height="1"/><rect x="0" y="3" width="1" height="2"/><rect x="7" y="3" width="1" height="2"/><rect x="1" y="1" width="6" height="6"/><rect x="3" y="3" width="2" height="2" fill="var(--surface)"/></svg></button></div>
       <section class="block">
         <h2>School</h2>
         <p class="hint" id="schoolUpdated"></p>
@@ -727,7 +723,6 @@
 
     <!-- ===================== FRIENDS (see how friends are getting on) ===================== -->
     <section class="screen" id="screenFriends" hidden>
-      <div class="settings-row"><button type="button" class="stage-corner-button settings-button" aria-label="Settings"><svg viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="3" y="0" width="2" height="1"/><rect x="3" y="7" width="2" height="1"/><rect x="0" y="3" width="1" height="2"/><rect x="7" y="3" width="1" height="2"/><rect x="1" y="1" width="6" height="6"/><rect x="3" y="3" width="2" height="2" fill="var(--surface)"/></svg></button></div>
       <!-- Friend requests sent to you (the number on the Friends tab) -->
       <section class="block" id="friendRequestsBlock" hidden>
         <h2>Friend requests</h2>
@@ -754,106 +749,121 @@
 
     <!-- ===================== CONFIG (opened from the ⚙ on Home) ===================== -->
     <section class="screen" id="screenConfig" hidden>
-      <div class="gamehead"><button type="button" class="btn small ghost" id="configBackButton">← Back</button></div>
-      <p class="hint" id="configSignedInAs"></p>
-      <section class="block">
-        <h2>Settings</h2>
-        <p class="settings-locked-note" id="settingsLockedNote" hidden></p>
-        <div class="setting">
-          <div class="text"><strong><label for="settingTimedMissions">Timed missions</label></strong><span class="hint">A clock gives you time to read each mission, then a few seconds to answer. Off means no clock at all.</span></div>
-          <input type="checkbox" class="switch" id="settingTimedMissions" role="switch">
+      <!-- Admin: every setting, in groups. They start closed on phones and open on bigger screens (app.js). -->
+      <details class="game-panel admin-group" id="scheduledSection">
+        <summary>Scheduled tasks</summary>
+        <div class="game-body">
+          <p class="hint">Tasks that come back on the days you pick, like brushing your teeth. They show up in Today's tasks. You can have up to 10 tasks a day in total.</p>
+          <ul class="schedule-list" id="scheduleList"></ul>
+          <form class="schedule-form" id="scheduleForm" novalidate>
+            <div class="field">
+              <label class="label" for="scheduleTitleInput">What's the task?</label>
+              <input type="text" id="scheduleTitleInput" maxlength="40" autocomplete="off" placeholder="e.g. Brush teeth">
+            </div>
+            <span class="label" id="scheduleDaysLabel">Which days?</span>
+            <div class="daypick" id="scheduleDayPicker" role="group" aria-labelledby="scheduleDaysLabel"></div>
+            <div class="quickdays">
+              <button type="button" class="btn small ghost" id="scheduleEveryDay">Every day</button>
+              <button type="button" class="btn small ghost" id="scheduleSchoolDays">School days</button>
+              <button type="button" class="btn small ghost" id="scheduleWeekends">Weekends</button>
+            </div>
+            <span class="label" id="scheduleTimesLabel">How many times a day?</span>
+            <div class="stepper" role="group" aria-labelledby="scheduleTimesLabel">
+              <button type="button" id="scheduleTimesDown" aria-label="Fewer times">−</button>
+              <output id="scheduleTimesValue" aria-live="polite">1</output>
+              <button type="button" id="scheduleTimesUp" aria-label="More times">+</button>
+            </div>
+            <p class="error" id="scheduleError" role="alert"></p>
+            <button class="btn" type="submit" id="scheduleAddButton">Add scheduled task</button>
+          </form>
         </div>
-        <div class="setting">
-          <div class="text"><strong><label for="settingResetStreak">Reset streak if a day is missed</label></strong><span class="hint">On: your streak goes back to 0 if you miss a day. Off: it counts every day you've played.</span></div>
-          <input type="checkbox" class="switch" id="settingResetStreak" role="switch">
+      </details>
+      <details class="game-panel admin-group" id="playingSection">
+        <summary>Missions and games</summary>
+        <div class="game-body">
+          <p class="settings-locked-note" id="settingsLockedNote" hidden></p>
+          <div class="setting">
+            <div class="text"><strong><label for="settingTimedMissions">Timed missions</label></strong><span class="hint">A clock gives you time to read each mission, then a few seconds to answer. Off means no clock at all.</span></div>
+            <input type="checkbox" class="switch" id="settingTimedMissions" role="switch">
+          </div>
+          <div class="setting">
+            <div class="text"><strong><label for="settingResetStreak">Reset streak if a day is missed</label></strong><span class="hint">On: your streak goes back to 0 if you miss a day. Off: it counts every day you've played.</span></div>
+            <input type="checkbox" class="switch" id="settingResetStreak" role="switch">
+          </div>
+          <div class="setting">
+            <div class="text"><strong><label for="settingChanceFeatures">Mystery boxes and Take a chance</label></strong><span class="hint">On: buy Mystery boxes and risk new items for rarer ones. Off: these are hidden.</span></div>
+            <input type="checkbox" class="switch" id="settingChanceFeatures" role="switch">
+          </div>
+          <!-- For every game. Remembered on this device, so a grown-up's lock doesn't apply to it. -->
+          <div class="setting" id="gamesRiskSetting">
+            <div class="text"><strong><label for="gamesRiskSwitch">Lose my points if I lose</label></strong><span class="hint">On: lose a game and you lose the XP you scored in it. Off: you keep every point, in every game.</span></div>
+            <input type="checkbox" class="switch" id="gamesRiskSwitch" role="switch">
+          </div>
+          <p class="error" id="settingsError" role="alert"></p>
         </div>
-        <div class="setting">
-          <div class="text"><strong><label for="settingChanceFeatures">Mystery boxes and Take a chance</label></strong><span class="hint">On: buy Mystery boxes and risk new items for rarer ones. Off: these are hidden.</span></div>
-          <input type="checkbox" class="switch" id="settingChanceFeatures" role="switch">
-        </div>
-        <!-- For every game. Remembered on this device, so a grown-up's lock doesn't apply to it. -->
-        <div class="setting" id="gamesRiskSetting">
-          <div class="text"><strong><label for="gamesRiskSwitch">Lose my points if I lose</label></strong><span class="hint">On: lose a game and you lose the XP you scored in it. Off: you keep every point, in every game.</span></div>
-          <input type="checkbox" class="switch" id="gamesRiskSwitch" role="switch">
-        </div>
-        <p class="error" id="settingsError" role="alert"></p>
-      </section>
-      <!-- Feature "school": when homework turns into a task on Home -->
-      <section class="block" id="schoolSettingsSection" hidden>
-        <h2>School</h2>
-        <span class="label" id="homeworkDaysLabel">Put homework in Today's tasks</span>
-        <div class="stepper" role="group" aria-labelledby="homeworkDaysLabel">
-          <button type="button" id="homeworkDaysDown" aria-label="Fewer days">−</button>
-          <output id="homeworkDaysValue" aria-live="polite">2</output>
-          <button type="button" id="homeworkDaysUp" aria-label="More days">+</button>
-        </div>
-        <p class="hint" id="homeworkDaysHint"></p>
-        <!-- Push notifications on THIS device (each device is turned on separately) -->
-        <div class="setting">
-          <div class="text"><strong><label for="settingReminders">Homework reminders</label></strong><span class="hint" id="remindersHint"></span></div>
-          <input type="checkbox" class="switch" id="settingReminders" role="switch">
-        </div>
-        <div class="field">
-          <label class="label" for="reminderTimeSelect">Reminder time</label>
-          <select id="reminderTimeSelect"></select>
-        </div>
-        <p class="error" id="schoolSettingsError" role="alert"></p>
-      </section>
-      <section class="block" id="linkGrownUpSection" aria-labelledby="linkGrownUpHeading">
-        <h2 id="linkGrownUpHeading">Link a grown-up</h2>
-        <ul class="grown-up-list" id="grownUpList" hidden></ul>
-        <p class="hint" id="linkGrownUpText"></p>
-      </section>
-      <section class="block scheduled" id="scheduledSection">
-        <h2>Scheduled tasks</h2>
-        <p class="hint">Tasks that come back on the days you pick, like brushing your teeth. They show up in Today's tasks. You can have up to 10 tasks a day in total.</p>
-        <ul class="schedule-list" id="scheduleList"></ul>
-        <form class="schedule-form" id="scheduleForm" novalidate>
+      </details>
+      <!-- Feature "school": homework on Home and reminders -->
+      <details class="game-panel admin-group" id="schoolSettingsSection" hidden>
+        <summary>School</summary>
+        <div class="game-body">
+          <span class="label" id="homeworkDaysLabel">Put homework in Today's tasks</span>
+          <div class="stepper" role="group" aria-labelledby="homeworkDaysLabel">
+            <button type="button" id="homeworkDaysDown" aria-label="Fewer days">−</button>
+            <output id="homeworkDaysValue" aria-live="polite">2</output>
+            <button type="button" id="homeworkDaysUp" aria-label="More days">+</button>
+          </div>
+          <p class="hint" id="homeworkDaysHint"></p>
+          <!-- Push notifications on THIS device (each device is turned on separately) -->
+          <div class="setting">
+            <div class="text"><strong><label for="settingReminders">Homework reminders</label></strong><span class="hint" id="remindersHint"></span></div>
+            <input type="checkbox" class="switch" id="settingReminders" role="switch">
+          </div>
           <div class="field">
-            <label class="label" for="scheduleTitleInput">What's the task?</label>
-            <input type="text" id="scheduleTitleInput" maxlength="40" autocomplete="off" placeholder="e.g. Brush teeth">
+            <label class="label" for="reminderTimeSelect">Reminder time</label>
+            <select id="reminderTimeSelect"></select>
           </div>
-          <span class="label" id="scheduleDaysLabel">Which days?</span>
-          <div class="daypick" id="scheduleDayPicker" role="group" aria-labelledby="scheduleDaysLabel"></div>
-          <div class="quickdays">
-            <button type="button" class="btn small ghost" id="scheduleEveryDay">Every day</button>
-            <button type="button" class="btn small ghost" id="scheduleSchoolDays">School days</button>
-            <button type="button" class="btn small ghost" id="scheduleWeekends">Weekends</button>
+          <p class="error" id="schoolSettingsError" role="alert"></p>
+        </div>
+      </details>
+      <details class="game-panel admin-group" id="linkGrownUpSection">
+        <summary>Grown-ups</summary>
+        <div class="game-body">
+          <h3 id="linkGrownUpHeading">Link a grown-up</h3>
+          <ul class="grown-up-list" id="grownUpList" hidden></ul>
+          <p class="hint" id="linkGrownUpText"></p>
+        </div>
+      </details>
+      <details class="game-panel admin-group" id="accountSection">
+        <summary>App and account</summary>
+        <div class="game-body">
+          <p class="hint" id="configSignedInAs"></p>
+          <div class="admin-subgroup" id="installSection"><!-- hidden once Voxie is installed -->
+            <h3>Get the Voxie app</h3>
+            <p class="hint" id="installSectionText">Put Voxie on your home screen so it opens like an app, with no web address bar.</p>
+            <button type="button" class="btn" id="installSettingsButton">Get the app</button>
+            <p class="hint" id="installHelp" role="status"></p>
           </div>
-          <span class="label" id="scheduleTimesLabel">How many times a day?</span>
-          <div class="stepper" role="group" aria-labelledby="scheduleTimesLabel">
-            <button type="button" id="scheduleTimesDown" aria-label="Fewer times">−</button>
-            <output id="scheduleTimesValue" aria-live="polite">1</output>
-            <button type="button" id="scheduleTimesUp" aria-label="More times">+</button>
-          </div>
-          <p class="error" id="scheduleError" role="alert"></p>
-          <button class="btn" type="submit" id="scheduleAddButton">Add scheduled task</button>
-        </form>
-      </section>
-      <section class="block" id="installSection"><!-- hidden once Voxie is installed -->
-        <h2>Get the Voxie app</h2>
-        <p class="hint" id="installSectionText">Put Voxie on your home screen so it opens like an app, with no web address bar.</p>
-        <button type="button" class="btn" id="installSettingsButton">Get the app</button>
-        <p class="hint" id="installHelp" role="status"></p>
-      </section>
-      <button class="btn ghost" type="button" id="logOutButton">Log out</button>
+          <button class="btn ghost" type="button" id="logOutButton">Log out</button>
+        </div>
+      </details>
     </section>
   </div>
 
   <nav class="tabbar" id="tabBar" aria-label="Main" hidden>
     <div class="tabs">
       <button type="button" class="tab" data-tab="home"><svg viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="1" y="1" width="2" height="1"/><rect x="5" y="1" width="2" height="1"/><rect x="0" y="2" width="8" height="2"/><rect x="1" y="4" width="6" height="1"/><rect x="2" y="5" width="4" height="1"/><rect x="3" y="6" width="2" height="1"/></svg>Home</button>
+      <button type="button" class="tab" data-tab="games"><svg viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="0" y="2" width="8" height="4"/><rect x="0" y="6" width="2" height="1"/><rect x="6" y="6" width="2" height="1"/><rect x="2" y="3" width="1" height="3" fill="var(--surface)"/><rect x="1" y="4" width="3" height="1" fill="var(--surface)"/><rect x="5" y="3" width="1" height="1" fill="var(--surface)"/><rect x="6" y="4" width="1" height="1" fill="var(--surface)"/></svg>Creative</button>
       <button type="button" class="tab" data-tab="inventory"><svg viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="1" y="0" width="6" height="1"/><rect x="0" y="1" width="8" height="2"/><rect x="0" y="4" width="8" height="4"/><rect x="3" y="3" width="2" height="2"/></svg>Inventory</button>
-      <button type="button" class="tab" data-tab="games"><svg viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="0" y="2" width="8" height="4"/><rect x="0" y="6" width="2" height="1"/><rect x="6" y="6" width="2" height="1"/><rect x="2" y="3" width="1" height="3" fill="var(--surface)"/><rect x="1" y="4" width="3" height="1" fill="var(--surface)"/><rect x="5" y="3" width="1" height="1" fill="var(--surface)"/><rect x="6" y="4" width="1" height="1" fill="var(--surface)"/></svg>Games</button>
       <button type="button" class="tab" data-tab="places"><svg viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="3" y="0" width="2" height="1"/><rect x="2" y="1" width="4" height="1"/><rect x="1" y="2" width="6" height="1"/><rect x="0" y="3" width="8" height="1"/><rect x="1" y="4" width="2" height="4"/><rect x="5" y="4" width="2" height="4"/><rect x="3" y="4" width="2" height="1"/></svg>Places</button>
       <button type="button" class="tab tab-more" id="moreTab" aria-expanded="false" aria-controls="moreMenu"><svg viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="3" y="0" width="2" height="8"/><rect x="0" y="3" width="8" height="2"/></svg>More</button>
     </div>
     <!-- More: the tabs that don't fit in the bar -->
     <div class="more-menu" id="moreMenu" hidden>
-        <!-- Only for users with the "school" feature (showScreen sets hidden) -->
-        <button type="button" class="tab" data-tab="school" id="schoolTab" hidden><svg viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="1" y="0" width="6" height="1"/><rect x="0" y="1" width="1" height="7"/><rect x="1" y="7" width="6" height="1"/><rect x="1" y="1" width="1" height="6"/><rect x="3" y="2" width="3" height="1"/><rect x="3" y="4" width="3" height="1"/><rect x="7" y="1" width="1" height="7"/></svg>School</button>
         <button type="button" class="tab" data-tab="buddies"><svg viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="2" y="0" width="4" height="1"/><rect x="1" y="1" width="6" height="1"/><rect x="0" y="2" width="8" height="4"/><rect x="1" y="6" width="6" height="1"/><rect x="2" y="7" width="2" height="1"/></svg>Buddies</button>
         <button type="button" class="tab" data-tab="friends"><svg viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="1" y="0" width="2" height="2"/><rect x="5" y="1" width="2" height="2"/><rect x="0" y="3" width="4" height="4"/><rect x="4" y="4" width="4" height="3"/></svg>Friends</button>
+        <!-- Only for users with the "school" feature (showScreen sets hidden) -->
+        <button type="button" class="tab" data-tab="school" id="schoolTab" hidden><svg viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="1" y="0" width="6" height="1"/><rect x="0" y="1" width="1" height="7"/><rect x="1" y="7" width="6" height="1"/><rect x="1" y="1" width="1" height="6"/><rect x="3" y="2" width="3" height="1"/><rect x="3" y="4" width="3" height="1"/><rect x="7" y="1" width="1" height="7"/></svg>School</button>
+        <button type="button" class="tab" data-tab="admin"><svg viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="3" y="0" width="2" height="1"/><rect x="3" y="7" width="2" height="1"/><rect x="0" y="3" width="1" height="2"/><rect x="7" y="3" width="1" height="2"/><rect x="1" y="1" width="6" height="6"/><rect x="3" y="3" width="2" height="2" fill="var(--surface)"/></svg>Admin</button>
     </div>
   </nav>
 

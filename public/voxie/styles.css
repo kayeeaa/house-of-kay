@@ -312,12 +312,6 @@ select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .switcher{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .switcher button{font-family:var(--f-display);font-size:17px;min-height:48px;background:var(--surface);color:var(--ink);border:2px solid var(--line);border-bottom-width:4px;cursor:pointer}
 .switcher button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent-dk)}
-/* Settings button in the corner of the Home picture. */
-.stage > .stage-corner-button{position:absolute;top:8px;right:8px;z-index:2;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--surface);color:var(--ink);border:2px solid var(--line);border-bottom-width:3px;cursor:pointer;padding:0}
-.stage-corner-button svg{width:20px;height:20px}
-/* Screens without a pet picture (Shop, Friends) get the Settings button in a row at the top. */
-.settings-row{display:flex;justify-content:flex-end;margin-bottom:-6px}
-.settings-row .stage-corner-button{position:static;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--surface);color:var(--ink);border:2px solid var(--line);border-bottom-width:3px;cursor:pointer;padding:0}
 /* Buddies */
 .buddy-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .buddy{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 8px;min-height:140px;justify-content:center;background:var(--surface);border:2px solid var(--line);border-bottom-width:4px;color:var(--ink);font:inherit;cursor:pointer;min-width:0}
@@ -573,6 +567,9 @@ select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .school-instructions{margin:0;white-space:pre-line}
 .school-links{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
 .school-links .btn{display:inline-flex;align-items:center;text-decoration:none}
+/* Admin tab: each group of settings opens and closes (the Creative tab's game-panel look) */
+.admin-subgroup{display:flex;flex-direction:column;gap:12px;padding-top:4px}
+.admin-subgroup h3,.admin-group .game-body > h3{font-size:17px}
 /* Grown-ups: lesson reminders on the child's tab */
 .lesson-times{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .check-group{border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
