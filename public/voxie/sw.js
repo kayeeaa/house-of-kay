@@ -21,7 +21,9 @@ self.addEventListener("push", event => {
 // Tapping it brings back an open Voxie, or opens one.
 self.addEventListener("notificationclick", event => {
   event.notification.close();
-  const url = new URL((event.notification.data && event.notification.data.url) || "/voxie", self.location.origin).href;
+  // Only ever Voxie's own pages, whatever the message says.
+  const wanted = new URL((event.notification.data && event.notification.data.url) || "/voxie", self.location.origin);
+  const url = wanted.origin === self.location.origin && wanted.pathname.startsWith("/voxie") ? wanted.href : new URL("/voxie", self.location.origin).href;
   event.waitUntil((async () => {
     const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
     const open = windows.find(client => new URL(client.url).pathname.startsWith("/voxie"));
