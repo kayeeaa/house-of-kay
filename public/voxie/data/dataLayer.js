@@ -344,6 +344,11 @@ const dataLayer = {
   },
 
   /* ---------- Grown-up accounts ---------- */
+  /** The sign-up email again. Throws Error("too-soon") inside Supabase's wait between emails. */
+  async resendSignUpEmail(email) {
+    const { error } = await supabaseClient.auth.resend({ type: "signup", email, options: { emailRedirectTo: `${location.origin}/voxie` } });
+    if (error) throw new Error(/rate|seconds|security purposes/i.test(error.message) ? "too-soon" : "save-failed");
+  },
   /** A grown-up signs up: { displayName, email, password }. With "Confirm email" on there's no session until they
       click the link, so this returns { needsEmailConfirmation: true }; otherwise their profile.
       Throws Error("needs-name"), Error("bad-email"), Error("too-short") or Error("email-taken"). */

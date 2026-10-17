@@ -120,13 +120,23 @@
           </div>
           <p class="hint" id="parentSignUpPasswordRule"></p>
           <p class="error" id="parentSignUpError" role="alert"></p>
-          <p class="hint" id="parentSignUpCheckEmail" role="status" hidden></p>
           <div class="btnrow">
             <button class="btn" type="submit" id="parentSignUpButton">Make my account</button>
             <button class="btn ghost" type="button" id="parentSignUpCancel">Back</button>
           </div>
           <p class="hint">Next you'll add your kids and make their logins. Kids never need an email address. Read how we look after your information in our <a class="linkish inline" href="/voxie/privacy/">privacy notice</a>.</p>
         </form>
+        <!-- After signing up (email confirmation is on): replaces the form, so it's clear an email has gone -->
+        <section class="block login-card check-email" id="parentCheckEmailPanel" aria-labelledby="parentCheckEmailHeading" hidden>
+          <h2 id="parentCheckEmailHeading" tabindex="-1">Check your email</h2>
+          <p>We've sent a link to <strong id="parentCheckEmailAddress"></strong>. Open it to finish making your account, then you can add your kids.</p>
+          <p class="hint"><strong>Can't see it?</strong> It can take a few minutes. Check your <strong>spam or junk</strong> folder too: it's from Voxie. If it's there, mark it "Not spam" so our emails reach your inbox next time.</p>
+          <p class="hint" id="parentCheckEmailStatus" role="status"></p>
+          <div class="btnrow">
+            <button class="btn" type="button" id="parentCheckEmailResend">Send it again</button>
+            <button class="btn ghost" type="button" id="parentCheckEmailChange">Use a different email</button>
+          </div>
+        </section>
       </section>
 
       <footer class="site-footer"><span class="text-logo small">Voxie</span><span>Made by House of Kay</span><a href="/voxie/privacy/">Privacy</a></footer>

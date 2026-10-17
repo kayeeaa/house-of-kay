@@ -1,0 +1,96 @@
+<!--
+  Voxie: "Confirm signup" email for grown-ups.
+  Paste everything below this comment into Supabase → Authentication → Emails → Templates → Confirm signup → Message body.
+  Subject: 🎉 Welcome to Voxie! Just one tap to go
+  (Keep it to one or two emojis: lots of them, or lots of "!!!", can push it towards spam.)
+  Supabase fills in {{ .ConfirmationURL }}, {{ .Email }} and {{ .Data.display_name }} (the name they typed when signing up).
+  Built for email apps: tables and inline styles only, no scripts, no web fonts, and it still reads fine with images off.
+-->
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light">
+  <title>Confirm your Voxie account</title>
+</head>
+<body style="margin:0;padding:0;background-color:#E6EEE6;">
+  <!-- Preview text (shown next to the subject in most inboxes) -->
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#E6EEE6;">One tap to finish making your Voxie account, then you can add your kids.</div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#E6EEE6;">
+    <tr>
+      <td align="center" style="padding:24px 12px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;background-color:#FFFFFF;border:2px solid #B9CDB9;border-bottom-width:5px;">
+          <!-- Top: the Voxie seal and name -->
+          <tr>
+            <td align="center" style="padding:28px 24px 8px 24px;">
+              <img src="https://www.house-of-kay.co.uk/voxie/apple-touch-icon.png" width="72" height="72" alt="" style="display:block;border:0;width:72px;height:72px;">
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:0 24px 4px 24px;font-family:Arial,Helvetica,sans-serif;font-size:28px;line-height:34px;font-weight:bold;color:#2C632E;letter-spacing:1px;">
+              Voxie
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:0 24px 20px 24px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:20px;color:#5E7A5F;">
+              Level up your buddy, level up you
+            </td>
+          </tr>
+
+          <!-- The message -->
+          <tr>
+            <td style="padding:0 28px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:26px;color:#1C2B1D;">
+              <p style="margin:0 0 14px 0;">{{ if .Data.display_name }}Hi {{ .Data.display_name }},{{ else }}Hi,{{ end }}</p>
+              <p style="margin:0 0 14px 0;">Thanks for making a grown-up account on Voxie. Tap the button to confirm your email, and you'll be taken straight back to Voxie to add your kids.</p>
+            </td>
+          </tr>
+
+          <!-- The button -->
+          <tr>
+            <td align="center" style="padding:10px 28px 22px 28px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" bgcolor="#3D8A3F" style="background-color:#3D8A3F;border:2px solid #2C632E;border-bottom-width:5px;">
+                    <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:14px 28px;font-family:Arial,Helvetica,sans-serif;font-size:18px;line-height:22px;font-weight:bold;color:#FFFFFF;text-decoration:none;">Confirm my account</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- If the button doesn't work -->
+          <tr>
+            <td style="padding:0 28px 20px 28px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:21px;color:#5E7A5F;">
+              <p style="margin:0 0 6px 0;">If the button doesn't work, copy this link into your browser:</p>
+              <p style="margin:0;word-break:break-all;"><a href="{{ .ConfirmationURL }}" style="color:#2C632E;">{{ .ConfirmationURL }}</a></p>
+            </td>
+          </tr>
+
+          <!-- What Voxie is, for reassurance -->
+          <tr>
+            <td style="padding:0 28px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#EEF4EE;border:2px solid #B9CDB9;">
+                <tr>
+                  <td style="padding:14px 16px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:21px;color:#1C2B1D;">
+                    <strong>What happens next:</strong> you add each of your kids with a username and passcode (they never need an email). They tick off jobs, do daily missions and level up their own pixel buddy. Free, with no adverts, no chat and no real money.
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:20px 28px 28px 28px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:19px;color:#5E7A5F;">
+              <p style="margin:0 0 8px 0;">This email was sent to {{ .Email }} because someone made a Voxie account with it. If that wasn't you, you can ignore this email and no account will be made.</p>
+              <p style="margin:0;">Voxie by House of Kay · <a href="https://www.house-of-kay.co.uk/voxie" style="color:#2C632E;">house-of-kay.co.uk/voxie</a> · <a href="https://www.house-of-kay.co.uk/voxie/privacy/" style="color:#2C632E;">Privacy</a></p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

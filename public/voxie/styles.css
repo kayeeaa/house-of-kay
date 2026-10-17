@@ -79,6 +79,10 @@ p{margin:0}
 .how-card p{margin:0;font-size:16px}
 .how-number{align-self:flex-start;font-family:var(--f-logo);font-size:18px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:var(--accent);color:var(--on-accent);border-bottom:3px solid var(--accent-dk)}
 .login-card{width:100%;max-width:460px;align-self:center}
+/* After signing up: the Check your email panel (green edge, so it's clearly a new step) */
+.check-email{border-color:var(--accent-dk)}
+.check-email p{margin:0}
+.check-email h2:focus{outline:none}
 .site-nav{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .login-sheet{max-width:420px}
 .login-sheet .sheet-top{align-items:center;justify-content:space-between}

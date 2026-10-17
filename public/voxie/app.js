@@ -2987,9 +2987,9 @@ function openParentSignUp() {
   closeLoginSheet();
   if (element("screenLogin").hidden) openLogin();
   element("parentSignUpForm").hidden = false;
+  element("parentCheckEmailPanel").hidden = true;
   element("parentSignUpPasswordRule").textContent = `At least ${MIN_PASSCODE_LENGTH} characters.`;
   element("parentSignUpError").textContent = "";
-  element("parentSignUpCheckEmail").hidden = true;
   setTimeout(() => {
     element("parentSignUpForm").scrollIntoView({ block: "start", behavior: "smooth" });
     element("parentSignUpName").focus({ preventScroll: true });
@@ -3004,6 +3004,51 @@ if (!SIGN_UP_OPEN) ["openParentSignUpButton", "parentsPageSignUpButton"].forEach
   const button = element(id); button.disabled = true; button.textContent = "Coming soon"; button.onclick = null;
 });
 element("parentSignUpCancel").onclick = () => { element("parentSignUpForm").hidden = true; };
+
+/* "Check your email": which address, a reminder about spam, and Send it again (Supabase allows one a minute). */
+const RESEND_WAIT_SECONDS = 60;
+let checkEmailAddress = "", resendTimer = null;
+function showCheckEmailPanel(address) {
+  checkEmailAddress = address;
+  element("parentSignUpForm").hidden = true;
+  element("parentCheckEmailPanel").hidden = false;
+  element("parentCheckEmailAddress").textContent = address;
+  element("parentCheckEmailStatus").textContent = "";
+  waitBeforeResend();
+  setTimeout(() => {
+    element("parentCheckEmailPanel").scrollIntoView({ block: "start", behavior: "smooth" });
+    element("parentCheckEmailHeading").focus({ preventScroll: true });
+  }, 50);
+}
+function waitBeforeResend() {
+  const button = element("parentCheckEmailResend");
+  let left = RESEND_WAIT_SECONDS;
+  clearInterval(resendTimer);
+  button.disabled = true;
+  const tick = () => {
+    if (left <= 0) { clearInterval(resendTimer); button.disabled = false; button.textContent = "Send it again"; return; }
+    button.textContent = `Send it again (${left--}s)`;
+  };
+  tick();
+  resendTimer = setInterval(tick, 1000);
+}
+element("parentCheckEmailResend").onclick = async () => {
+  element("parentCheckEmailResend").disabled = true;
+  try {
+    await dataLayer.resendSignUpEmail(checkEmailAddress);
+    element("parentCheckEmailStatus").textContent = `Sent again to ${checkEmailAddress}. Remember to look in spam or junk too.`;
+    waitBeforeResend();
+  } catch (error) {
+    element("parentCheckEmailStatus").textContent = error.message === "too-soon" ? "Wait a minute, then try again."
+      : "Couldn't send it. Check your internet and try again.";
+    element("parentCheckEmailResend").disabled = false;
+  }
+};
+element("parentCheckEmailChange").onclick = () => {
+  clearInterval(resendTimer);
+  openParentSignUp();
+  element("parentSignUpEmail").select();
+};
 element("parentSignUpForm").onsubmit = async event => {
   event.preventDefault();
   const displayName = element("parentSignUpName").value, email = element("parentSignUpEmail").value;
@@ -3016,15 +3061,16 @@ element("parentSignUpForm").onsubmit = async event => {
   element("parentSignUpButton").disabled = true;
   try {
     const profile = await dataLayer.signUpParent({ displayName, email, password });
-    ["parentSignUpName", "parentSignUpEmail", "parentSignUpPassword", "parentSignUpPasswordAgain"].forEach(id => element(id).value = "");
+    ["parentSignUpPassword", "parentSignUpPasswordAgain"].forEach(id => element(id).value = "");
     // Email confirmation is on: they finish signing up from the link we emailed, which brings them back here logged in.
+    // The form is swapped for a "Check your email" panel, so it doesn't look like it just emptied itself.
     if (profile.needsEmailConfirmation) {
       say("");
-      element("parentSignUpCheckEmail").textContent = `Nearly there! We've emailed a link to ${email.trim()}. Open it to finish making your account, then you can add your kids.`;
-      element("parentSignUpCheckEmail").hidden = false;
       element("parentSignUpButton").disabled = false;
+      showCheckEmailPanel(email.trim().toLowerCase());
       return;
     }
+    ["parentSignUpName", "parentSignUpEmail"].forEach(id => element(id).value = "");
     element("parentSignUpForm").hidden = true;
     await routeAfterSignIn(profile);
   } catch (error) {
