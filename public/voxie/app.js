@@ -514,8 +514,8 @@ function renderSchoolHomework() {
       const status = item.submitted ? "Handed in" : tick ? "Done" : due.text;
       return `<details class="school-homework${finished ? " done" : ""}" data-due="${due.urgency}">
         <summary>
-          <span class="school-homework-title"><strong>${escapeHtml(item.title)}</strong><span class="hint">${escapeHtml(item.subject || "From Teams")}</span></span>
-          <span class="school-due">${escapeHtml(status)}</span>
+          <span class="school-homework-title"><strong>${escapeHtml(item.title)}</strong>
+            <span class="homework-meta"><span class="school-due">${escapeHtml(status)}</span><span class="hint">${escapeHtml(item.subject || "From Teams")}</span></span></span>
         </summary>
         <div class="school-homework-body">
           ${item.instructions ? `<p class="school-instructions">${escapeHtml(item.instructions)}</p>` : ""}
@@ -661,7 +661,7 @@ function renderHomeworkTasks() {
     const tickAttributes = tick ? `checked${tick.completedOn === today ? "" : " disabled"}` : "";
     const about = [item.subject || "From Teams", item.setBy && `set by ${item.setBy}`].filter(Boolean).join(", ");
     return `<li class="homework-task" data-due="${due.urgency}">
-      <div class="chore"><label><input type="checkbox" data-homework-id="${escapeHtml(item.id)}" ${tickAttributes}><span class="homework-task-title"><strong>${escapeHtml(item.title)}</strong><span class="hint">${escapeHtml(about)}</span></span><span class="school-due">${escapeHtml(due.text)}</span></label></div>
+      <div class="chore"><label><input type="checkbox" data-homework-id="${escapeHtml(item.id)}" ${tickAttributes}><span class="homework-task-title"><strong>${escapeHtml(item.title)}</strong><span class="homework-meta"><span class="school-due">${escapeHtml(due.text)}</span><span class="hint">${escapeHtml(about)}</span></span></span></label></div>
       ${homeworkLinksHtml(item)}
       <details class="homework-task-more">
         <summary>What to do</summary>
