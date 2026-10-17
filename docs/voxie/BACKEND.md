@@ -17,6 +17,7 @@ Files:
 - `supabase/migrations/20261017090000_voxie_lesson_reminders.sql`: lesson reminders set by grown-ups on the child's tab (night before and/or morning of a lesson, to the child and/or grown-ups, at two times per child), and grown-ups get a copy of homework reminders. Sent by `send-reminders`.
 - `supabase/migrations/20261017110000_voxie_weekly_shop.sql`: each buddy's Shop sells 12 items, a different 12 per buddy and a new 12 every Monday (`private.shop_this_week`); `buy_item` only sells this week's 12. `buddy_shop` is no longer used.
 - `supabase/migrations/20261017120000_voxie_creations.sql`: things children make (for everyone since `20261017130000_voxie_creations_for_everyone.sql`), starting with 16 × 16 wall art for the picture slot. 20 XP each, 20 per buddy, item id `made-<id>`, private (left out of `public_look`), no powers, never in Mystery boxes; thrown away = hidden, XP stays spent.
+- `supabase/migrations/20261018090000_voxie_new_grown_up_alert.sql` and `supabase/functions/notify-admins`: a push to everyone in `site_admins` when a new grown-up signs up. Deploy with `--no-verify-jwt`; add yourself with `insert into public.site_admins (user_id) select id from auth.users where email = '…';`.
 - `supabase/functions/_shared/voxie.ts` plus the `add-child`, `set-child-passcode` and `delete-child-account` folders.
 
 ## Calling conventions

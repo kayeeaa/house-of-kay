@@ -38,6 +38,7 @@ function showScreen(screenId) {
   ALL_SCREENS.forEach(id => element(id).hidden = id !== screenId);
   if (screenId === "screenLoading") drawLoadingBuddy(element("loadingScreenBuddy"));
   if (typeof startAngelAnimation === "function") startAngelAnimation();
+  if (screenId === "screenLogin" || screenId === "screenParents") countFrontPageVisit();
   element("tabBar").hidden = !TAB_SCREENS.includes(screenId);
   element("schoolTab").hidden = !featureOn("school");
   document.querySelectorAll(".tab[data-tab]").forEach(tab => tab.dataset.tab === TAB_FOR_SCREEN[screenId] ? tab.setAttribute("aria-current", "page") : tab.removeAttribute("aria-current"));
@@ -48,6 +49,18 @@ function showScreen(screenId) {
   window.scrollTo(0, 0);
 }
 
+/* Visit counts for the logged-out front page only (Cloudflare Web Analytics: no cookies, nothing personal). It's loaded
+   the first time the front page shows to someone who isn't logged in, and never for a signed-in child or grown-up. */
+let frontPageCounted = false;
+function countFrontPageVisit() {
+  if (frontPageCounted || currentProfile || typeof VOXIE_ANALYTICS_TOKEN !== "string" || !VOXIE_ANALYTICS_TOKEN) return;
+  frontPageCounted = true;
+  const script = document.createElement("script");
+  script.defer = true;
+  script.src = "https://static.cloudflareinsights.com/beacon.min.js";
+  script.dataset.cfBeacon = JSON.stringify({ token: VOXIE_ANALYTICS_TOKEN, spa: false });
+  document.head.append(script);
+}
 /* Button labels use the pixel font, whose digits read badly, so numbers in a label get the chunky number font. */
 function setButtonText(button, text) {
   button.innerHTML = escapeHtml(text).replace(/\d+/g, digits => `<span class="num">${digits}</span>`);
@@ -73,6 +86,7 @@ function endSession() {
 /* Clears everything from the last child, so a brother logging in on the same tablet starts fresh. */
 function resetSessionState() {
   currentProfile = null;
+  frontPageCounted = true;   // someone just logged out on this device: the front page after that isn't a new visitor
   if (typeof registerCreations === "function") registerCreations([]);
   missionHelp = {}; openMissionId = null; newItemQueue = []; levelsSeen = {};
   myChance = { wonItemIds: [], swappedAwayItemIds: [], triedItemIds: [], boxesOpenedToday: 0, treasureClaimedThisWeek: false, claimedMilestones: [] };
@@ -455,7 +469,7 @@ document.querySelectorAll(".tab[data-tab]").forEach(tab => tab.onclick = () => {
 });
 function openHome() { showScreen("screenGame"); renderHome(); showNewTaskNotifications(true); }
 /* ---------- School tab (feature "school") ----------
-   The timetable and homework the grown-up's MyChildAtSchool (MCAS) account syncs in. Times are UK school times,
+   The timetable and homework the nightly school sync copies in. Times are UK school times,
    so dates and times stay as "2026-10-15" / "08:50" strings and are compared with getTodayInUk(). */
 let mySchool = null;              // { linked, updatedAt, schoolDays, lessons, homework } from dataLayer.loadMySchool()
 let schoolPickedDay = null;       // the day the timetable is showing
@@ -475,7 +489,7 @@ function renderSchool() {
   element("schoolNotLinked").hidden = linked;
   element("schoolTimetable").hidden = !linked;
   element("schoolHomework").hidden = !linked;
-  element("schoolUpdated").textContent = linked && mySchool.updatedAt ? `From MyChildAtSchool, updated ${schoolUpdatedLabel(mySchool.updatedAt)}.` : "";
+  element("schoolUpdated").textContent = linked && mySchool.updatedAt ? `Updated ${schoolUpdatedLabel(mySchool.updatedAt)}.` : "";
   if (!linked) return;
   renderSchoolDays();
   renderSchoolLessons();
@@ -505,7 +519,7 @@ function renderSchoolLessons() {
       </li>`).join("");
 }
 
-/* Not handed in first, soonest due at the top. Overdue ones stay until MCAS says they're handed in. */
+/* Not handed in first, soonest due at the top. Overdue ones stay until the school says they're handed in. */
 /* In order of when it's due: late ones first, then soonest due, then anything done (handed in or ticked off) at the
    bottom. The due label is above each name, the subject below. */
 function renderSchoolHomework() {
@@ -534,7 +548,7 @@ function renderSchoolHomework() {
     }).join("");
   element("schoolHomeworkList").querySelectorAll("[data-tick-homework]").forEach(button => button.onclick = () => tickHomeworkInSchool(button));
 }
-/* Not handed in, not ticked, and on Home already or late (a teacher may give more time without changing MCAS). */
+/* Not handed in, not ticked, and on Home already or late (a teacher may give more time without changing the school's date). */
 function canTickInSchool(item) {
   return !item.submitted && !homeworkTick(item.id) && !!schoolSettings
     && shiftDate(item.dueDate, -schoolSettings.homeworkTaskDaysBefore) <= getTodayInUk();
@@ -563,7 +577,7 @@ function homeworkLinksHtml(item) {
 }
 /* Teachers type these links, so only https links are shown. */
 function safeLink(url) { try { return new URL(url).protocol === "https:"; } catch (error) { return false; } }
-/* MCAS subject colours are 6-digit hex without the "#". */
+/* School subject colours are 6-digit hex without the "#". */
 function safeColour(hex) { return /^[0-9a-f]{6}$/i.test(hex || "") ? `#${hex}` : "var(--line)"; }
 
 function schoolDayLabel(day) {
@@ -609,7 +623,7 @@ async function loadHomeworkTasks() {
   showHandedInHomework();
 }
 
-/* Homework MCAS says is handed in (the overnight sync), due in the last 7 days or later, that wasn't ticked here:
+/* Homework the school says is handed in (the overnight sync), due in the last 7 days or later, that wasn't ticked here:
    one pop-up to collect its XP and level points. The server works out what's collectable and gives each one only
    once, whether it was ticked or collected. Closing without collecting shows it again next time. */
 let handedInToCollect = [];
@@ -621,7 +635,7 @@ function showHandedInHomework() {
   if (!handedInToCollect.length) return;
   const count = handedInToCollect.length;
   element("handedInTitle").textContent = count === 1 ? "You handed in homework!" : `You handed in ${count} homeworks!`;
-  element("handedInText").textContent = `MyChildAtSchool says ${count === 1 ? "this is" : "these are"} done. Nice work!`;
+  element("handedInText").textContent = `Your school says ${count === 1 ? "this is" : "these are"} done. Nice work!`;
   element("handedInList").innerHTML = handedInToCollect.map(item =>
     `<li><span class="power-text"><b>${escapeHtml(item.title)}</b><span>${escapeHtml(item.subject || "From Teams")}</span></span></li>`).join("");
   element("handedInError").textContent = "";
@@ -704,7 +718,7 @@ async function toggleHomeworkTask(checkbox) {
     if (error.message === "xp-spent") { showSaveError("You've already spent that XP, so this homework stays ticked."); return; }
     if (error.message === "not-today") { showSaveError("You ticked this on another day, so it stays ticked."); return; }
     if (error.message === "too-early") { loadHomeworkTasks(); return; }
-    if (error.message === "handed-in") { showSaveError("MCAS says you handed this in, so it stays ticked."); return; }
+    if (error.message === "handed-in") { showSaveError("Your school says you handed this in, so it stays ticked."); return; }
     showSaveError("Couldn't save that. Check your internet and try again.", () => { checkbox.checked = nowDone; toggleHomeworkTask(checkbox); });
   }
 }
@@ -1149,7 +1163,7 @@ function pongResultMessage(myPoints, botPoints, losePoints, { xpAwarded, won, hi
 }
 
 /* ---------- Snap (engine/snap.js) ----------
-   The same game as /slap-war. 3 XP for winning (finishing above 0), 1 XP for trying. */
+   Based on the old standalone Snap! game. 3 XP for winning (finishing above 0), 1 XP for trying. */
 let snapGame = null, snapRiskThisGame = false;
 const SNAP_MODE_KEY = () => `voxie-snap-mode:${currentProfile.id}`;
 function snapMode() { try { const mode = localStorage.getItem(SNAP_MODE_KEY()); return SNAP_MODES[mode] ? mode : "classic"; } catch (error) { return "classic"; } }
@@ -3184,7 +3198,7 @@ async function openParentTab(tabId) {
 
 /* ---------- Grown-ups: lesson reminders (feature "school") ----------
    On the child's tab: a notification the night before and/or the morning of a lesson (e.g. Core PE → "Get the PE kit
-   and key ready"), to the grown-ups and/or the child. Lessons come from the child's MCAS timetable, so the subject is
+   and key ready"), to the grown-ups and/or the child. Lessons come from the child's school timetable, so the subject is
    picked from it. send-reminders sends them at the two times set here; a day's lessons come in one notification. */
 const LESSON_EVENING_HOURS = [15, 16, 17, 18, 19, 20, 21, 22], LESSON_MORNING_HOURS = [5, 6, 7, 8, 9, 10];   // the server's limits too
 let parentLessons = null;   // { childId, reminders, subjects, eveningHour, morningHour }

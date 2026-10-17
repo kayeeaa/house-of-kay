@@ -266,9 +266,9 @@ const dataLayer = {
   },
 
   /* ---------- School (feature "school") ---------- */
-  /** The signed-in child's timetable and homework, synced from their grown-up's MyChildAtSchool account (school_* tables):
+  /** The signed-in child's timetable and homework, synced each night from their school (school_* tables):
       { linked, updatedAt, schoolDays: ["2026-10-15", ...], lessons: [{ date, start, end, subject, colour, teachers }],
-        homework: [{ id, source: "mcas" | "teams", subject, title, dueDate, dueTime, instructions, links: [{ label, url }], setBy, submitted }] }
+        homework: [{ id, source, subject, title, dueDate, dueTime, instructions, links: [{ label, url }], setBy, submitted }] }
       Dates and times are UK school times. Lessons from this Monday on; homework due in the last 14 days or later. */
   async loadMySchool() {
     const today = getTodayInUk(), weekDay = new Date(`${today}T12:00:00Z`).getUTCDay(), monday = shiftDate(today, -((weekDay + 6) % 7));
@@ -305,9 +305,9 @@ const dataLayer = {
       Throws Error("too-early") or Error("not-found"). */
   async markHomeworkDone(homeworkId) { return callRpc("mark_homework_done", { p_homework_id: homeworkId }); },
   /** Only on the day it was ticked: Error("not-today"); only if its XP isn't spent: Error("xp-spent"); never one collected
-      from MCAS: Error("handed-in"). */
+      from the school: Error("handed-in"). */
   async unmarkHomeworkDone(homeworkId) { await callRpc("unmark_homework_done", { p_homework_id: homeworkId }); },
-  /** Homework MCAS says is handed in (due in the last 7 days or later) that wasn't ticked: collects the same XP and
+  /** Homework the school says is handed in (due in the last 7 days or later) that wasn't ticked: collects the same XP and
       level points as ticking it. { homework: [{ id, title, subject }], xpAwarded, levelPoints }. */
   async collectHandedInHomework() { return callRpc("collect_handed_in_homework"); },
   /** This device's push subscription ({ endpoint, p256dh, auth } from PushSubscription.toJSON()), for homework reminders.

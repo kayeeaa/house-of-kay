@@ -1,5 +1,5 @@
 /* ======================================================================
-   engine/snap.js  —  Snap in the Games tab. The same game as /slap-war (public/slap-war/index.html), drawn in
+   engine/snap.js  —  Snap in the Creative tab's Games. Based on the old standalone Snap! game, drawn in
    Voxie's style: a bot number and your number change on their own timers; press SNAP when they match.
    Modes: classic (match the numbers) and hard (match on numbers and on colours).
    30 seconds of warm-up learns how fast you are (no score), then 30 scored seconds tuned to you:

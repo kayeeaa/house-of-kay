@@ -81,4 +81,6 @@ Kids testing at 10–11 get about 2 months of missions before anything repeats.
 
 ## Adding more later
 
+**After adding or changing missions,** rebuild the public missions page (`/voxie/missions/`, questions only, never answers): `node scripts/build-voxie-missions-page.mjs`.
+
 Copy any file in `content/missions/` and give it a new id starting with its type: `trivia-`, `puzzle-`, `scenario-` or `feelgood-`. Set its `ages` and drop it in. IDs are permanent: never reuse or rename one once kids have played it.

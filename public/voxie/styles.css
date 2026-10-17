@@ -97,6 +97,11 @@ p{margin:0}
 .parents h3{font-size:18px;margin-top:4px}
 .parents-list{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
 .site-footer{display:flex;align-items:baseline;justify-content:center;gap:10px;color:var(--muted);font-size:14px;padding:8px 0}
+/* /voxie/missions/: every mission's question, by age and kind */
+.mission-group > summary{font-size:18px}
+.mission-count{font-family:var(--f-body);font-size:13px;font-weight:700;color:var(--muted);background:var(--sunk);border:2px solid var(--line);padding:0 8px;margin-left:auto}
+.mission-list{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px}
+.mission-cta{margin:4px 0}
 .text-logo.small{font-size:18px}
 .site-footer a{color:inherit}
 /* Links styled as buttons (privacy and new-password pages) */
@@ -549,7 +554,7 @@ select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .snap-overlay-big{font-family:var(--f-logo);font-size:48px;line-height:1.1}
 .snap-overlay-text{max-width:300px;font-size:15px;color:#DCE2F5}
 @media (max-width:380px){.snap-number{font-size:52px}}
-/* School tab: day buttons, the day's lessons (a stripe in the subject's MCAS colour), then homework that opens up. */
+/* School tab: day buttons, the day's lessons (a stripe in the subject's colour), then homework that opens up. */
 .school-days{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
 .school-day{flex:none;min-height:44px;padding:8px 12px;font-family:var(--f-display);font-size:14px;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-bottom-width:4px;cursor:pointer}
 .school-day[aria-pressed="true"]{background:var(--accent);border-color:var(--accent-dk);color:var(--on-accent)}

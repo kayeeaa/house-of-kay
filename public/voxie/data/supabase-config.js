@@ -5,3 +5,6 @@ const VOXIE_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOi
 // Web push (homework reminders): the PUBLIC half of the VAPID key pair, from `npx web-push generate-vapid-keys`.
 // Public by design. The private half is only ever the Edge Function secret VAPID_PRIVATE_KEY. Empty = reminders off.
 const VOXIE_VAPID_PUBLIC_KEY = 'BBbv4JI-jOHmIyFaU4c6m7sdjJqeVWPuKTjJNwbgl2g4VNcI8BnF9a1USx8jMA73c120ZiotK1zo9ZbUH1cSxcI';
+// Visit counts on the logged-out front page: the site token from Cloudflare Web Analytics (no cookies, nothing personal).
+// Public by design. Empty = no counting. Never loaded once someone is logged in (see countFrontPageVisit in app.js).
+const VOXIE_ANALYTICS_TOKEN = 'ef3be9c7beed43f1ad24d1da14156936';
