@@ -506,24 +506,19 @@ function renderSchoolLessons() {
 }
 
 /* Not handed in first, soonest due at the top. Overdue ones stay until MCAS says they're handed in. */
-/* Grouped by when it's due: Late first, then each day (Today, Tomorrow, Monday 20 October…), then Done
-   (handed in or ticked off) at the bottom. In each one the due label is above the name, the subject below. */
+/* In order of when it's due: late ones first, then soonest due, then anything done (handed in or ticked off) at the
+   bottom. The due label is above each name, the subject below. */
 function renderSchoolHomework() {
   const today = getTodayInUk();
   const finished = item => item.submitted || !!homeworkTick(item.id);
   const groupFor = item => finished(item) ? "done" : homeworkDueLabel(item).urgency === "late" ? "late" : item.dueDate;
-  const groupName = group => group === "done" ? "Done" : group === "late" ? "Late" : group === today ? "Today" : group === shiftDate(today, 1) ? "Tomorrow"
-    : new Date(`${group}T12:00:00Z`).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
   const groupOrder = group => group === "late" ? "0" : group === "done" ? "9" : `1${group}`;
   const homework = [...mySchool.homework].sort((a, b) => groupOrder(groupFor(a)).localeCompare(groupOrder(groupFor(b))) || `${a.dueDate} ${a.dueTime}`.localeCompare(`${b.dueDate} ${b.dueTime}`));
-  let lastGroup = null;
   element("schoolHomeworkList").innerHTML = !homework.length ? `<p class="hint">No homework right now. Nice!</p>`
     : homework.map(item => {
-      const due = homeworkDueLabel(item), tick = homeworkTick(item.id), group = groupFor(item);
+      const due = homeworkDueLabel(item), tick = homeworkTick(item.id);
       const status = item.submitted ? "Handed in" : tick ? "Done" : due.text;
-      const heading = group === lastGroup ? "" : `<h4 class="homework-day" data-group="${group === "late" || group === "done" ? group : "day"}">${escapeHtml(groupName(group))}</h4>`;
-      lastGroup = group;
-      return `${heading}<details class="school-homework${finished(item) ? " done" : ""}" data-due="${due.urgency}">
+      return `<details class="school-homework${finished(item) ? " done" : ""}" data-due="${due.urgency}">
         <summary>
           <span class="school-homework-title"><span class="school-due">${escapeHtml(status)}</span><strong>${escapeHtml(item.title)}</strong>
             <span class="hint">${escapeHtml(item.subject || "From Teams")}</span></span>

@@ -563,10 +563,7 @@ select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .school-homework-title strong,.homework-task-title strong{overflow-wrap:anywhere}
 .homework-meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
 .school-homework-title .school-due{align-self:flex-start}
-/* School tab: a heading for each due day */
-.homework-day{margin:8px 0 0;font-size:15px;color:var(--muted)}
-.homework-day:first-child{margin-top:0}
-.homework-day[data-group="late"]{color:var(--danger)}
+
 .school-due{flex:none;font-family:var(--f-display);font-size:13px;padding:3px 8px;background:var(--sunk);border:2px solid var(--line);color:var(--muted)}
 .school-homework[data-due="soon"] .school-due{background:var(--gold);border-color:var(--dirt);color:#2A2100}
 .school-homework[data-due="late"] .school-due{background:var(--danger-bg);border-color:var(--danger);color:var(--danger)}
