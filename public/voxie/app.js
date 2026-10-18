@@ -39,7 +39,7 @@ function showScreen(screenId) {
   if (screenId === "screenLoading") drawLoadingBuddy(element("loadingScreenBuddy"));
   if (typeof startAngelAnimation === "function") startAngelAnimation();
   if (screenId === "screenLogin" || screenId === "screenParents") countFrontPageVisit();
-  element("tabBar").hidden = !TAB_SCREENS.includes(screenId);
+  element("tabBar").hidden = element("logOutButton").hidden = !TAB_SCREENS.includes(screenId);
   element("schoolTab").hidden = !featureOn("school");
   document.querySelectorAll(".tab[data-tab]").forEach(tab => tab.dataset.tab === TAB_FOR_SCREEN[screenId] ? tab.setAttribute("aria-current", "page") : tab.removeAttribute("aria-current"));
   // More lights up for the tabs inside it.
@@ -94,7 +94,8 @@ function resetSessionState() {
   myFriendRequests = []; mySentFriendRequests = []; renderFriendsBadge();
   parentChildren = []; parentOpenChildId = null; parentOverview = null;
   inventoryBrowser.mode = houseBrowser.mode = "type"; lastPlacesScreen = "screenHouse";
-  ["itemSheet", "buySheet", "chanceSheet", "parentNoticeSheet", "childNoticeSheet", "remindersSheet"].forEach(id => element(id).hidden = true);
+  ["itemSheet", "buySheet", "chanceSheet", "parentNoticeSheet", "childNoticeSheet", "remindersSheet", "giveSheet", "pictureSheet"].forEach(id => element(id).hidden = true);
+  giving = null; pictureOpenId = null;
   hideLevelUp(); hideSaveError(); gameLoadedOnDay = null;
 }
 function showSaveError(message, retryAction) {
@@ -782,14 +783,21 @@ async function currentPushSubscription() {
   return registration ? registration.pushManager.getSubscription() : null;
 }
 /* A "reminders on this device" switch. The child's is in Settings → School; a grown-up's is in Lesson reminders. */
-const CHILD_REMINDER_SWITCH = { toggle: "settingReminders", hint: "remindersHint", error: "schoolSettingsError",
-  onText: () => `On for this device. You'll get one at ${reminderTimeText()} when homework is due tonight or tomorrow, or has just come onto Home.`,
-  offText: () => `Get a notification on this device at ${reminderTimeText()} when homework is due soon.` };
+/* What a child's device gets: homework reminders (feature "school") and gifts from friends. */
+const childNotificationKinds = () => [featureOn("school") && `homework reminders at ${reminderTimeText()}`, "gifts from friends"].filter(Boolean).join(" and ");
+const CHILD_REMINDER_SWITCH = { toggle: "settingReminders", hint: "remindersHint", error: "notificationSettingsError",
+  onText: () => `On for this device: ${childNotificationKinds()}.`,
+  offText: () => `Turn on to get notifications on this device: ${childNotificationKinds()}.` };
 const GROWN_UP_REMINDER_SWITCH = { toggle: "parentRemindersSwitch", hint: "parentRemindersHint", error: "parentLessonError",
   onText: () => "On for this device: the lesson reminders below, and a copy of homework reminders.",
   offText: () => "Turn on to get lesson reminders and a copy of homework reminders on this device." };
 async function renderReminderSetting() {
   if (schoolSettings) element("reminderTimeSelect").value = String(schoolSettings.reminderHour);
+  await renderPushSwitch(CHILD_REMINDER_SWITCH);   // its text says the reminder time
+}
+/* Settings → Notifications: one switch for this device, for everything (school reminders and gifts). */
+async function renderNotificationSettings() {
+  element("notificationSettingsError").textContent = "";
   await renderPushSwitch(CHILD_REMINDER_SWITCH);
 }
 async function renderPushSwitch(config) {
@@ -873,7 +881,7 @@ async function remindersOnByDefault() {
   if (!element(forGrownUp ? "screenParentHome" : "screenGame").hidden && REMINDER_SHEETS.every(id => element(id).hidden)) {
     element("remindersText").textContent = forGrownUp
       ? "Get a notification before your kids' lessons (like PE kit days) and a copy of their homework reminders on this device."
-      : `Get a notification on this device at ${reminderTimeText()} when homework is due soon.`;
+      : `Get a notification on this device at ${reminderTimeText()} when homework is due soon, and when a friend gives you something.`;
     element("remindersError").textContent = "";
     element("remindersOn").disabled = false;
     element("remindersSheet").hidden = false;
@@ -909,7 +917,7 @@ async function turnOffRemindersHere() {
    Wall art first: a 16 × 16 picture drawn in Creative, which then hangs in the house's picture slot like any other
    item ("made-<id>"). Making one costs CREATION_PRICE XP, at most MAX_CREATIONS per buddy (the server's numbers too:
    make_creation). Only the child and their grown-ups can see what they make: the server leaves it out of what
-   friends see. Pixels are stored as 16 rows of "0"–"f" (a colour from CREATION_PALETTE) or "." (empty). */
+   friends see, unless they give it to a friend. Gifts they get have their own limit, so they don't count towards MAX_CREATIONS. Pixels are stored as 16 rows of "0"–"f" (a colour from CREATION_PALETTE) or "." (empty). */
 const CREATION_PRICE = 20, MAX_CREATIONS = 20, WALL_ART_SIZE = 16;
 const CREATION_PALETTE = [
   ["0", "#14172E", "Black"], ["1", "#FFFFFF", "White"], ["2", "#9AA3AD", "Grey"], ["3", "#5C6470", "Dark grey"],
@@ -928,10 +936,13 @@ function registerCreations(creations) {
   for (let index = INVENTORY_ITEMS.length - 1; index >= 0; index--) if (INVENTORY_ITEMS[index].made) INVENTORY_ITEMS.splice(index, 1);
   creations.forEach(creation => INVENTORY_ITEMS.push({
     id: `made-${creation.id}`, label: creation.name, category: "house", houseType: "extras", slot: "house-picture",
-    roomLayer: "on-wall", rarity: "common", colourName: "Made by you", colour: "#8A5E36", season: null, structural: true, made: true,
+    roomLayer: "on-wall", rarity: "common", colourName: creation.giftFrom ? `Gift from ${creation.giftFrom}` : "Made by you", colour: "#8A5E36",
+    season: null, structural: true, made: true, giftFrom: creation.giftFrom,
     drawInRoom: scene => drawWallArtInRoom(scene, creation.pixels),
   }));
 }
+/* "🎁 From Sam" on a gift's card. */
+const giftTagHtml = item => item.giftFrom ? `<span class="gift-tag">🎁 From ${escapeHtml(item.giftFrom)}</span>` : "";
 /* In a wooden frame where pictures hang, always left of the door (the widest door is width × 0.13 at the right edge),
    and right of the buddy in the middle. The room canvas is low-res, so each square is a few canvas pixels at most. */
 function drawWallArtInRoom({ fill, width, height, themeShade }, pixels) {
@@ -952,9 +963,9 @@ function drawWallArtPixels(fill, pixels, left, top, square) {
 const wallArtPainted = pixels => pixels.some(row => /[0-9a-f]/.test(row));
 
 function renderMakePanel() {
-  const wallet = xpToSpend(), full = myCreations.length >= MAX_CREATIONS;
-  element("makeHint").textContent = full ? `You've made ${MAX_CREATIONS} pictures, the most for one buddy. Throw one away to make another.`
-    : `Draw a picture for your wall. Making it costs ${CREATION_PRICE} XP (you have ${wallet}). Only you and your grown-ups can see it.`;
+  const wallet = xpToSpend(), full = myCreations.filter(creation => !creation.giftFrom).length >= MAX_CREATIONS;
+  element("makeHint").textContent = full ? `You've made ${MAX_CREATIONS} pictures, the most for one buddy. Throw one away or give one to a friend to make another.`
+    : `Draw a picture for your wall. Making it costs ${CREATION_PRICE} XP (you have ${wallet}). Only you and your grown-ups can see it, unless you give it to a friend.`;
   element("makePalette").innerHTML = CREATION_PALETTE.map(([id, colour, label]) =>
     `<button type="button" class="make-swatch" data-make-colour="${id}" style="--swatch:${colour}" aria-label="${label}" aria-pressed="${id === makeColour}"></button>`).join("")
     + `<button type="button" class="make-swatch eraser" data-make-colour="." aria-label="Rubber (clear a square)" aria-pressed="${makeColour === "."}">✕</button>`;
@@ -1045,9 +1056,11 @@ function renderMakeList() {
   const list = element("makeList"), equipped = currentProfile.equipped_items;
   list.innerHTML = myCreations.length ? myCreations.slice().reverse().map(creation => {
     const itemId = `made-${creation.id}`, up = equipped.includes(itemId), asking = throwAwayAsked === creation.id;
+    const canGive = !creation.giftFrom;
     return `<li><canvas width="16" height="16" data-make-thumb="${creation.id}" aria-hidden="true"></canvas>
-      <span class="what"><strong>${escapeHtml(creation.name)}</strong>${up ? `<span class="hint">On your wall</span>` : ""}</span>
+      <span class="what"><strong>${escapeHtml(creation.name)}</strong>${giftTagHtml(creation)}${up ? `<span class="hint">On your wall</span>` : ""}</span>
       <button type="button" class="btn small${up ? " ghost" : ""}" data-make-hang="${itemId}">${up ? "Take it down" : "Put it up"}</button>
+      ${canGive ? `<button type="button" class="btn small ghost" data-make-give="${creation.id}">Give</button>` : ""}
       <button type="button" class="btn small ${asking ? "danger" : "ghost"}" data-make-bin="${creation.id}">${asking ? "Sure? Throw away" : "Throw away"}</button></li>`;
   }).join("") : `<li class="empty"><span class="hint">Nothing yet. Draw something above!</span></li>`;
   list.querySelectorAll("[data-make-thumb]").forEach(canvas => {
@@ -1056,6 +1069,7 @@ function renderMakeList() {
   });
   list.querySelectorAll("[data-make-hang]").forEach(button => button.onclick = () => toggleInventoryItem(button.dataset.makeHang));
   list.querySelectorAll("[data-make-bin]").forEach(button => button.onclick = () => throwAwayCreation(button.dataset.makeBin));
+  list.querySelectorAll("[data-make-give]").forEach(button => button.onclick = () => openGiveSheet(button.dataset.makeGive));
 }
 /* Two taps: "Throw away", then "Sure? Throw away". The XP isn't given back. */
 async function throwAwayCreation(creationId) {
@@ -1069,6 +1083,114 @@ async function throwAwayCreation(creationId) {
   } catch (error) { showSaveError("Couldn't throw it away. Check your internet and try again."); }
   renderMakePanel();
 }
+/* Giving wall art to a friend. Free, and it leaves your stuff for theirs, so they pick the friend
+   first and then confirm. Only things you made can be given, not gifts you got. */
+let giving = null;   // { creationId, friends (null while loading), friendId }
+async function openGiveSheet(creationId) {
+  const creation = myCreations.find(candidate => candidate.id === creationId);
+  if (!creation) return;
+  giving = { creationId, friends: null, friendId: null };
+  element("giveTitle").textContent = `Give "${creation.name}" to a friend`;
+  element("giveText").textContent = "Loading your friends…";
+  element("giveFriends").innerHTML = "";
+  element("giveError").textContent = "";
+  element("giveConfirm").hidden = true;
+  element("giveSheet").hidden = false;
+  element("giveCancel").focus();
+  let friends;
+  try { friends = await dataLayer.loadMyFriends(); }
+  catch (error) { if (giving && giving.creationId === creationId) element("giveText").textContent = "Couldn't load your friends. Check your internet and try again."; return; }
+  if (!giving || giving.creationId !== creationId) return;   // closed while loading
+  giving.friends = friends;
+  renderGiveSheet();
+}
+function renderGiveSheet() {
+  const { friends, friendId } = giving, chosen = friends.find(friend => friend.id === friendId);
+  element("giveText").textContent = friends.length ? "It's free. It leaves your stuff and goes to theirs, so you can't get it back."
+    : "Add a friend in Friends first, then you can give them things.";
+  element("giveFriends").innerHTML = friends.map(friend =>
+    `<button type="button" data-give-friend="${friend.id}" aria-pressed="${friend.id === friendId}">${escapeHtml(friend.displayName)}</button>`).join("");
+  element("giveFriends").querySelectorAll("[data-give-friend]").forEach(button => button.onclick = () => {
+    giving.friendId = button.dataset.giveFriend; element("giveError").textContent = ""; renderGiveSheet();
+  });
+  element("giveConfirm").hidden = !friends.length;
+  element("giveConfirm").disabled = !chosen;
+  setButtonText(element("giveConfirm"), chosen ? `Give it to ${chosen.displayName}` : "Pick a friend");
+}
+function closeGiveSheet() { element("giveSheet").hidden = true; giving = null; }
+element("giveConfirm").onclick = async () => {
+  const { creationId, friendId, friends } = giving, friend = friends.find(candidate => candidate.id === friendId);
+  if (!friend) return;
+  element("giveConfirm").disabled = true;
+  try {
+    await dataLayer.giveCreation(creationId, friendId);
+    registerCreations(myCreations.filter(creation => creation.id !== creationId));
+    currentProfile.equipped_items = currentProfile.equipped_items.filter(itemId => itemId !== `made-${creationId}`);
+    closeGiveSheet();
+    element("makeDone").textContent = `You gave it to ${friend.displayName}! They'll get a message about it.`;
+    rerenderCurrentScreen();
+  } catch (error) {
+    const messages = { "friend-full": `${friend.displayName} has 20 gifts already. They need to throw one away before they can get another.`,
+      "not-friends": `You're not friends with ${friend.displayName} any more.`, "not-found": "That picture's gone. It may already have been given away." };
+    element("giveError").textContent = messages[error.message] || "Couldn't give it. Check your internet and try again.";
+    element("giveConfirm").disabled = false;
+  }
+};
+element("giveCancel").onclick = closeGiveSheet;
+element("giveSheet").addEventListener("click", event => { if (event.target === element("giveSheet")) closeGiveSheet(); });
+document.addEventListener("keydown", event => { if (event.key === "Escape" && !element("giveSheet").hidden) closeGiveSheet(); });
+
+/* A picture's own pop-up, from its card in Places → House or the gift pop-up: put it up or take it down, give it
+   (only ones you made) or throw it away (two taps; a gift can be thrown away like anything you made). */
+let pictureOpenId = null, pictureBinAsked = false;
+function openPictureSheet(creationId) {
+  if (!myCreations.some(creation => creation.id === creationId)) return;
+  pictureOpenId = creationId;
+  pictureBinAsked = false;
+  element("pictureError").textContent = "";
+  renderPictureSheet();
+  element("pictureSheet").hidden = false;
+  element("pictureClose").focus();
+}
+function renderPictureSheet() {
+  const creation = myCreations.find(candidate => candidate.id === pictureOpenId);
+  if (!creation) { closePictureSheet(); return; }
+  const up = currentProfile.equipped_items.includes(`made-${creation.id}`), context = element("picturePreview").getContext("2d");
+  context.clearRect(0, 0, WALL_ART_SIZE, WALL_ART_SIZE);
+  drawWallArtPixels((x, y, w, h, colour) => { context.fillStyle = colour; context.fillRect(x, y, w, h); }, creation.pixels, 0, 0, 1);
+  element("pictureTitle").textContent = creation.name;
+  element("pictureFrom").innerHTML = creation.giftFrom ? giftTagHtml(creation) : `<span class="hint">Made by you</span>`;
+  element("pictureText").textContent = (up ? "It's on your wall." : "Put it up to hang it on your wall. It takes the place of any other picture.")
+    + (creation.giftFrom ? "" : " If you give it to a friend, it leaves your stuff.");
+  element("pictureHang").textContent = up ? "Take it down" : "Put it up";
+  element("pictureGive").hidden = !!creation.giftFrom;
+  element("pictureBin").textContent = pictureBinAsked ? "Sure? Throw it away" : "Throw away";
+  element("pictureBin").classList.toggle("danger", pictureBinAsked);
+  element("pictureBin").classList.toggle("ghost", !pictureBinAsked);
+}
+function closePictureSheet() { element("pictureSheet").hidden = true; pictureOpenId = null; }
+element("pictureHang").onclick = async () => {
+  const creationId = pictureOpenId;
+  await toggleInventoryItem(`made-${creationId}`);
+  if (pictureOpenId === creationId) renderPictureSheet();
+};
+element("pictureGive").onclick = () => { const creationId = pictureOpenId; closePictureSheet(); openGiveSheet(creationId); };
+element("pictureBin").onclick = async () => {
+  if (!pictureBinAsked) { pictureBinAsked = true; renderPictureSheet(); return; }
+  const creationId = pictureOpenId;
+  element("pictureBin").disabled = true;
+  try {
+    await dataLayer.throwAwayCreation(creationId);
+    registerCreations(myCreations.filter(creation => creation.id !== creationId));
+    currentProfile.equipped_items = currentProfile.equipped_items.filter(itemId => itemId !== `made-${creationId}`);
+    closePictureSheet();
+    rerenderCurrentScreen();
+  } catch (error) { element("pictureError").textContent = "Couldn't throw it away. Check your internet and try again."; }
+  element("pictureBin").disabled = false;
+};
+element("pictureClose").onclick = closePictureSheet;
+element("pictureSheet").addEventListener("click", event => { if (event.target === element("pictureSheet")) closePictureSheet(); });
+document.addEventListener("keydown", event => { if (event.key === "Escape" && !element("pictureSheet").hidden) closePictureSheet(); });
 
 /* ---------- Games tab ----------
    Mini-games to play with your buddy.
@@ -1349,18 +1471,29 @@ let shownChildNotificationIds = [];
 async function showNewTaskNotifications(reloadTasks) {
   let notifications;
   try { notifications = await dataLayer.loadMyTaskNotifications(); } catch (error) { return; }
-  const newTasks = notifications.filter(notice => notice.kind === "task-added");
-  if (!newTasks.length || element("screenGame").hidden || !element("childNoticeSheet").hidden) return;
-  if (reloadTasks) {
+  const newTasks = notifications.filter(notice => notice.kind === "task-added"), gifts = notifications.filter(notice => notice.kind === "gift-received");
+  if ((!newTasks.length && !gifts.length) || element("screenGame").hidden || !element("childNoticeSheet").hidden) return;
+  if (reloadTasks && newTasks.length) {
     try { myScheduledTasks = await dataLayer.loadMyScheduledTasks(); renderChores(); } catch (error) {}
   }
-  shownChildNotificationIds = newTasks.map(notice => notice.id);
+  // A gift that came while the game was open isn't in My stuff yet.
+  if (gifts.length) { try { registerCreations(await dataLayer.loadMyCreations()); } catch (error) {} }
+  shownChildNotificationIds = [...newTasks, ...gifts].map(notice => notice.id);
+  // The newest gift, so "See your gift" can open it (the notice has its name and who gave it).
+  const newestGift = gifts[gifts.length - 1], received = myCreations.filter(creation => creation.giftFrom);
+  childNoticeGiftId = gifts.length ? ((received.slice().reverse().find(creation => creation.name === newestGift.taskTitle && creation.giftFrom === newestGift.fromName)
+    || received[received.length - 1] || {}).id || "house") : null;
+  element("childNoticeOk").textContent = !gifts.length ? "Let's do it!" : gifts.length === 1 ? "See your gift" : "See your gifts";
   const byGrownUp = {};
   newTasks.forEach(notice => { const who = notice.fromName || "Your grown-up"; (byGrownUp[who] = byGrownUp[who] || []).push(notice.taskTitle); });
-  element("childNoticeTitle").textContent = newTasks.length === 1 ? "A new task!" : "New tasks!";
+  element("childNoticeTitle").textContent = !gifts.length ? (newTasks.length === 1 ? "A new task!" : "New tasks!")
+    : !newTasks.length ? (gifts.length === 1 ? "You got a gift!" : "You got gifts!") : "News for you!";
   element("childNoticeList").innerHTML = Object.entries(byGrownUp).map(([who, titles]) =>
     `<li><span class="power-text"><b>${escapeHtml(who)} added ${titles.length === 1 ? "a task" : `${titles.length} tasks`}</b>`
-    + `<span>${titles.map(escapeHtml).join(", ")}</span></span></li>`).join("");
+    + `<span>${titles.map(escapeHtml).join(", ")}</span></span></li>`).join("")
+    + gifts.map(notice => `<li><span class="power-text"><b>🎁 ${escapeHtml(notice.fromName || "A friend")} gave you "${escapeHtml(notice.taskTitle || "a picture")}"</b>`
+      + `<span>It's in Places → House, in Extras.</span></span></li>`).join("");
+  element("childNoticeHint").hidden = !newTasks.length;
   element("childNoticeSheet").hidden = false;
   element("childNoticeOk").focus();
 }
@@ -1371,7 +1504,16 @@ function closeNewTaskNotifications() {
   shownChildNotificationIds = [];
   if (typeof showHandedInHomework === "function") showHandedInHomework();
 }
-element("childNoticeOk").onclick = closeNewTaskNotifications;
+/* With a gift: off to Places → House, Extras, with the newest gift open. Leaving Home first means the handed-in
+   homework pop-up waits until they're back. */
+let childNoticeGiftId = null;
+element("childNoticeOk").onclick = () => {
+  const giftId = childNoticeGiftId;
+  childNoticeGiftId = null;
+  if (giftId) { houseBrowser.mode = "type"; houseBrowser.selectedType = "extras"; openHouse(); }
+  closeNewTaskNotifications();
+  if (giftId) openPictureSheet(giftId);
+};
 element("childNoticeSheet").addEventListener("click", event => { if (event.target === element("childNoticeSheet")) closeNewTaskNotifications(); });
 document.addEventListener("keydown", event => { if (event.key === "Escape") closeNewTaskNotifications(); });
 function renderHome() {
@@ -1948,8 +2090,8 @@ function renderInventory() {
     const useWord = inUse ? inUseWord(item) : "Tap for details";
     const thumbSize = item.category === "pets" ? 16 : 112;
     return `<button type="button" class="item" data-item="${item.id}" aria-pressed="${inUse}">
-      <canvas width="${thumbSize}" height="${thumbSize}"></canvas><strong>${item.label}</strong>
-      ${rarityBadgeHtml(item.rarity)}
+      <canvas width="${thumbSize}" height="${thumbSize}"></canvas><strong>${escapeHtml(item.label)}</strong>
+      ${rarityBadgeHtml(item.rarity)}${giftTagHtml(item)}
       ${cardPowersHtml(item)}
       <span class="status">${useWord}</span></button>`;
   }).join("") : emptyCollectionHtml();
@@ -2018,7 +2160,7 @@ function renderItemDetails() {
   const chosenColour = ITEM_COLOUR_OPTIONS.find(option => option.id === (myItemColours[item.id] || "original"));
   const recolourLevel = recolourUnlockLevel(item, gotAtLevelFor(item, myGotAtLevels)), colourLocked = unlockedLevel() < recolourLevel;
   const shownSwatch = chosenColour.hue !== undefined ? recolourHex(swatchColour, chosenColour.id) : swatchColour;
-  element("itemStatColour").innerHTML = `<span class="swatch" style="background:${shownSwatch}"></span>${chosenColour.hue !== undefined ? chosenColour.label : item.colourName || "Mixed"}`
+  element("itemStatColour").innerHTML = `<span class="swatch" style="background:${shownSwatch}"></span>${chosenColour.hue !== undefined ? chosenColour.label : escapeHtml(item.colourName || "Mixed")}`
     + (colourLocked ? `<span class="mini-lock" title="Change colour at level ${recolourLevel}" aria-label="Changing colour unlocks at level ${recolourLevel}">${LOCK_ICON}<span>Lv ${recolourLevel}</span></span>`
       : item.category === "house" ? "" : `<button type="button" class="mini-change" id="itemChangeColourButton">Change</button>`);
   if (!colourLocked && element("itemChangeColourButton")) element("itemChangeColourButton").onclick = () => { colourPanelOpen = !colourPanelOpen; renderColourPanel(item); };
@@ -2883,14 +3025,14 @@ function renderHouse() {
   grid.innerHTML = items.length ? items.map(item => {
     const unlocked = isItemUnlocked(item, level), out = equipped.includes(item.id);
     return unlocked
-      ? `<button type="button" class="place" data-house-item="${item.id}" aria-pressed="${out}"><canvas class="${item.structural ? "" : "house-thumb"}" width="${item.structural ? 48 : 28}" height="${item.structural ? 36 : 28}"></canvas><strong>${item.label}</strong>${rarityBadgeHtml(item.rarity)}<span class="status">${item.structural ? (out ? "Added" : "Tap to add") : (out ? "In the house" : "Tap to put out")}</span></button>`
+      ? `<button type="button" class="place" data-house-item="${item.id}" aria-pressed="${out}"><canvas class="${item.structural ? "" : "house-thumb"}" width="${item.structural ? 48 : 28}" height="${item.structural ? 36 : 28}"></canvas><strong>${escapeHtml(item.label)}</strong>${rarityBadgeHtml(item.rarity)}${giftTagHtml(item)}<span class="status">${item.made ? (out ? "On your wall" : "Tap to see") : item.structural ? (out ? "Added" : "Tap to add") : (out ? "In the house" : "Tap to put out")}</span></button>`
       : lockedCardHtml("place", item.unlockLevel);
   }).join("") : emptyCollectionHtml();
   grid.querySelectorAll("[data-house-item]").forEach(button => {
     const houseItem = getInventoryItem(button.dataset.houseItem);
     if (houseItem.structural) drawLocationScene(button.querySelector("canvas"), "home", getThemeColour(look.themeColour), [houseItem.id]);
     else drawDecorationThumbnail(button.querySelector("canvas"), houseItem.id, getThemeColour(look.themeColour));
-    button.onclick = () => toggleInventoryItem(button.dataset.houseItem);
+    button.onclick = () => houseItem.made ? openPictureSheet(houseItem.id.slice("made-".length)) : toggleInventoryItem(button.dataset.houseItem);
   });
 }
 
@@ -2990,6 +3132,7 @@ function openConfigScreen() {
   renderChildSettings();
   renderGamesSetting();
   renderSchoolSettings();
+  renderNotificationSettings();
   element("settingsError").textContent = "";
   // A grown-up may have changed these since the game loaded, so check again.
   dataLayer.getSignedInProfile().then(fresh => {

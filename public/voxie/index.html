@@ -190,7 +190,7 @@
       <header class="site-top">
         <p class="logo-text-lockup"><span class="text-logo">Voxie</span><span class="logo-byline">for grown-ups</span></p>
         <nav class="site-nav" aria-label="Your account">
-          <button type="button" class="btn small ghost" id="parentLogOutButton">Log out</button>
+          <button type="button" class="btn small ghost logout-corner" id="parentLogOutButton">Log out</button>
         </nav>
       </header>
       <h1 id="parentGreeting">Hi</h1>
@@ -858,6 +858,17 @@
           <p class="error" id="settingsError" role="alert"></p>
         </div>
       </details>
+      <!-- Push notifications on THIS device (each device is turned on separately): school reminders and gifts -->
+      <details class="game-panel admin-group" id="notificationSettingsSection">
+        <summary>Notifications</summary>
+        <div class="game-body">
+          <div class="setting">
+            <div class="text"><strong><label for="settingReminders">Notifications on this device</label></strong><span class="hint" id="remindersHint"></span></div>
+            <input type="checkbox" class="switch" id="settingReminders" role="switch">
+          </div>
+          <p class="error" id="notificationSettingsError" role="alert"></p>
+        </div>
+      </details>
       <!-- Feature "school": homework on Home and reminders -->
       <details class="game-panel admin-group" id="schoolSettingsSection" hidden>
         <summary>School</summary>
@@ -869,13 +880,8 @@
             <button type="button" id="homeworkDaysUp" aria-label="More days">+</button>
           </div>
           <p class="hint" id="homeworkDaysHint"></p>
-          <!-- Push notifications on THIS device (each device is turned on separately) -->
-          <div class="setting">
-            <div class="text"><strong><label for="settingReminders">Homework reminders</label></strong><span class="hint" id="remindersHint"></span></div>
-            <input type="checkbox" class="switch" id="settingReminders" role="switch">
-          </div>
           <div class="field">
-            <label class="label" for="reminderTimeSelect">Reminder time</label>
+            <label class="label" for="reminderTimeSelect">Homework reminder time</label>
             <select id="reminderTimeSelect"></select>
           </div>
           <p class="error" id="schoolSettingsError" role="alert"></p>
@@ -899,11 +905,13 @@
             <button type="button" class="btn" id="installSettingsButton">Get the app</button>
             <p class="hint" id="installHelp" role="status"></p>
           </div>
-          <button class="btn ghost" type="button" id="logOutButton">Log out</button>
         </div>
       </details>
     </section>
   </div>
+
+  <!-- Always in the top right while playing (shown with the tab bar) -->
+  <button type="button" class="btn small ghost logout-corner" id="logOutButton" hidden>Log out</button>
 
   <nav class="tabbar" id="tabBar" aria-label="Main" hidden>
     <div class="tabs">
@@ -1056,7 +1064,7 @@
     <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="childNoticeTitle">
       <h2 id="childNoticeTitle">New tasks!</h2>
       <ul class="ability-list" id="childNoticeList"></ul>
-      <p class="hint">Find them in Today's tasks on the days they're set for.</p>
+      <p class="hint" id="childNoticeHint">Find them in Today's tasks on the days they're set for.</p>
       <button type="button" class="btn" id="childNoticeOk">Let's do it!</button>
     </section>
   </div>
@@ -1078,6 +1086,37 @@
       <h2 id="parentNoticeTitle">News from your kids</h2>
       <ul class="ability-list" id="parentNoticeList"></ul>
       <button type="button" class="btn" id="parentNoticeOk">Got it</button>
+    </section>
+  </div>
+
+  <!-- One picture (wall art you made or were given), from its card in Places → House or the gift pop-up -->
+  <div class="sheet-backdrop" id="pictureSheet" hidden>
+    <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="pictureTitle">
+      <div class="sheet-top">
+        <canvas id="picturePreview" class="picture-preview" width="16" height="16" aria-hidden="true"></canvas>
+        <div class="sheet-title">
+          <h2 id="pictureTitle"></h2>
+          <span id="pictureFrom"></span>
+        </div>
+        <button type="button" class="sheet-close" id="pictureClose" aria-label="Close">✕</button>
+      </div>
+      <p class="hint" id="pictureText"></p>
+      <p class="error" id="pictureError" role="alert"></p>
+      <button type="button" class="btn" id="pictureHang"></button>
+      <button type="button" class="btn ghost" id="pictureGive">Give to a friend</button>
+      <button type="button" class="btn ghost" id="pictureBin"></button>
+    </section>
+  </div>
+
+  <!-- Give wall art to a friend -->
+  <div class="sheet-backdrop" id="giveSheet" hidden>
+    <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="giveTitle">
+      <h2 id="giveTitle">Give it to a friend</h2>
+      <p class="hint" id="giveText"></p>
+      <div class="give-friends" id="giveFriends"></div>
+      <p class="error" id="giveError" role="alert"></p>
+      <button type="button" class="btn" id="giveConfirm">Give it</button>
+      <button type="button" class="btn ghost" id="giveCancel">Cancel</button>
     </section>
   </div>
 

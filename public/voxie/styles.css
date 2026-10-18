@@ -594,6 +594,12 @@ select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .make-list li{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px;background:var(--sunk);border:2px solid var(--line)}
 .make-list canvas{width:48px;height:48px;flex:none;image-rendering:pixelated;background:#FFFFFF;border:2px solid var(--dirt)}
 .make-list .what{flex:1;min-width:8em;display:flex;flex-direction:column}
+/* Gifts: the tag on a gift (My stuff, House, Creative) and picking a friend to give to */
+.gift-tag{display:inline-flex;align-items:center;font-size:12px;font-weight:700;color:var(--ink);background:var(--surface);border:1px solid var(--accent);padding:1px 7px;overflow-wrap:anywhere}
+.sheet-top canvas.picture-preview{background:#FFFFFF;border-color:var(--dirt)}
+.give-friends{display:flex;flex-wrap:wrap;gap:8px}
+.give-friends button{font:inherit;font-weight:700;min-height:44px;padding:6px 12px;background:var(--surface);color:var(--ink);border:2px solid var(--line);border-bottom-width:4px;cursor:pointer;overflow-wrap:anywhere}
+.give-friends button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent-dk)}
 /* Admin tab: each group of settings opens and closes (the Creative tab's game-panel look) */
 .admin-subgroup{display:flex;flex-direction:column;gap:12px;padding-top:4px}
 .admin-subgroup h3,.admin-group .game-body > h3{font-size:17px}
@@ -622,6 +628,10 @@ select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){.game-panel > summary::after,.snap-progress-fill{transition:none}.snap-arena[data-phase="warmup"] .snap-phase,.snap-number.pulse,.snap-overlay{animation:none}}
 
 /* tab bar */
+/* Log out, fixed in the top right: on every game screen (the page starts below it, so it never covers anything) and on
+   the grown-ups' page (where it sits beside the logo). */
+.btn.logout-corner{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));right:calc(8px + env(safe-area-inset-right,0px));z-index:5;font-size:14px;min-height:36px;padding:4px 10px;border-bottom-width:3px}
+body:has(#logOutButton:not([hidden])){padding-top:calc(52px + env(safe-area-inset-top,0px))}
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--surface);border-top:2px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
 .tabbar .tabs{max-width:460px;margin:0 auto;display:flex}
 .tabbar .tab{flex:1 1 0}

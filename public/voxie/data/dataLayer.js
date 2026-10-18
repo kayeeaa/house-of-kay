@@ -109,8 +109,9 @@ const dataLayer = {
   /** Changes from the Buddies and Settings screens (same look shape). Throws Error("name-taken") if the game name is
       another child's game name or username. Changing the game name notifies the child's grown-ups. Returns the profile. */
   async updateMyProfile(look) { return callRpc("update_my_profile", { p_look: look }); },
-  /** The child's unseen notifications, oldest first: [{ id, kind: "task-added", fromName, taskTitle }].
-      One row per task a grown-up added; the app shows them together in one pop-up. */
+  /** The child's unseen notifications, oldest first: [{ id, kind: "task-added" | "gift-received", fromName, taskTitle }].
+      One row per task a grown-up added (fromName: the grown-up) or gift a friend gave (fromName: their game name,
+      taskTitle: the picture's name); the app shows them together in one pop-up. */
   async loadMyTaskNotifications() {
     const rows = await readMyRows("child_notifications", "id, kind, from_name, task_title, created_at", query => query.is("seen_at", null).order("created_at"));
     return rows.map(row => ({ id: row.id, kind: row.kind, fromName: row.from_name, taskTitle: row.task_title }));
@@ -140,15 +141,23 @@ const dataLayer = {
     unlocks.forEach(row => { (unlockLevels[row.kind] = unlockLevels[row.kind] || {})[row.option_id] = row.unlock_level; });
     return { unlockLevels, shopThisWeek: shop.itemIds, shopRestocksOn: shop.restocksOn };
   },
-  /** Things the playing buddy made: [{ id, kind: "wall-art", name, pixels: 16 rows of 16 chars }]. */
+  /** Things the playing buddy made or was given: [{ id, kind: "wall-art", name, pixels: 16 rows of 16 chars, giftFrom }].
+      giftFrom: the friend's game name for a gift, otherwise null. */
   async loadMyCreations() {
-    const { rows } = await readMyBuddyRows("creations", "id, kind, name, pixels, created_at", query => query.eq("thrown_away", false).order("created_at"));
-    return rows.map(row => ({ id: row.id, kind: row.kind, name: row.name, pixels: row.pixels }));
+    const [{ rows }, gifts] = await Promise.all([
+      readMyBuddyRows("creations", "id, kind, name, pixels, received_as_gift, created_at", query => query.eq("thrown_away", false).order("created_at")),
+      readMyRows("creation_gifts", "creation_id, from_name")]);
+    const giftFrom = Object.fromEntries(gifts.map(gift => [gift.creation_id, gift.from_name]));
+    return rows.map(row => ({ id: row.id, kind: row.kind, name: row.name, pixels: row.pixels,
+      giftFrom: row.received_as_gift ? giftFrom[row.id] || "a friend" : null }));
   },
   /** → { id, name, pixels, pricePaid }. Throws Error("not-enough-xp"), Error("too-many"), Error("bad-name") or Error("bad-pixels"). */
   async makeCreation(kind, name, pixels) { return callRpc("make_creation", { p_kind: kind, p_name: name, p_pixels: pixels }); },
   /** Takes it down and out of My stuff. The XP isn't given back. */
   async throwAwayCreation(creationId) { await callRpc("throw_away_creation", { p_creation_id: creationId }); },
+  /** Gives something you made to a friend, free: it leaves your stuff and goes to theirs. Throws Error("not-found"),
+      Error("is-a-gift"), Error("not-friends") or Error("friend-full"). */
+  async giveCreation(creationId, friendId) { await callRpc("give_creation", { p_creation_id: creationId, p_friend_id: friendId }); },
   /** [{ id, displayName, petType, petLook, relationship, requestId }] */
   async searchPlayers(searchText) { return callRpc("search_players", { p_search_text: searchText }); },
   async sendFriendRequest(toChildId) { return callRpc("send_friend_request", { p_to_child_id: toChildId }); },
