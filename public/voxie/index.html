@@ -179,7 +179,7 @@
         <ul class="parents-list">
           <li><strong>No real money, ever.</strong> XP is the only currency, and it only comes from missions.</li>
           <li><strong>No adverts.</strong></li>
-          <li><strong>Private.</strong> Friends only see each other's buddy, level and XP. No chat, no photos.</li>
+          <li><strong>Private.</strong> Nobody can search for your child. They add friends only by swapping a friend code, and only if you turn friends on. Friends see each other's buddy, level and XP. No chat, no photos.</li>
           <li><strong>You're in charge of the account.</strong> We never ask for your child's real name, email or full date of birth: just a username you make up and the month and year they were born. We only use that to pick missions that suit their age. <a class="linkish inline" href="/voxie/privacy/">Read the privacy notice</a>.</li>
           <li><strong>Mystery boxes and "Take a chance" can be switched off.</strong></li>
           <li><strong>No timers if they don't suit your child.</strong> Timed missions can be turned off.</li>
@@ -274,6 +274,11 @@
               <div class="setting">
                 <div class="text"><strong><label for="parentSettingChildCanChange" id="parentSettingChildCanChangeLabel">Let them change these</label></strong><span class="hint">Off: only you can change these three settings.</span></div>
                 <input type="checkbox" class="switch" id="parentSettingChildCanChange" role="switch">
+              </div>
+              <!-- Only grown-ups change this one, whatever "Let them change these" says -->
+              <div class="setting">
+                <div class="text"><strong><label for="parentSettingFriends">Friends</label></strong><span class="hint">Let them add friends with a friend code. Only you can change this. Off: no code and no new friend requests, but friends they already have stay.</span></div>
+                <input type="checkbox" class="switch" id="parentSettingFriends" role="switch">
               </div>
               <p class="error" id="parentSettingsError" role="alert"></p>
               </div>
@@ -435,7 +440,7 @@
           <input type="text" id="setupNameInput" maxlength="20" autocomplete="off">
         </div>
         <p class="error" id="setupNameError" role="alert"></p>
-        <p class="hint">This is your username to start with. Keep it, or make up a new one: just don't use your real name. Friends find you by this name, and nobody else can have it.</p>
+        <p class="hint">This is your username to start with. Keep it, or make up a new one: just don't use your real name. This is the name friends see, and nobody else can have it.</p>
         <button class="btn" type="submit">Next</button>
       </form>
     </section>
@@ -802,16 +807,29 @@
         <h2>Waiting for a reply</h2>
         <div class="request-list" id="sentRequestList"></div>
       </section>
-      <form class="block" id="friendSearchForm" novalidate>
-        <h2>Find friends</h2>
+      <!-- No search: a friend adds you with your friend code, if your grown-up has turned friends on -->
+      <section class="block" id="friendCodeBlock" hidden>
+        <h2>Your friend code</h2>
+        <p class="friend-code" id="myFriendCode"></p>
+        <p class="hint">Give it to friends you know in real life, so they can add you. Don't post it anywhere online.</p>
+        <div class="btnrow"><button type="button" class="btn ghost small" id="newFriendCodeButton">Make a new code</button></div>
+        <p class="hint" id="newFriendCodeHint" role="status"></p>
+      </section>
+      <form class="block" id="addFriendForm" novalidate hidden>
+        <h2>Add a friend</h2>
         <div class="search-row">
-          <label class="visually-hidden" for="friendSearchInput">Search by name</label>
-          <input type="search" id="friendSearchInput" placeholder="Type a name" autocomplete="off" maxlength="16">
-          <button class="btn" type="submit">Search</button>
+          <label class="visually-hidden" for="addFriendInput">Your friend's code</label>
+          <input type="text" id="addFriendInput" placeholder="e.g. FROG-48213" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="20">
+          <button class="btn" type="submit" id="addFriendButton">Find</button>
         </div>
-        <p class="hint" id="friendSearchHint"></p>
-        <div class="request-list" id="friendSearchResults"></div>
+        <p class="error" id="addFriendError" role="alert"></p>
+        <p class="hint" id="addFriendDone" role="status"></p>
+        <div class="request-list" id="addFriendResult"></div>
       </form>
+      <section class="block" id="friendsOffBlock" hidden>
+        <h2>Adding friends</h2>
+        <p class="hint">Ask your grown-up if you can add friends.</p>
+      </section>
       <h2 class="list-heading" id="friendsHeading">Your friends</h2>
       <div class="friend-list" id="friendList"></div>
     </section>

@@ -48,6 +48,12 @@ async function callRpc(name, args) {
   if (error) throw new Error(error.message || "save-failed");
   return data;
 }
+/* The friend code RPCs return wrong-code errors instead of raising them (so the server's count of wrong tries sticks):
+   turn them into the usual Error("code") here. */
+function friendCodeResult(result) {
+  if (result && result.error) throw new Error(result.error);
+  return result;
+}
 /* A table read limited to the signed-in child's rows. build(query) adds filters and ordering. */
 async function readMyRows(table, columns, build = query => query) {
   const childId = await requireUserId();
@@ -158,9 +164,16 @@ const dataLayer = {
   /** Gives something you made to a friend, free: it leaves your stuff and goes to theirs. Throws Error("not-found"),
       Error("is-a-gift"), Error("not-friends") or Error("friend-full"). */
   async giveCreation(creationId, friendId) { await callRpc("give_creation", { p_creation_id: creationId, p_friend_id: friendId }); },
-  /** [{ id, displayName, petType, petLook, relationship, requestId }] */
-  async searchPlayers(searchText) { return callRpc("search_players", { p_search_text: searchText }); },
-  async sendFriendRequest(toChildId) { return callRpc("send_friend_request", { p_to_child_id: toChildId }); },
+  /** Your friend code: { allowed, code }. code is null when your grown-up has friends off. There's no search:
+      friends add each other by code. */
+  async loadMyFriendCode() { return callRpc("load_my_friend_code"); },
+  /** A new code; the old one stops working. → { code }. Throws Error("friends-off"). */
+  async newFriendCode() { return callRpc("new_friend_code"); },
+  /** Who a friend code belongs to: { displayName, petType, petLook, relationship: "none" | "friend" | "request-sent" | "request-received" }.
+      Throws Error("code-format"), Error("own-code"), Error("bad-code"), Error("too-many-tries") (10 wrong codes a day) or Error("friends-off"). */
+  async lookUpFriendCode(code) { return friendCodeResult(await callRpc("look_up_friend_code", { p_code: code })); },
+  /** Sends a friend request to whoever has this code. Throws the lookUpFriendCode errors, Error("already-friends") or Error("already-asked"). */
+  async sendFriendRequest(code) { friendCodeResult(await callRpc("send_friend_request", { p_code: code })); },
   async loadMyFriendRequests() { return callRpc("load_my_friend_requests"); },
   async removeFriend(friendId) { return callRpc("remove_friend", { p_friend_id: friendId }); },
   async loadMySentFriendRequests() { return callRpc("load_my_sent_friend_requests"); },

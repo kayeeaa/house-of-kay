@@ -18,6 +18,7 @@ Files:
 - `supabase/migrations/20261017110000_voxie_weekly_shop.sql`: each buddy's Shop sells 12 items, a different 12 per buddy and a new 12 every Monday (`private.shop_this_week`); `buy_item` only sells this week's 12. `buddy_shop` is no longer used.
 - `supabase/migrations/20261017120000_voxie_creations.sql`: things children make (for everyone since `20261017130000_voxie_creations_for_everyone.sql`), starting with 16 × 16 wall art for the picture slot. 20 XP each, 20 per buddy, item id `made-<id>`, private (left out of `public_look`), no powers, never in Mystery boxes; thrown away = hidden, XP stays spent.
 - `supabase/migrations/20261019090000_voxie_wall_art_gifts.sql` and `supabase/functions/notify-child`: giving wall art you made to a friend, free, for everyone. The friend gets a copy (`received_as_gift`, price 0) and the giver's is hidden (`thrown_away`, `given_away`), so the XP stays spent. Who it came from is in `creation_gifts`, readable by the child who got it only (grown-ups never see friends). The friend gets an in-game pop-up (`child_notifications` kind `gift-received`) and a push from `notify-child` to every device they turned notifications on for (one switch for school reminders and gifts). Gifts have their own limit: a buddy can hold its own 20 and 20 gifts. Deploy `notify-child` with `--no-verify-jwt`; it uses the same secrets as `notify-admins`.
+- `supabase/migrations/20261020090000_voxie_friend_codes.sql`: friend codes instead of friend search (`search_players` is dropped). Each child has a code like `FROG-48213` (`friend_codes`, server only); requests are sent by code, never by child id. 10 wrong codes a day per child (`friend_code_tries`). The grown-ups' Friends setting is `profiles.friends_allowed`: existing children ON, new children OFF; off means no code and no requests either way (waiting ones are cancelled), but existing friends and gifts between them stay. Only `update_child_settings` changes it.
 - `supabase/migrations/20261018090000_voxie_new_grown_up_alert.sql` and `supabase/functions/notify-admins`: a push to everyone in `site_admins` when a new grown-up signs up. Deploy with `--no-verify-jwt`; add yourself with `insert into public.site_admins (user_id) select id from auth.users where email = '…';`.
 - `supabase/functions/_shared/voxie.ts` plus the `add-child`, `set-child-passcode` and `delete-child-account` folders.
 
@@ -47,8 +48,10 @@ Files:
 | loadMyCreations | table `creations` (the playing buddy's, not thrown away) | none | `[{ id, kind, name, pixels }]` |
 | makeCreation | `make_creation` | `p_kind, p_name, p_pixels` | `{ id, name, pixels, pricePaid }` |
 | throwAwayCreation | `throw_away_creation` | `p_creation_id` | none |
-| searchPlayers | `search_players` | `p_search_text` | `[{ id, displayName, petType, petLook, relationship, requestId }]` |
-| sendFriendRequest | `send_friend_request` | `p_to_child_id` | none |
+| loadMyFriendCode | `load_my_friend_code` | none | `{ allowed, code }` (code null when friends are off) |
+| newFriendCode | `new_friend_code` | none | `{ code }` |
+| lookUpFriendCode | `look_up_friend_code` | `p_code` | `{ displayName, petType, petLook, relationship }`; a wrong code comes back as `{ error }`, which dataLayer throws |
+| sendFriendRequest | `send_friend_request` | `p_code` | none; a wrong code comes back as `{ error }`, which dataLayer throws |
 | loadMyFriendRequests | `load_my_friend_requests` | none | `[{ id, fromChildId, displayName, petType, petLook }]` |
 | loadMySentFriendRequests | `load_my_sent_friend_requests` | none | `[{ id, toChildId, displayName, petType, petLook }]` |
 | answerFriendRequest | `answer_friend_request` | `p_request_id, p_accept` | none |
@@ -105,7 +108,7 @@ Files:
 | setChildBirthMonth | `set_child_birth_month` | `p_child_id, p_birth_month, p_birth_year` | none |
 | addChildTask | `add_child_task` | `p_child_id, p_task` | task shape |
 | removeChildTask | `remove_child_task` | `p_child_id, p_task_id` | none |
-| updateChildSettings | `update_child_settings` | `p_child_id, p_settings` (`{ …, childCanChangeSettings }`) | none |
+| updateChildSettings | `update_child_settings` | `p_child_id, p_settings` (`{ …, childCanChangeSettings, friendsAllowed }`) | none |
 | createGrownUpInvite | `create_grown_up_invite` | `p_child_id` | `{ code, expiresAt }` |
 | linkChildWithCode | `link_child_with_code` | `p_code` | child (as loadMyChildren) |
 | unlinkChild | `unlink_child` | `p_child_id` | none |
@@ -135,7 +138,7 @@ The service-role-only database functions are `create_child_profile` and `delete_
 6. **Mission ages.** `MISSION_MIN_AGE` and `MISSION_MAX_AGE` weren't in the files, so I hardcoded 5 and 13 from the comment in `missionsForAge`.
 7. **No pet or location catalogue.** The server only checks that pet types, colours and locations look like ids. It doesn't check they exist or are unlocked at the child's level. These are cosmetic only and don't affect XP or chance. A `pet_catalogue` table would close this if you want it.
 8. **Usernames can be checked.** `email_for_username` returns null for unknown usernames, as briefed, so anyone can test whether a username exists. The alternative is to return a dummy address so the login simply fails.
-9. **Strangers can find each other.** Search lets any set-up child find and friend-request any other child. With the ICO Children's Code in mind, consider letting grown-ups approve friend requests. That's your call. The data shown is already limited to safe fields.
+9. **Strangers can't find each other (since 2026-10-20).** Friend search is gone: a child adds a friend only by typing that friend's code, and only if a grown-up has turned Friends on (off for new children). See `20261020090000_voxie_friend_codes.sql`.
 10. **Chores.** dataLayer has no "add chore" function, so `chores` is only filled by hand. Grown-ups' tasks from the app go into `scheduled_tasks` with `set_by = 'parent'`.
 11. **Audit trail.** Every chance roll also stores `random_number`, the dice value used, so any "that's not fair!" can be checked.
 

@@ -92,7 +92,7 @@ function resetSessionState() {
   missionHelp = {}; openMissionId = null; newItemQueue = []; levelsSeen = {};
   myChance = { wonItemIds: [], swappedAwayItemIds: [], triedItemIds: [], boxesOpenedToday: 0, treasureClaimedThisWeek: false, claimedMilestones: [] };
   myPurchases = []; myItemXp = {}; myItemColours = {}; myGotAtLevels = {}; myBuddies = [];
-  myFriendRequests = []; mySentFriendRequests = []; renderFriendsBadge();
+  myFriendRequests = []; mySentFriendRequests = []; renderFriendsBadge(); myFriendCode = null; foundFriend = null;
   parentChildren = []; parentOpenChildId = null; parentOverview = null;
   inventoryBrowser.mode = houseBrowser.mode = "type"; lastPlacesScreen = "screenHouse";
   ["itemSheet", "buySheet", "chanceSheet", "parentNoticeSheet", "childNoticeSheet", "remindersSheet", "giveSheet", "pictureSheet"].forEach(id => element(id).hidden = true);
@@ -2801,7 +2801,9 @@ element("buySheetClose").onclick = closeBuySheet;
 element("buySheet").addEventListener("click", event => { if (event.target === element("buySheet")) closeBuySheet(); });
 document.addEventListener("keydown", event => { if (event.key === "Escape" && !element("buySheet").hidden) closeBuySheet(); });
 
-/* ---------- Friends: see how friends (added by a grown-up) are getting on ---------- */
+/* ---------- Friends: see how friends are getting on ----------
+   No search: a child adds a friend by typing that friend's code, and only if their grown-up has turned friends on.
+   The server checks every step (and counts wrong codes), so this is only what the child sees. */
 /* Requests sent to you. The count shows on the Friends tab. */
 let myFriendRequests = [];
 /* The number shows on Friends and on More, which Friends is inside. */
@@ -2847,7 +2849,6 @@ async function cancelSentRequest(requestId, button) {
     mySentFriendRequests = mySentFriendRequests.filter(request => request.id !== requestId);
     hideSaveError();
     renderSentFriendRequests();
-    if (element("friendSearchInput").value.trim().length >= 2) runFriendSearch();
   } catch (error) {
     button.disabled = false;
     showSaveError("Couldn't cancel that. Check your internet and try again.", () => cancelSentRequest(requestId, button));
@@ -2887,40 +2888,95 @@ async function answerRequest(requestId, accept) {
   renderFriendRequests();
   // Refreshing the lists is separate: if it fails, the answer still went through.
   try { if (accept) renderFriends(await dataLayer.loadMyFriends()); } catch (error) { /* shows next time Friends opens */ }
-  if (element("friendSearchInput").value.trim().length >= 2) runFriendSearch();
 }
-const SEARCH_ACTIONS = {
-  "none": person => `<button type="button" class="btn" data-add="${person.id}">Add friend</button>`,
-  "request-sent": () => `<span class="hint">Asked</span>`,
-  "request-received": person => `<button type="button" class="btn" data-accept="${person.requestId}">Accept</button>`,
-  "friend": () => `<span class="hint">Friends</span>`
-};
-async function runFriendSearch() {
-  const searchText = element("friendSearchInput").value.trim(), hint = element("friendSearchHint"), results = element("friendSearchResults");
-  if (searchText.length < 2) { hint.textContent = "Type at least 2 letters of their name."; results.innerHTML = ""; return; }
-  hint.textContent = "Searching…";
+/* Your friend code. "Make a new code" asks first (two taps): the old code stops working, friends stay friends. */
+let myFriendCode = null, newFriendCodeAsked = false;   // { allowed, code } from dataLayer.loadMyFriendCode()
+function renderFriendCode() {
+  const allowed = !!myFriendCode && myFriendCode.allowed;
+  element("friendCodeBlock").hidden = element("addFriendForm").hidden = !allowed;
+  element("friendsOffBlock").hidden = !myFriendCode || allowed;
+  if (!allowed) return;
+  element("myFriendCode").textContent = myFriendCode.code;
+  const button = element("newFriendCodeButton");
+  button.textContent = newFriendCodeAsked ? "Sure? Your old code will stop working" : "Make a new code";
+  button.classList.toggle("danger", newFriendCodeAsked);
+  button.classList.toggle("ghost", !newFriendCodeAsked);
+}
+function friendsTurnedOff() { myFriendCode = { allowed: false, code: null }; foundFriend = null; renderFriendCode(); }
+element("newFriendCodeButton").onclick = async () => {
+  element("newFriendCodeHint").textContent = "";
+  if (!newFriendCodeAsked) { newFriendCodeAsked = true; renderFriendCode(); return; }
+  newFriendCodeAsked = false;
+  element("newFriendCodeButton").disabled = true;
   try {
-    const people = await dataLayer.searchPlayers(searchText);
-    hint.textContent = people.length ? "" : `No one called "${searchText}". Check the spelling?`;
-    results.innerHTML = people.map(person => personRowHtml({ ...person, subtitle: person.relationship === "request-received" ? "wants to be your friend" : "" }, SEARCH_ACTIONS[person.relationship](person))).join("");
-    drawPersonPets(results, people);
-    results.querySelectorAll("[data-add]").forEach(button => button.onclick = () => addFriend(button.dataset.add, button));
-    results.querySelectorAll("[data-accept]").forEach(button => button.onclick = () => answerRequest(button.dataset.accept, true));
+    const { code } = await dataLayer.newFriendCode();
+    myFriendCode = { allowed: true, code };
+    element("newFriendCodeHint").textContent = "Here's your new code. The old one doesn't work any more, and your friends are still your friends.";
   } catch (error) {
-    hint.textContent = "Couldn't search. Check your internet and try again.";
+    if (error.message === "friends-off") friendsTurnedOff();
+    else element("newFriendCodeHint").textContent = "Couldn't make a new code. Check your internet and try again.";
   }
+  element("newFriendCodeButton").disabled = false;
+  renderFriendCode();
+};
+
+/* Adding a friend: type their code, see who it is, then "Send a friend request?". They still have to say yes. */
+const FRIEND_CODE_MESSAGES = {
+  "code-format": "Friend codes look like FROG-48213: a word, then 5 numbers.",
+  "own-code": "That's your own code! Type your friend's code instead.",
+  "bad-code": "That code doesn't work. Check it with your friend and try again.",
+  "too-many-tries": "Lots of codes didn't work today, so adding friends is paused until tomorrow.",
+  "already-friends": "You're already friends!",
+  "already-asked": "You've already asked them. Wait for them to say yes."
+};
+const FOUND_FRIEND_SUBTITLES = { "none": "Send a friend request?", "request-sent": "You've already asked them",
+  "request-received": "They've asked you! Say yes in Friend requests above.", "friend": "You're already friends" };
+let foundFriend = null;   // { code, person } once a code has been found
+function showFriendCodeError(error, fallback) {
+  if (error.message === "friends-off") { friendsTurnedOff(); return; }
+  element("addFriendError").textContent = FRIEND_CODE_MESSAGES[error.message] || fallback;
 }
-element("friendSearchForm").onsubmit = event => { event.preventDefault(); runFriendSearch(); };
-async function addFriend(childId, button) {
+function renderFoundFriend() {
+  const result = element("addFriendResult");
+  if (!foundFriend) { result.innerHTML = ""; return; }
+  const { person } = foundFriend;
+  const actions = person.relationship === "none"
+    ? `<button type="button" class="btn" data-send-request>Send</button><button type="button" class="btn ghost" data-forget-found>Cancel</button>`
+    : `<button type="button" class="btn ghost" data-forget-found>OK</button>`;
+  result.innerHTML = personRowHtml({ id: "found", displayName: person.displayName, subtitle: FOUND_FRIEND_SUBTITLES[person.relationship] || "" }, actions);
+  drawPersonPets(result, [{ ...person, id: "found" }]);
+  const send = result.querySelector("[data-send-request]");
+  if (send) send.onclick = () => sendFoundFriendRequest(send);
+  result.querySelector("[data-forget-found]").onclick = () => { foundFriend = null; renderFoundFriend(); element("addFriendInput").focus(); };
+}
+element("addFriendForm").onsubmit = async event => {
+  event.preventDefault();
+  const code = element("addFriendInput").value.trim();
+  ["addFriendError", "addFriendDone"].forEach(id => element(id).textContent = "");
+  foundFriend = null;
+  renderFoundFriend();
+  if (!code) { element("addFriendError").textContent = "Type your friend's code first."; return; }
+  element("addFriendButton").disabled = true;
+  try {
+    foundFriend = { code, person: await dataLayer.lookUpFriendCode(code) };
+    renderFoundFriend();
+  } catch (error) {
+    showFriendCodeError(error, "Couldn't check that code. Check your internet and try again.");
+  }
+  element("addFriendButton").disabled = false;
+};
+async function sendFoundFriendRequest(button) {
   button.disabled = true;
   try {
-    await dataLayer.sendFriendRequest(childId);
-    button.outerHTML = `<span class="hint">Asked</span>`;
+    await dataLayer.sendFriendRequest(foundFriend.code);
+    element("addFriendDone").textContent = `Friend request sent to ${foundFriend.person.displayName}! You'll be friends when they say yes.`;
+    foundFriend = null;
+    element("addFriendInput").value = "";
+    renderFoundFriend();
     refreshSentFriendRequests();
-    hideSaveError();
   } catch (error) {
-    if (error.message === "already-friends" || error.message === "already-asked") runFriendSearch();
-    else { button.disabled = false; showSaveError("Couldn't send that. Check your internet and try again.", () => addFriend(childId, button)); }
+    button.disabled = false;
+    showFriendCodeError(error, "Couldn't send that. Check your internet and try again.");
   }
 }
 async function openFriends() {
@@ -2929,10 +2985,18 @@ async function openFriends() {
   drawLoadingBuddies(element("friendList"));
   renderFriendRequests();
   element("sentRequestsBlock").hidden = true;
+  myFriendCode = null; foundFriend = null; newFriendCodeAsked = false;
+  element("addFriendInput").value = "";
+  ["addFriendError", "addFriendDone", "newFriendCodeHint"].forEach(id => element(id).textContent = "");
+  renderFriendCode();
+  renderFoundFriend();
   try {
-    const [friends, requests, sentRequests] = await Promise.all([dataLayer.loadMyFriends(), dataLayer.loadMyFriendRequests(), dataLayer.loadMySentFriendRequests()]);
+    const [friends, requests, sentRequests, code] = await Promise.all([dataLayer.loadMyFriends(), dataLayer.loadMyFriendRequests(),
+      dataLayer.loadMySentFriendRequests(), dataLayer.loadMyFriendCode()]);
     myFriendRequests = requests;
     mySentFriendRequests = sentRequests;
+    myFriendCode = code;
+    renderFriendCode();
     renderSentFriendRequests();
     renderFriendsBadge();
     renderFriendRequests();
@@ -2946,7 +3010,9 @@ async function openFriends() {
 function renderFriends(friends) {
   const list = element("friendList");
   if (!friends.length) {
-    list.innerHTML = `<div class="empty"><strong>No friends yet</strong><span class="hint">Search for a friend's name above. When they say yes, you'll see their buddies and levels here.</span></div>`;
+    list.innerHTML = myFriendCode && !myFriendCode.allowed
+      ? `<div class="empty"><strong>No friends yet</strong><span class="hint">Ask your grown-up if you can add friends.</span></div>`
+      : `<div class="empty"><strong>No friends yet</strong><span class="hint">Add a friend with their friend code above. When they say yes, you'll see their buddies and levels here.</span></div>`;
     return;
   }
   list.innerHTML = friends.map((friend, index) => {
@@ -3600,6 +3666,7 @@ function renderParentSettings() {
   element("parentSettingChance").checked = settings.chanceFeatures;
   element("parentSettingStreak").checked = settings.resetStreakOnMiss;
   element("parentSettingChildCanChange").checked = settings.childCanChangeSettings;
+  element("parentSettingFriends").checked = settings.friendsAllowed;
   element("parentSettingChildCanChangeLabel").textContent = `Let ${parentOverview.child.displayName} change these`;
 }
 let parentSettingsSaveNumber = 0; // only the latest save decides what's shown if one fails
@@ -3608,7 +3675,8 @@ async function saveParentSettings() {
   const childId = parentOpenChildId, saveNumber = ++parentSettingsSaveNumber;
   if (!parentSettingsSaved || parentSettingsSaved.childId !== childId) parentSettingsSaved = { childId, settings: parentOverview.settings };
   const settings = { timedMissions: element("parentSettingTimed").checked, chanceFeatures: element("parentSettingChance").checked,
-    resetStreakOnMiss: element("parentSettingStreak").checked, childCanChangeSettings: element("parentSettingChildCanChange").checked };
+    resetStreakOnMiss: element("parentSettingStreak").checked, childCanChangeSettings: element("parentSettingChildCanChange").checked,
+    friendsAllowed: element("parentSettingFriends").checked };
   parentOverview.settings = settings;
   try {
     await dataLayer.updateChildSettings(childId, settings);
@@ -3622,7 +3690,7 @@ async function saveParentSettings() {
     element("parentSettingsError").textContent = "Couldn't save that setting. Check your internet and try again.";
   }
 }
-["parentSettingTimed", "parentSettingChance", "parentSettingStreak", "parentSettingChildCanChange"].forEach(id => element(id).onchange = saveParentSettings);
+["parentSettingTimed", "parentSettingChance", "parentSettingStreak", "parentSettingChildCanChange", "parentSettingFriends"].forEach(id => element(id).onchange = saveParentSettings);
 /* Login: the child's username, and a new passcode if they've forgotten theirs (children have no email). */
 function renderParentLogin() {
   const { child, login } = parentOverview;
