@@ -256,31 +256,13 @@
           </details>
 
           <div class="parent-side">
-            <details class="game-panel admin-group">
-              <summary id="parentSettingsHeading">Settings</summary>
+            <!-- Feature "school": the child's timetable from the school sync, this week and next -->
+            <details class="game-panel admin-group" id="parentTimetableSection" hidden>
+              <summary>Timetable</summary>
               <div class="game-body">
-              <div class="setting">
-                <div class="text"><strong><label for="parentSettingTimed">Timed missions</label></strong><span class="hint">A clock for reading each mission, then a few seconds to answer. Off means no clock at all.</span></div>
-                <input type="checkbox" class="switch" id="parentSettingTimed" role="switch">
-              </div>
-              <div class="setting">
-                <div class="text"><strong><label for="parentSettingChance">Mystery boxes and Take a chance</label></strong><span class="hint">Spend XP on a random item, or risk a new item for a rarer one. XP only, never real money. Off hides them.</span></div>
-                <input type="checkbox" class="switch" id="parentSettingChance" role="switch">
-              </div>
-              <div class="setting">
-                <div class="text"><strong><label for="parentSettingStreak">Reset streak if a day is missed</label></strong><span class="hint">Off: the streak counts every day they've played, so a missed day doesn't undo it.</span></div>
-                <input type="checkbox" class="switch" id="parentSettingStreak" role="switch">
-              </div>
-              <!-- Only grown-ups change this one, whatever "Let them change these" says -->
-              <div class="setting">
-                <div class="text"><strong><label for="parentSettingFriends">Friends</label></strong><span class="hint">Let them add friends with a friend code. Only you can change this. Off: no code and no new friend requests, but friends they already have stay.</span></div>
-                <input type="checkbox" class="switch" id="parentSettingFriends" role="switch">
-              </div>
-              <div class="setting">
-                <div class="text"><strong><label for="parentSettingChildCanChange" id="parentSettingChildCanChangeLabel">Let them change these</label></strong><span class="hint">Lets them change timed missions, Mystery boxes and the streak setting themselves. Off: only you can. Friends is always yours to decide.</span></div>
-                <input type="checkbox" class="switch" id="parentSettingChildCanChange" role="switch">
-              </div>
-              <p class="error" id="parentSettingsError" role="alert"></p>
+              <p class="hint" id="parentTimetableIntro"></p>
+              <div class="school-days" id="parentTimetableDays" role="group" aria-label="Pick a day"></div>
+              <ol class="school-lessons" id="parentTimetableLessons" aria-live="polite"></ol>
               </div>
             </details>
             <!-- Feature "school": notifications before lessons on the child's school timetable -->
@@ -321,54 +303,81 @@
               </form>
               </div>
             </details>
+            <!-- The child's details: their login, their age (for missions) and the grown-ups linked to them -->
             <details class="game-panel admin-group">
-              <summary id="parentLoginHeading">Login</summary>
+              <summary id="parentDetailsHeading">Details</summary>
               <div class="game-body">
-              <p class="login-detail"><span class="label">Username</span> <strong id="parentChildUsername"></strong></p>
-              <form class="login-pop-form" id="parentPasscodeForm" novalidate>
-                <div class="field">
-                  <label class="label" for="parentNewPasscode" id="parentNewPasscodeLabel">New passcode</label>
-                  <input type="text" id="parentNewPasscode" autocomplete="off" autocapitalize="none" spellcheck="false">
-                  <span class="hint" id="parentNewPasscodeHint"></span>
-                </div>
-                <p class="error" id="parentPasscodeError" role="alert"></p>
-                <p class="hint" id="parentPasscodeDone" role="status"></p>
-                <button class="btn small" type="submit" id="parentPasscodeButton">Set new passcode</button>
-              </form>
-              </div>
-            </details>
-            <details class="game-panel admin-group">
-              <summary id="parentBirthHeading">Age</summary>
-              <div class="game-body">
-              <form class="login-pop-form" id="parentBirthForm" novalidate>
-                <div class="field">
-                  <span class="label" id="parentBirthLabel">Birth month and year</span>
-                  <div class="birth-row" role="group" aria-labelledby="parentBirthLabel">
-                    <select id="parentBirthMonth" aria-label="Birth month"></select>
-                    <select id="parentBirthYear" aria-label="Birth year"></select>
+              <div class="admin-subgroup">
+                <h3 id="parentLoginHeading">Login</h3>
+                <p class="login-detail"><span class="label">Username</span> <strong id="parentChildUsername"></strong></p>
+                <form class="login-pop-form" id="parentPasscodeForm" novalidate>
+                  <div class="field">
+                    <label class="label" for="parentNewPasscode" id="parentNewPasscodeLabel">New passcode</label>
+                    <input type="text" id="parentNewPasscode" autocomplete="off" autocapitalize="none" spellcheck="false">
+                    <span class="hint" id="parentNewPasscodeHint"></span>
                   </div>
-                  <span class="hint" id="parentBirthHint"></span>
+                  <p class="error" id="parentPasscodeError" role="alert"></p>
+                  <p class="hint" id="parentPasscodeDone" role="status"></p>
+                  <button class="btn small" type="submit" id="parentPasscodeButton">Set new passcode</button>
+                </form>
+              </div>
+              <div class="admin-subgroup">
+                <h3 id="parentBirthHeading">Age</h3>
+                <form class="login-pop-form" id="parentBirthForm" novalidate>
+                  <div class="field">
+                    <span class="label" id="parentBirthLabel">Birth month and year</span>
+                    <div class="birth-row" role="group" aria-labelledby="parentBirthLabel">
+                      <select id="parentBirthMonth" aria-label="Birth month"></select>
+                      <select id="parentBirthYear" aria-label="Birth year"></select>
+                    </div>
+                    <span class="hint" id="parentBirthHint"></span>
+                  </div>
+                  <p class="error" id="parentBirthError" role="alert"></p>
+                  <p class="hint" id="parentBirthDone" role="status"></p>
+                  <button class="btn small" type="submit" id="parentBirthButton">Save</button>
+                </form>
+              </div>
+              <div class="admin-subgroup">
+                <h3 id="parentGrownUpsHeading">Grown-ups</h3>
+                <ul class="grown-up-list" id="parentGrownUpList"></ul>
+                <p class="hint" id="parentInviteText"></p>
+                <p class="link-code" id="parentInviteCode" hidden></p>
+                <p class="hint" id="parentInviteHint" hidden></p>
+                <button type="button" class="btn small ghost" id="parentInviteButton">Invite another grown-up</button>
+                <p class="error" id="parentInviteError" role="alert"></p>
+                <div class="danger-zone">
+                  <p class="hint" id="parentUnlinkText"></p>
+                  <div class="btnrow" id="parentUnlinkRow"></div>
+                  <p class="error" id="parentUnlinkError" role="alert"></p>
                 </div>
-                <p class="error" id="parentBirthError" role="alert"></p>
-                <p class="hint" id="parentBirthDone" role="status"></p>
-                <button class="btn small" type="submit" id="parentBirthButton">Save</button>
-              </form>
+              </div>
               </div>
             </details>
             <details class="game-panel admin-group">
-              <summary id="parentGrownUpsHeading">Grown-ups</summary>
+              <summary id="parentSettingsHeading">Settings</summary>
               <div class="game-body">
-              <ul class="grown-up-list" id="parentGrownUpList"></ul>
-              <p class="hint" id="parentInviteText"></p>
-              <p class="link-code" id="parentInviteCode" hidden></p>
-              <p class="hint" id="parentInviteHint" hidden></p>
-              <button type="button" class="btn small ghost" id="parentInviteButton">Invite another grown-up</button>
-              <p class="error" id="parentInviteError" role="alert"></p>
-              <div class="danger-zone">
-                <p class="hint" id="parentUnlinkText"></p>
-                <div class="btnrow" id="parentUnlinkRow"></div>
-                <p class="error" id="parentUnlinkError" role="alert"></p>
+              <div class="setting">
+                <div class="text"><strong><label for="parentSettingTimed">Timed missions</label></strong><span class="hint">A clock for reading each mission, then a few seconds to answer. Off means no clock at all.</span></div>
+                <input type="checkbox" class="switch" id="parentSettingTimed" role="switch">
               </div>
+              <div class="setting">
+                <div class="text"><strong><label for="parentSettingChance">Mystery boxes and Take a chance</label></strong><span class="hint">Spend XP on a random item, or risk a new item for a rarer one. XP only, never real money. Off hides them.</span></div>
+                <input type="checkbox" class="switch" id="parentSettingChance" role="switch">
+              </div>
+              <div class="setting">
+                <div class="text"><strong><label for="parentSettingStreak">Reset streak if a day is missed</label></strong><span class="hint">Off: the streak counts every day they've played, so a missed day doesn't undo it.</span></div>
+                <input type="checkbox" class="switch" id="parentSettingStreak" role="switch">
+              </div>
+              <!-- Only grown-ups change this one, whatever "Let them change these" says -->
+              <div class="setting">
+                <div class="text"><strong><label for="parentSettingFriends">Friends</label></strong><span class="hint">Let them add friends with a friend code. Only you can change this. Off: no code and no new friend requests, but friends they already have stay.</span></div>
+                <input type="checkbox" class="switch" id="parentSettingFriends" role="switch">
+              </div>
+              <div class="setting">
+                <div class="text"><strong><label for="parentSettingChildCanChange" id="parentSettingChildCanChangeLabel">Let them change these</label></strong><span class="hint">Lets them change timed missions, Mystery boxes and the streak setting themselves. Off: only you can. Friends is always yours to decide.</span></div>
+                <input type="checkbox" class="switch" id="parentSettingChildCanChange" role="switch">
+              </div>
+              <p class="error" id="parentSettingsError" role="alert"></p>
               </div>
             </details>
           </div>

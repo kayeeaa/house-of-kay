@@ -98,6 +98,7 @@ Files:
 | collectHandedInHomework | `collect_handed_in_homework` | none | `{ homework: [{ id, title, subject }], xpAwarded, levelPoints }` |
 | savePushSubscription | `save_my_push_subscription` | `p_endpoint, p_p256dh, p_auth` | none |
 | removePushSubscription | `remove_my_push_subscription` | `p_endpoint` | none |
+| loadChildTimetable | tables `school_sync`, `school_days`, `school_lessons` for the child (from this Monday) | `childId` | `{ linked, updatedAt, schoolDays, lessons }` |
 | loadChildLessonReminders | tables `lesson_reminders`, `school_settings`, `school_lessons` (subjects) for the child | `childId` | `{ reminders, subjects, eveningHour, morningHour }` |
 | addLessonReminder | `add_lesson_reminder` | `p_child_id, p_subject, p_note, p_night_before, p_morning_of, p_to_child, p_to_grown_ups` | the reminder |
 | removeLessonReminder | `remove_lesson_reminder` | `p_child_id, p_reminder_id` | none |

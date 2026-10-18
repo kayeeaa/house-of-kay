@@ -513,9 +513,11 @@ function renderSchoolDays() {
     renderSchoolLessons();
   });
 }
-function renderSchoolLessons() {
-  const lessons = mySchool.lessons.filter(lesson => lesson.date === schoolPickedDay);
-  element("schoolLessons").innerHTML = !schoolPickedDay ? `<li class="hint">No more school days coming up.</li>`
+function renderSchoolLessons() { element("schoolLessons").innerHTML = lessonListHtml(mySchool.lessons, schoolPickedDay); }
+/* One day's lessons as list items: the School tab and the grown-ups' Timetable share it. */
+function lessonListHtml(allLessons, day) {
+  const lessons = allLessons.filter(lesson => lesson.date === day);
+  return !day ? `<li class="hint">No more school days coming up.</li>`
     : !lessons.length ? `<li class="hint">No lessons on this day.</li>`
     : lessons.map(lesson => `<li class="school-lesson" style="--subject:${safeColour(lesson.colour)}">
         <span class="school-lesson-time">${escapeHtml(lesson.start)}<span class="hint">${escapeHtml(lesson.end)}</span></span>
@@ -3459,6 +3461,35 @@ async function openParentTab(tabId) {
   renderParentChild();
   element("parentChildPanel").hidden = false;
   loadParentLessonReminders(tabId);
+  loadParentTimetable(tabId);
+}
+
+/* ---------- Grown-ups: the child's timetable (feature "school") ----------
+   The same lessons as the child's School tab, from the nightly school sync, from this Monday to the end of next
+   week, so the week so far can be looked back at too. Opens on today (or the next school day). */
+let parentTimetable = null;   // { childId, linked, updatedAt, schoolDays, lessons, pickedDay }
+async function loadParentTimetable(childId) {
+  element("parentTimetableSection").hidden = true;
+  if (!featureOn("school")) return;
+  let data;
+  try { data = await dataLayer.loadChildTimetable(childId); } catch (error) { return; }
+  if (parentOpenChildId !== childId || !data.linked) return;   // they've moved to another tab, or no school link
+  const today = getTodayInUk();
+  parentTimetable = { childId, ...data, pickedDay: data.schoolDays.find(day => day >= today) || data.schoolDays.at(-1) || null };
+  renderParentTimetable();
+  element("parentTimetableSection").hidden = false;
+}
+function renderParentTimetable() {
+  const { schoolDays, lessons, pickedDay, updatedAt } = parentTimetable;
+  element("parentTimetableIntro").textContent = `${parentOverview.child.displayName}'s lessons this week and next, from school.`
+    + (updatedAt ? ` Updated ${schoolUpdatedLabel(updatedAt)}.` : "");
+  element("parentTimetableDays").innerHTML = schoolDays.map(day =>
+    `<button type="button" class="school-day" data-day="${day}" aria-pressed="${day === pickedDay}">${escapeHtml(schoolDayLabel(day))}</button>`).join("");
+  element("parentTimetableDays").querySelectorAll("[data-day]").forEach(button => button.onclick = () => {
+    parentTimetable.pickedDay = button.dataset.day;
+    renderParentTimetable();
+  });
+  element("parentTimetableLessons").innerHTML = lessonListHtml(lessons, pickedDay);
 }
 
 /* ---------- Grown-ups: lesson reminders (feature "school") ----------

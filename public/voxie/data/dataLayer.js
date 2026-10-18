@@ -48,6 +48,10 @@ async function callRpc(name, args) {
   if (error) throw new Error(error.message || "save-failed");
   return data;
 }
+/* A school_lessons row as the app uses it: "08:50" times, the teachers list as is. */
+function lessonFromRow(row) {
+  return { date: row.lesson_date, start: row.start_time.slice(0, 5), end: row.end_time.slice(0, 5), subject: row.subject, colour: row.colour, teachers: row.teachers };
+}
 /* The friend code RPCs return wrong-code errors instead of raising them (so the server's count of wrong tries sticks):
    turn them into the usual Error("code") here. */
 function friendCodeResult(result) {
@@ -304,7 +308,7 @@ const dataLayer = {
       // Linked once the first sync has worked (a failed first try leaves a row with no last_synced_at).
       linked: !!(sync && sync.last_synced_at), updatedAt: sync && sync.last_synced_at,
       schoolDays: days.map(row => row.school_day),
-      lessons: lessons.map(row => ({ date: row.lesson_date, start: row.start_time.slice(0, 5), end: row.end_time.slice(0, 5), subject: row.subject, colour: row.colour, teachers: row.teachers })),
+      lessons: lessons.map(lessonFromRow),
       homework: homework.map(row => ({ id: row.id, source: row.source, subject: row.subject, title: row.title, dueDate: row.due_date, dueTime: row.due_time.slice(0, 5),
         instructions: row.instructions, links: Array.isArray(row.links) ? row.links : [], setBy: row.set_by, submitted: row.submitted })),
     };
@@ -340,6 +344,23 @@ const dataLayer = {
   async removePushSubscription(endpoint) { await callRpc("remove_my_push_subscription", { p_endpoint: endpoint }); },
   /** Grown-ups: a child's lesson reminders. { reminders: [{ id, subject, note, nightBefore, morningOf, toChild, toGrownUps }],
       subjects: the lessons on their synced timetable, eveningHour, morningHour }. */
+  /** A linked grown-up's view of a child's timetable, from this Monday: { linked, updatedAt, schoolDays, lessons }
+      (lessons as loadMySchool). The school tables let a child's linked grown-ups read them. */
+  async loadChildTimetable(childId) {
+    const today = getTodayInUk(), weekDay = new Date(`${today}T12:00:00Z`).getUTCDay(), monday = shiftDate(today, -((weekDay + 6) % 7));
+    const [sync, days, lessons] = await Promise.all([
+      supabaseClient.from("school_sync").select("last_synced_at").eq("child_id", childId).maybeSingle(),
+      supabaseClient.from("school_days").select("school_day").eq("child_id", childId).gte("school_day", monday).order("school_day"),
+      supabaseClient.from("school_lessons").select("lesson_date, start_time, end_time, subject, colour, teachers").eq("child_id", childId)
+        .gte("lesson_date", monday).order("lesson_date").order("start_time"),
+    ]);
+    const failed = sync.error || days.error || lessons.error;
+    if (failed) throw new Error(failed.message || "load-failed");
+    return {
+      linked: !!(sync.data && sync.data.last_synced_at), updatedAt: sync.data && sync.data.last_synced_at,
+      schoolDays: days.data.map(row => row.school_day), lessons: lessons.data.map(lessonFromRow),
+    };
+  },
   async loadChildLessonReminders(childId) {
     const [reminders, settings, lessons] = await Promise.all([
       supabaseClient.from("lesson_reminders").select("id, subject, note, night_before, morning_of, to_child, to_grown_ups").eq("child_id", childId).order("created_at"),
