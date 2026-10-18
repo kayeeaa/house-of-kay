@@ -412,7 +412,7 @@ select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .request-row.incoming .actions .btn{flex:1}
 .search-row{display:flex;gap:8px}
 /* Friends: your own friend code, big enough to read out */
-.friend-code{margin:0;font-family:var(--f-display);font-size:30px;font-weight:700;letter-spacing:.06em;color:var(--ink);overflow-wrap:anywhere;user-select:all}
+.friend-code{margin:0;font-family:var(--f-body);font-size:30px;font-weight:700;letter-spacing:.08em;font-variant-numeric:tabular-nums;color:var(--ink);overflow-wrap:anywhere;user-select:all}
 .search-row input{flex:1;min-width:0;font:inherit;font-size:18px;padding:10px 12px;border:2px solid var(--line);border-bottom-width:4px;background:var(--bg);color:var(--ink)}
 .list-heading{font-size:20px;margin-top:4px}
 .tab{position:relative}
