@@ -932,11 +932,13 @@ function registerCreations(creations) {
     drawInRoom: scene => drawWallArtInRoom(scene, creation.pixels),
   }));
 }
-/* In a wooden frame where pictures hang. The room canvas is low-res, so each square is a few canvas pixels at most. */
+/* In a wooden frame where pictures hang, always left of the door (the widest door is width × 0.13 at the right edge),
+   and right of the buddy in the middle. The room canvas is low-res, so each square is a few canvas pixels at most. */
 function drawWallArtInRoom({ fill, width, height, themeShade }, pixels) {
-  const square = Math.max(1, Math.floor(Math.min(width * 0.2, height * 0.34) / (WALL_ART_SIZE + 2)));
+  const right = Math.round(width - Math.max(8, width * 0.13) - 4);
+  const square = Math.max(1, Math.floor(Math.min(right - width * 0.62, height * 0.34) / (WALL_ART_SIZE + 2)));
   const framed = square * (WALL_ART_SIZE + 2);
-  const x = Math.max(0, Math.min(Math.round(width * 0.68), width - framed)), y = Math.max(0, Math.min(Math.round(height * 0.1), height - framed));   // inside small thumbnails too
+  const x = Math.max(0, right - framed), y = Math.max(0, Math.min(Math.round(height * 0.1), height - framed));   // inside small thumbnails too
   fill(x, y, framed, framed, "#8A5E36");
   fill(x + square, y + square, square * WALL_ART_SIZE, square * WALL_ART_SIZE, themeShade(90));
   drawWallArtPixels(fill, pixels, x + square, y + square, square);
