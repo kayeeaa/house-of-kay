@@ -1,8 +1,8 @@
 /* ======================================================================
    content/loader.js  —  registers every content file, then loads the game.
    The prototype planned one import.meta.glob line per folder, which needs a bundler (Vite).
-   This app has no bundler, so server.js lists each folder at /voxie/content-manifest.json and
-   every file in it is imported here. Adding content is still ONE new file: no other code changes.
+   This app has no bundler, so server.js lists each folder at /voxie/content-manifest.json and serves every file
+   in one download (/voxie/content-bundle.js), registered here. Adding content is still ONE new file: no other code changes.
    Each file is checked by addItem / addPetType / addLocation / addMission (content/registry.js);
    a file that won't load or doesn't pass is skipped with a clear console message.
 
@@ -40,28 +40,49 @@ function petTypeRank(fileName) {
   const index = PET_TYPE_ORDER.indexOf(fileName.replace(/\.js$/, ""));
   return index === -1 ? PET_TYPE_ORDER.length : index;
 }
+const byPetOrder = (first, second) => petTypeRank(first) - petTypeRank(second) || first.localeCompare(second);
+/* One content file, checked on its own: skipped with a clear message if it won't load or isn't export default { ... }. */
+function registerOne(path, load, register) {
+  let value;
+  try { value = load(); } catch (error) { return console.error(`Voxie: ${path} couldn't be loaded and was skipped:`, error); }
+  if (!value || typeof value !== "object") return console.error(`Voxie: ${path} was skipped: it needs export default { ... }`);
+  register(value);
+}
+/* The bundle: every content file in one download (server.js makes it), each as [file name, function returning its export]. */
+function registerBundled(folder, files, register) {
+  files.forEach(([fileName, load]) => registerOne(`content/${folder}/${fileName}`, load, register));
+}
+/* Only if the bundle can't load: each file fetched on its own, as before (about 750 downloads, so slow). */
 async function registerFolder(folder, fileNames, register) {
   const files = await Promise.allSettled(fileNames.map(fileName => import(`/voxie/content/${folder}/${fileName}`)));
-  files.forEach((file, index) => {
-    const path = `content/${folder}/${fileNames[index]}`;
-    if (file.status === "rejected") return console.error(`Voxie: ${path} couldn't be loaded and was skipped:`, file.reason);
-    if (!file.value.default || typeof file.value.default !== "object") return console.error(`Voxie: ${path} was skipped: it needs export default { ... }`);
-    register(file.value.default);
-  });
+  files.forEach((file, index) => registerOne(`content/${folder}/${fileNames[index]}`,
+    () => { if (file.status === "rejected") throw file.reason; return file.value.default; }, register));
 }
-function loadScript(src) {
-  return new Promise((resolve, reject) => {
+/* All downloaded at once (index.html preloads them), but async = false still runs them in this order. */
+function loadScriptsInOrder(sources) {
+  return Promise.all(sources.map(src => new Promise((resolve, reject) => {
     const script = document.createElement("script");
     script.src = src;
+    script.async = false;
     script.onload = resolve;
     script.onerror = () => reject(new Error(`Voxie: couldn't load ${src}`));
     document.body.append(script);
-  });
+  })));
 }
 
 const manifest = await (await fetch("/voxie/content-manifest.json")).json();
-await registerFolder("locations", manifest.locations, addLocation);
-await registerFolder("pets", [...manifest.pets].sort((first, second) => petTypeRank(first) - petTypeRank(second) || first.localeCompare(second)), addPetType);
-await registerFolder("items", manifest.items, addItem);
-await registerFolder("missions", manifest.missions, addMission);
-for (const src of SCRIPTS_AFTER_CONTENT) await loadScript(src);
+let bundle = null;
+try { bundle = (await import(manifest.bundle)).default; }
+catch (error) { console.error("Voxie: the content bundle couldn't be loaded, so each file is loaded on its own:", error); }
+if (bundle) {
+  registerBundled("locations", bundle.locations, addLocation);
+  registerBundled("pets", [...bundle.pets].sort(([first], [second]) => byPetOrder(first, second)), addPetType);
+  registerBundled("items", bundle.items, addItem);
+  registerBundled("missions", bundle.missions, addMission);
+} else {
+  await registerFolder("locations", manifest.locations, addLocation);
+  await registerFolder("pets", [...manifest.pets].sort(byPetOrder), addPetType);
+  await registerFolder("items", manifest.items, addItem);
+  await registerFolder("missions", manifest.missions, addMission);
+}
+await loadScriptsInOrder(SCRIPTS_AFTER_CONTENT);

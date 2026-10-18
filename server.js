@@ -1,4 +1,5 @@
 const express = require('express')
+const crypto = require('crypto')
 const fs = require('fs')
 const path = require('path')
 const app = express()
@@ -32,10 +33,36 @@ const listVoxieContent = (folder) => {
   try { return fs.readdirSync(pub(`voxie/content/${folder}`)).filter(name => name.endsWith('.js')).sort() }
   catch (error) { return [] }
 }
-app.get('/voxie/content-manifest.json', (req, res) => res.json({
-  items: listVoxieContent('items'), pets: listVoxieContent('pets'),
-  locations: listVoxieContent('locations'), missions: listVoxieContent('missions')
-}))
+app.get('/voxie/content-manifest.json', (req, res) => {
+  res.set('Cache-Control', 'no-cache')
+  res.json({
+    items: listVoxieContent('items'), pets: listVoxieContent('pets'),
+    locations: listVoxieContent('locations'), missions: listVoxieContent('missions'),
+    bundle: `/voxie/content-bundle.js?v=${voxieContentBundle().version}`
+  })
+})
+
+// Every content file in ONE download, so the game doesn't fetch ~750 files one by one. Each file becomes a function
+// that returns its export default, so content/loader.js can still check each one on its own and skip a broken one.
+// Made once (content only changes with a deploy, which restarts the server). The version is a hash of the contents,
+// so browsers keep it for a year and fetch the new one after a deploy.
+let voxieBundleCache = null
+const voxieContentBundle = () => {
+  if (voxieBundleCache) return voxieBundleCache
+  const folder = (name) => listVoxieContent(name).map(file => {
+    const source = fs.readFileSync(pub(`voxie/content/${name}/${file}`), 'utf8').replace(/^export default /m, 'return ')
+    return `[${JSON.stringify(file)}, () => {\n${source}\n}]`
+  }).join(',\n')
+  const code = `export default {\n${['locations', 'pets', 'items', 'missions'].map(name => `${name}: [\n${folder(name)}\n]`).join(',\n')}\n};\n`
+  voxieBundleCache = { code, version: crypto.createHash('sha256').update(code).digest('hex').slice(0, 16) }
+  return voxieBundleCache
+}
+app.get('/voxie/content-bundle.js', (req, res) => {
+  const bundle = voxieContentBundle()
+  res.type('text/javascript')
+  res.set('Cache-Control', req.query.v === bundle.version ? 'public, max-age=31536000, immutable' : 'no-cache')
+  res.send(bundle.code)
+})
 
 app.get('/voxie', (req, res) => res.sendFile(pub('voxie/index.html')))
 

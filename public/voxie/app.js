@@ -26,6 +26,7 @@ let myChance = { wonItemIds: [], swappedAwayItemIds: [], triedItemIds: [], boxes
 let retryLastFailedAction = null;
 
 function showScreen(screenId) {
+  document.documentElement.classList.remove("has-session");   // boot.js's first guess: the app decides from here on
   element("itemSheet").hidden = true;
   element("buySheet").hidden = true;
   element("loginSheet").hidden = true;
@@ -249,7 +250,8 @@ async function routeAfterSignIn(profile) {
   await openGame();
 }
 async function startApp() {
-  showScreen("screenLoading");
+  // No saved login (boot.js): the front page is already showing, so don't swap it for Loading while checking.
+  if (document.documentElement.classList.contains("has-session")) showScreen("screenLoading");
   try {
     const profile = await dataLayer.getSignedInProfile();
     if (profile) await routeAfterSignIn(profile); else openLogin();

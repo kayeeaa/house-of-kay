@@ -35,7 +35,7 @@ Then open http://localhost:3000/voxie. The local site talks to the same Supabase
 
 | Path | What's there |
 |---|---|
-| `server.js` | The Express server: redirects, the Voxie content list, static files |
+| `server.js` | The Express server: redirects, the Voxie content list and the content bundle (every content file in one download), static files |
 | `public/voxie/` | The Voxie app: `index.html`, `app.js`, `styles.css`, `sw.js` (push notifications), `manifest.webmanifest` |
 | `public/voxie/data/dataLayer.js` | Voxie's only way to talk to Supabase |
 | `public/voxie/content/` | Items, buddies, places and missions, one file each |

@@ -36,14 +36,26 @@
     "publisher": { "@type": "Organization", "name": "House of Kay", "url": "https://www.house-of-kay.co.uk/" }
   }
   </script>
+  <script src="/voxie/boot.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Pixelify+Sans:wght@500;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
   <link rel="stylesheet" href="/voxie/styles.css" />
+  <!-- Start these downloads now, while the page is read; content/loader.js runs them once the content is in -->
+  <link rel="preload" href="/voxie/content-manifest.json" as="fetch" crossorigin>
+  <link rel="preload" href="/voxie/engine/progression.js" as="script">
+  <link rel="preload" href="/voxie/engine/pet.js" as="script">
+  <link rel="preload" href="/voxie/engine/missions.js" as="script">
+  <link rel="preload" href="/voxie/engine/pong.js" as="script">
+  <link rel="preload" href="/voxie/engine/snap.js" as="script">
+  <link rel="preload" href="/voxie/data/dataLayer.js" as="script">
+  <link rel="preload" href="/voxie/app.js" as="script">
 </head>
 <body>
   <div class="wrap">
 
     <!-- ===================== LOADING ===================== -->
-    <section class="screen" id="screenLoading">
+    <section class="screen" id="screenLoading" hidden>
       <div class="loading">
         <div>
           <div class="logo-text-lockup"><p class="text-logo">Voxie</p><p class="logo-byline">by House of Kay</p></div>
@@ -53,7 +65,7 @@
     </section>
 
     <!-- ===================== LOG IN ===================== -->
-    <section class="screen home-page" id="screenLogin" hidden>
+    <section class="screen home-page" id="screenLogin">
       <!-- HOMEPAGE: this is voxie's front page on the web, with the log-in on it -->
       <header class="site-top">
         <p class="logo-text-lockup"><span class="text-logo">Voxie</span><span class="logo-byline">by House of Kay</span></p>
