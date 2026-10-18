@@ -2,6 +2,8 @@
 
 Things to change, from playing and testing. Newest first. Tick each one off when it's done.
 
+Bigger planned work is in [TODO.md](TODO.md).
+
 ## 2026-10-18: wall art and gifts
 
 - [ ] **Give a picture to more than one friend.** At the moment a picture can only go to one friend, because giving it moves it out of your stuff. It should be possible to send it to several friends.
