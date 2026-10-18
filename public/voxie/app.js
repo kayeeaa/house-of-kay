@@ -94,7 +94,7 @@ function resetSessionState() {
   myFriendRequests = []; mySentFriendRequests = []; renderFriendsBadge();
   parentChildren = []; parentOpenChildId = null; parentOverview = null;
   inventoryBrowser.mode = houseBrowser.mode = "type"; lastPlacesScreen = "screenHouse";
-  ["itemSheet", "buySheet", "chanceSheet", "parentNoticeSheet", "childNoticeSheet"].forEach(id => element(id).hidden = true);
+  ["itemSheet", "buySheet", "chanceSheet", "parentNoticeSheet", "childNoticeSheet", "remindersSheet"].forEach(id => element(id).hidden = true);
   hideLevelUp(); hideSaveError(); gameLoadedOnDay = null;
 }
 function showSaveError(message, retryAction) {
@@ -621,6 +621,7 @@ async function loadHomeworkTasks() {
   catch (error) { return; }       // Home works without it; it comes back next time the game loads
   renderHomeworkTasks();
   showHandedInHomework();
+  remindersOnByDefault();
 }
 
 /* Homework the school says is handed in (the overnight sync), due in the last 7 days or later, that wasn't ticked here:
@@ -815,40 +816,87 @@ function vapidKeyBytes(base64Url) {
   const base64 = (base64Url + "=".repeat((4 - base64Url.length % 4) % 4)).replace(/-/g, "+").replace(/_/g, "/");
   return Uint8Array.from(atob(base64), character => character.charCodeAt(0));
 }
+/* Asks the browser (call it straight after a tap: browsers only ask when the person has just pressed something), then
+   saves this device's push address. Returns the permission; throws if saving fails. */
+async function turnOnRemindersHere() {
+  const permission = await Notification.requestPermission();
+  if (permission !== "granted") return permission;
+  const registration = await activeServiceWorker();
+  if (!registration) throw new Error("no-service-worker");
+  const subscription = await registration.pushManager.getSubscription()
+    || await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: vapidKeyBytes(VOXIE_VAPID_PUBLIC_KEY) });
+  const { endpoint, keys } = subscription.toJSON();
+  await dataLayer.savePushSubscription({ endpoint, p256dh: keys.p256dh, auth: keys.auth });
+  return permission;
+}
+const NOT_ALLOWED_TEXT = "Notifications weren't allowed. Look for a bell icon at the end of the address bar, click it and choose Allow, then try again.";
+// The bit in brackets says what went wrong, for whoever's fixing it.
+const remindersErrorText = error => error.message === "too-many-devices" ? "Reminders are already on for 10 devices. Turn them off on one first."
+  : `Couldn't change reminders. Check your internet and try again. (${error.name && error.name !== "Error" ? `${error.name}: ` : ""}${error.message})`;
 function wirePushSwitch(config) {
   element(config.toggle).onchange = async event => {
     const turningOn = event.target.checked;
     element(config.toggle).disabled = true;
     element(config.error).textContent = "";
+    writeStorage(REMINDERS_CHOICE_KEY(), turningOn ? "on" : "off");
     try {
       if (turningOn) {
-        // Asked for here, straight after the tap: browsers only ask when the person has just pressed something.
-        const permission = await Notification.requestPermission();
-        if (permission !== "granted") {
-          await renderPushSwitch(config);
-          if (permission === "default") element(config.error).textContent = "Notifications weren't allowed. Look for a bell icon at the end of the address bar, click it and choose Allow, then try again.";
-          return;
-        }
-        const registration = await activeServiceWorker();
-        if (!registration) throw new Error("no-service-worker");
-        const subscription = await registration.pushManager.getSubscription()
-          || await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: vapidKeyBytes(VOXIE_VAPID_PUBLIC_KEY) });
-        const { endpoint, keys } = subscription.toJSON();
-        await dataLayer.savePushSubscription({ endpoint, p256dh: keys.p256dh, auth: keys.auth });
+        const permission = await turnOnRemindersHere();
+        if (permission === "default") element(config.error).textContent = NOT_ALLOWED_TEXT;
       } else {
         await turnOffRemindersHere();
       }
     } catch (error) {
       console.error("Reminders:", error);
-      // The bit in brackets says what went wrong, for whoever's fixing it.
-      element(config.error).textContent = error.message === "too-many-devices" ? "Reminders are already on for 10 devices. Turn them off on one first."
-        : `Couldn't change reminders. Check your internet and try again. (${error.name && error.name !== "Error" ? `${error.name}: ` : ""}${error.message})`;
+      element(config.error).textContent = remindersErrorText(error);
     }
     await renderPushSwitch(config);
   };
 }
 wirePushSwitch(CHILD_REMINDER_SWITCH);
 wirePushSwitch(GROWN_UP_REMINDER_SWITCH);
+
+/* School reminders are on by default for everyone with the "school" feature, on each device they use. If the browser
+   already allows Voxie's notifications they're switched on quietly; if not, a pop-up asks once (its button is the tap
+   the browser needs). "Not now", or switching them off in settings, is remembered for this person on this device. */
+const REMINDERS_CHOICE_KEY = () => `voxie-school-reminders:${currentProfile.id}`;
+const REMINDER_SHEETS = ["childNoticeSheet", "handedInSheet", "parentNoticeSheet", "remindersSheet"];
+async function remindersOnByDefault() {
+  if (!featureOn("school") || !pushPossible() || Notification.permission === "denied") return;
+  if (readStorage(REMINDERS_CHOICE_KEY()) === "off") return;
+  if (await currentPushSubscription().catch(() => null)) return;
+  if (Notification.permission === "granted") {
+    try { await turnOnRemindersHere(); return; }
+    catch (error) { console.error("Reminders:", error); }   // e.g. Safari wants a tap even then: ask below
+  }
+  const forGrownUp = currentProfile.role === "parent";
+  if (!element(forGrownUp ? "screenParentHome" : "screenGame").hidden && REMINDER_SHEETS.every(id => element(id).hidden)) {
+    element("remindersText").textContent = forGrownUp
+      ? "Get a notification before your kids' lessons (like PE kit days) and a copy of their homework reminders on this device."
+      : `Get a notification on this device at ${reminderTimeText()} when homework is due soon.`;
+    element("remindersError").textContent = "";
+    element("remindersOn").disabled = false;
+    element("remindersSheet").hidden = false;
+    element("remindersOn").focus();
+  }
+}
+function closeRemindersSheet() { element("remindersSheet").hidden = true; }
+element("remindersOn").onclick = async () => {
+  element("remindersOn").disabled = true;
+  element("remindersError").textContent = "";
+  writeStorage(REMINDERS_CHOICE_KEY(), "on");
+  try {
+    const permission = await turnOnRemindersHere();
+    if (permission === "granted") closeRemindersSheet();
+    else if (permission === "denied") { writeStorage(REMINDERS_CHOICE_KEY(), "off"); closeRemindersSheet(); }
+    else element("remindersError").textContent = NOT_ALLOWED_TEXT;
+  } catch (error) {
+    console.error("Reminders:", error);
+    element("remindersError").textContent = remindersErrorText(error);
+  }
+  element("remindersOn").disabled = false;
+};
+element("remindersNotNow").onclick = () => { writeStorage(REMINDERS_CHOICE_KEY(), "off"); closeRemindersSheet(); };
 /* Also on log out, so a shared tablet doesn't keep getting the last child's reminders. */
 async function turnOffRemindersHere() {
   const subscription = await currentPushSubscription().catch(() => null);
@@ -3128,7 +3176,8 @@ async function openParentHome(childIdToOpen = null) {
   const stillLinked = id => parentChildren.some(child => child.id === id);
   const tabToOpen = [childIdToOpen, parentOpenChildId].find(stillLinked) || (parentChildren[0] ? parentChildren[0].id : "add");
   await openParentTab(tabToOpen);
-  showParentNotifications();
+  await showParentNotifications();
+  remindersOnByDefault();
 }
 /* Pop-up for news about their children, e.g. a child changed their game name. Shown once: closing marks them seen. */
 let shownNotificationIds = [];

@@ -1081,6 +1081,18 @@
     </section>
   </div>
 
+  <!-- School reminders, on by default: asked once per person per device (feature "school") -->
+  <div class="sheet-backdrop" id="remindersSheet" hidden>
+    <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="remindersTitle">
+      <h2 id="remindersTitle">Turn on school reminders?</h2>
+      <p class="hint" id="remindersText"></p>
+      <p class="hint">You can change this any time in settings.</p>
+      <p class="error" id="remindersError" role="alert"></p>
+      <button type="button" class="btn" id="remindersOn">Turn on</button>
+      <button type="button" class="btn ghost" id="remindersNotNow">Not now</button>
+    </section>
+  </div>
+
   <div class="toast" id="toast" role="alert" hidden>
     <p id="toastMessage"></p>
     <button class="btn small ghost" type="button" id="toastRetry">Try again</button>
