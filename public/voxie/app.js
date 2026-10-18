@@ -244,6 +244,7 @@ function renderColourPicker(containerId, selectedColourId, onSelect) {
 async function routeAfterSignIn(profile) {
   sessionEnded = false;
   currentProfile = profile;
+  writeStorage("voxie-last-role", profile.role);   // boot.js: a grown-up's Loading screen is the dashboard's width
   if (profile.role === "parent") { await openParentHome(); return; }
   applyThemeColour(profile.theme_colour);
   if (!profile.setup_complete) { startSetup(); return; }
@@ -3314,6 +3315,7 @@ async function openParentHome(childIdToOpen = null) {
   showScreen("screenParentHome");
   applyThemeColour("green");
   element("parentGreeting").textContent = `Hi ${currentProfile.display_name}`;
+  element("parentFooter").hidden = true;
   element("parentChildTabs").innerHTML = "";
   element("parentChildPanel").hidden = element("parentAddPanel").hidden = true;
   showParentLoading("Loading your kids…");
@@ -3323,6 +3325,7 @@ async function openParentHome(childIdToOpen = null) {
   const stillLinked = id => parentChildren.some(child => child.id === id);
   const tabToOpen = [childIdToOpen, parentOpenChildId].find(stillLinked) || (parentChildren[0] ? parentChildren[0].id : "add");
   await openParentTab(tabToOpen);
+  element("parentFooter").hidden = false;
   await showParentNotifications();
   remindersOnByDefault();
 }
