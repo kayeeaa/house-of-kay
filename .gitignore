@@ -1,5 +1,4 @@
 node_modules
-public/js/supabase-config.js
 
 # Supabase CLI local state
 supabase/.temp/

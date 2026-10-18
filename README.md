@@ -39,8 +39,8 @@ Then open http://localhost:3000/voxie. The local site talks to the same Supabase
 | `public/voxie/` | The Voxie app: `index.html`, `app.js`, `styles.css`, `sw.js` (push notifications), `manifest.webmanifest` |
 | `public/voxie/data/dataLayer.js` | Voxie's only way to talk to Supabase |
 | `public/voxie/content/` | Items, buddies, places and missions, one file each |
-| `supabase/migrations/` | The database (tables, security rules, functions). Apply with `npx supabase db push` |
-| `supabase/functions/` | Edge Functions: child accounts, the MyChildAtSchool sync, reminders |
+| `supabase/migrations/` | The database (tables, security rules, functions). Each one is run by hand in the Supabase SQL Editor, before the site that needs it goes out |
+| `supabase/functions/` | Edge Functions: child accounts, the MyChildAtSchool sync, reminders, and push notifications (`notify-admins`, `notify-child`) |
 | `supabase/snippets/` | SQL to paste into the Supabase SQL Editor (test data, linking MCAS, schedules) |
 | `docs/voxie/` | How Voxie works: backend, feature flags, content, missions, email templates |
 

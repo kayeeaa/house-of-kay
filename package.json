@@ -1,14 +1,12 @@
 {
   "name": "house-of-kay",
   "version": "1.0.0",
-  "description": "",
+  "description": "The House of Kay website, which serves Voxie",
   "main": "server.js",
+  "private": true,
   "scripts": {
-    "start": "node server.js",
-"test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
