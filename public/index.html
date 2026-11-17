@@ -1,14 +1,719 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth dark">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>House of Kay</title>
-  <meta http-equiv="refresh" content="0; url=/voxie">
-  <link rel="canonical" href="https://www.house-of-kay.co.uk/voxie">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House of Kay | The AI Building & Creative Journey</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        charcoal: {
+                            900: '#0c0e12',
+                            800: '#151821',
+                            700: '#1e222e',
+                            600: '#2a3040'
+                        },
+                        plum: {
+                            600: '#7c2d58',
+                            500: '#9d3a72',
+                            400: '#bd4b8d'
+                        },
+                        goldAccent: '#d4af37'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #0c0e12;
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+        }
+        .gothic-heading {
+            font-family: 'Playfair Display', serif;
+        }
+        /* Custom scrollbar for moody aesthetic */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0c0e12;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a3040;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #7c2d58;
+        }
+        /* Workiro-style 3D Curved Video Carousel (scaled up for larger, fewer video cards) */
+        .curved-stage {
+            position: relative;
+            width: 100%;
+            height: clamp(340px, 40vw, 450px);
+            perspective: 1200px;
+            perspective-origin: 50% 50%;
+            overflow: hidden;
+            touch-action: pan-y;
+            cursor: grab;
+            user-select: none;
+        }
+        .curved-stage:active {
+            cursor: grabbing;
+        }
+        .curved-stage::before,
+        .curved-stage::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 12%;
+            z-index: 50;
+            pointer-events: none;
+        }
+        .curved-stage::before {
+            left: 0;
+            background: linear-gradient(90deg, #0c0e12 0%, rgba(12, 14, 18, 0) 100%);
+        }
+        .curved-stage::after {
+            right: 0;
+            background: linear-gradient(270deg, #0c0e12 0%, rgba(12, 14, 18, 0) 100%);
+        }
+        .curved-card {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 280px;
+            height: 370px;
+            margin: -185px 0 0 -140px;
+            border-radius: 22px;
+            overflow: hidden;
+            background: #151821 center / cover no-repeat;
+            border: 1px solid rgba(189, 75, 141, 0.3);
+            box-shadow: 0 20px 44px rgba(0, 0, 0, 0.7), 0 0 24px rgba(124, 45, 88, 0.18);
+            will-change: transform, opacity;
+        }
+        .curved-card video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            pointer-events: none;
+        }
+        @media (max-width: 700px) {
+            .curved-stage {
+                height: 310px;
+            }
+            .curved-card {
+                width: 200px;
+                height: 268px;
+                margin: -134px 0 0 -100px;
+                border-radius: 18px;
+            }
+        }
+    </style>
 </head>
-<body>
-<!-- The server sends / to /voxie with a 301; this is only a fallback. -->
-<script>window.location.replace('/voxie');</script>
+<body class="bg-charcoal-900 text-slate-100 min-h-screen flex flex-col selection:bg-plum-600 selection:text-white">
+
+    <!-- Header & Navigation (NO LOGO & NO TAGLINE TEXT AS REQUESTED) -->
+    <header class="sticky top-0 z-[70] backdrop-blur-md bg-charcoal-900/90 border-b border-charcoal-700/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Empty placeholder slot for your custom logo drop-in later -->
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded bg-charcoal-800 border border-charcoal-700 flex items-center justify-center text-xs font-mono text-slate-500">HK</div>
+            </div>
+            
+            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
+                <a href="#about" class="hover:text-plum-400 transition">The Journey</a>
+                <a href="#hub" class="hover:text-plum-400 transition">Content Hub</a>
+                <a href="#characters" class="hover:text-plum-400 transition">Character Bibles</a>
+            </nav>
+
+            <div class="flex items-center gap-4">
+                <a href="#hub" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-plum-600/20 border border-plum-500/40 text-plum-300 text-sm font-medium hover:bg-plum-600 hover:text-white transition shadow-lg shadow-plum-600/10">
+                    <i class="fa-solid fa-compass"></i> Explore Logs
+                </a>
+                <button id="mobile-menu-btn" class="md:hidden p-2 text-slate-300 hover:text-white focus:outline-none" aria-label="Toggle Menu">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-charcoal-800 border-b border-charcoal-700 px-4 pt-2 pb-6 space-y-3">
+            <a href="#about" class="block py-2 text-slate-300 hover:text-plum-400 font-medium border-b border-charcoal-700/50">The Journey</a>
+            <a href="#hub" class="block py-2 text-slate-300 hover:text-plum-400 font-medium border-b border-charcoal-700/50">Content Hub</a>
+            <a href="#characters" class="block py-2 text-slate-300 hover:text-plum-400 font-medium">Character Bibles</a>
+        </div>
+    </header>
+
+    <!-- TOP 3D CURVED VIDEO CAROUSEL (WORKIRO STYLE - LARGER & FEWER CARDS) -->
+    <section class="relative w-full py-6 sm:py-8 bg-charcoal-900 border-b border-charcoal-700/40 overflow-hidden">
+        <div id="curved-stage" class="curved-stage" aria-label="Featured video reels">
+
+            <!-- Video Card 1: Replace src="" with your MP4 path/URL -->
+            <div class="curved-card" style="background-image: url('https://placehold.co/600x800/151821/bd4b8d?text=INSERT+VIDEO+01+HERE');">
+                <video muted loop playsinline preload="metadata" poster="https://placehold.co/600x800/151821/bd4b8d?text=INSERT+VIDEO+01+HERE">
+                    <!-- <source src="/videos/reel-1.mp4" type="video/mp4"> -->
+                </video>
+                <div class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none">
+                    <span class="text-[10px] font-mono uppercase tracking-widest text-plum-400">INSERT TAG HERE</span>
+                    <p class="gothic-heading text-sm font-bold text-white">INSERT TITLE 01 HERE</p>
+                </div>
+            </div>
+
+            <!-- Video Card 2: Replace src="" with your MP4 path/URL -->
+            <div class="curved-card" style="background-image: url('https://placehold.co/600x800/1e222e/d4af37?text=INSERT+VIDEO+02+HERE');">
+                <video muted loop playsinline preload="metadata" poster="https://placehold.co/600x800/1e222e/d4af37?text=INSERT+VIDEO+02+HERE">
+                    <!-- <source src="/videos/reel-2.mp4" type="video/mp4"> -->
+                </video>
+                <div class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none">
+                    <span class="text-[10px] font-mono uppercase tracking-widest text-amber-300">INSERT TAG HERE</span>
+                    <p class="gothic-heading text-sm font-bold text-white">INSERT TITLE 02 HERE</p>
+                </div>
+            </div>
+
+            <!-- Video Card 3: Replace src="" with your MP4 path/URL -->
+            <div class="curved-card" style="background-image: url('https://placehold.co/600x800/0c0e12/9d3a72?text=INSERT+VIDEO+03+HERE');">
+                <video muted loop playsinline preload="metadata" poster="https://placehold.co/600x800/0c0e12/9d3a72?text=INSERT+VIDEO+03+HERE">
+                    <!-- <source src="/videos/reel-3.mp4" type="video/mp4"> -->
+                </video>
+                <div class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none">
+                    <span class="text-[10px] font-mono uppercase tracking-widest text-pink-300">INSERT TAG HERE</span>
+                    <p class="gothic-heading text-sm font-bold text-white">INSERT TITLE 03 HERE</p>
+                </div>
+            </div>
+
+            <!-- Video Card 4: Replace src="" with your MP4 path/URL -->
+            <div class="curved-card" style="background-image: url('https://placehold.co/600x800/151821/7c2d58?text=INSERT+VIDEO+04+HERE');">
+                <video muted loop playsinline preload="metadata" poster="https://placehold.co/600x800/151821/7c2d58?text=INSERT+VIDEO+04+HERE">
+                    <!-- <source src="/videos/reel-4.mp4" type="video/mp4"> -->
+                </video>
+                <div class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none">
+                    <span class="text-[10px] font-mono uppercase tracking-widest text-plum-400">INSERT TAG HERE</span>
+                    <p class="gothic-heading text-sm font-bold text-white">INSERT TITLE 04 HERE</p>
+                </div>
+            </div>
+
+            <!-- Video Card 5: Replace src="" with your MP4 path/URL -->
+            <div class="curved-card" style="background-image: url('https://placehold.co/600x800/1e222e/bd4b8d?text=INSERT+VIDEO+05+HERE');">
+                <video muted loop playsinline preload="metadata" poster="https://placehold.co/600x800/1e222e/bd4b8d?text=INSERT+VIDEO+05+HERE">
+                    <!-- <source src="/videos/reel-5.mp4" type="video/mp4"> -->
+                </video>
+                <div class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none">
+                    <span class="text-[10px] font-mono uppercase tracking-widest text-amber-300">INSERT TAG HERE</span>
+                    <p class="gothic-heading text-sm font-bold text-white">INSERT TITLE 05 HERE</p>
+                </div>
+            </div>
+
+            <!-- Video Card 6: Replace src="" with your MP4 path/URL -->
+            <div class="curved-card" style="background-image: url('https://placehold.co/600x800/0c0e12/d4af37?text=INSERT+VIDEO+06+HERE');">
+                <video muted loop playsinline preload="metadata" poster="https://placehold.co/600x800/0c0e12/d4af37?text=INSERT+VIDEO+06+HERE">
+                    <!-- <source src="/videos/reel-6.mp4" type="video/mp4"> -->
+                </video>
+                <div class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none">
+                    <span class="text-[10px] font-mono uppercase tracking-widest text-pink-300">INSERT TAG HERE</span>
+                    <p class="gothic-heading text-sm font-bold text-white">INSERT TITLE 06 HERE</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Manual Scroll Arrow Controls -->
+        <button id="carousel-prev" type="button" aria-label="Scroll carousel left" class="absolute left-2 sm:left-8 top-1/2 -translate-y-1/2 z-[60] w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-charcoal-900/80 backdrop-blur-md border border-plum-500/40 text-slate-200 hover:bg-plum-600 hover:text-white hover:border-plum-400 transition shadow-lg flex items-center justify-center">
+            <i class="fa-solid fa-chevron-left text-xs sm:text-sm"></i>
+        </button>
+        <button id="carousel-next" type="button" aria-label="Scroll carousel right" class="absolute right-2 sm:right-8 top-1/2 -translate-y-1/2 z-[60] w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-charcoal-900/80 backdrop-blur-md border border-plum-500/40 text-slate-200 hover:bg-plum-600 hover:text-white hover:border-plum-400 transition shadow-lg flex items-center justify-center">
+            <i class="fa-solid fa-chevron-right text-xs sm:text-sm"></i>
+        </button>
+    </section>
+
+    <main class="flex-grow">
+        
+        <!-- Hero Headline & Introduction -->
+        <section class="relative overflow-hidden py-16 md:py-24 border-b border-charcoal-700/40 bg-gradient-to-b from-charcoal-900 via-charcoal-800 to-charcoal-900">
+            <div class="absolute inset-0 opacity-15 bg-[radial-gradient(#9d3a72_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none"></div>
+            
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-6">
+                <h1 class="gothic-heading text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.1]">
+                    House of Kay: <span class="text-transparent bg-clip-text bg-gradient-to-r from-plum-400 to-pink-400 italic">embracing the AI revolution</span>
+                </h1>
+                
+                <p class="text-base sm:text-lg text-slate-300 leading-relaxed font-light max-w-3xl mx-auto">
+                    Kay here, hi! Mum of 2 humans and 2 dogs (rescues of course), Operations Manager, based in Beds UK. Spare time vibe coder (are we still saying that?!) and now diving head first into creating the creatures and short stories that have been lingering in this neurospicy brain since the beginning of its time! I'll be documenting my journey, tech stack, pipelines, wins, losses, frustrations and everything in between.
+                </p>
+
+                <div class="flex flex-wrap justify-center gap-4 pt-4">
+                    <a href="#hub" class="px-6 py-3 rounded-xl bg-plum-600 text-white font-medium hover:bg-plum-500 transition shadow-lg shadow-plum-600/30 flex items-center gap-2">
+                        <i class="fa-solid fa-compass"></i> INSERT BUTTON 1 TEXT HERE
+                    </a>
+                    <a href="#about" class="px-6 py-3 rounded-xl bg-charcoal-700/80 border border-charcoal-600 text-slate-200 font-medium hover:bg-charcoal-600 transition flex items-center gap-2">
+                        <i class="fa-solid fa-heart"></i> INSERT BUTTON 2 TEXT HERE
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Vibe & Mission Section -->
+        <section id="about" class="py-20 bg-charcoal-800/50 border-b border-charcoal-700/40">
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+                    <span class="text-plum-400 font-mono text-xs uppercase tracking-widest">INSERT TAGLINE HERE</span>
+                    <h2 class="gothic-heading text-3xl sm:text-4xl font-bold text-white">INSERT SECTION HEADING HERE</h2>
+                    <p class="text-slate-400 text-sm italic">INSERT SUBTITLE / NOTE HERE</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    
+                    <div class="p-6 rounded-2xl bg-charcoal-800 border border-charcoal-700 hover:border-plum-500/50 transition space-y-4">
+                        <div class="w-12 h-12 rounded-xl bg-plum-600/20 text-plum-400 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-mug-hot"></i>
+                        </div>
+                        <h3 class="gothic-heading text-xl font-bold text-white">INSERT CARD 1 TITLE HERE</h3>
+                        <p class="text-sm text-slate-300 leading-relaxed">
+                            INSERT CARD 1 DESCRIPTION HERE
+                        </p>
+                    </div>
+
+                    <div class="p-6 rounded-2xl bg-charcoal-800 border border-charcoal-700 hover:border-plum-500/50 transition space-y-4">
+                        <div class="w-12 h-12 rounded-xl bg-plum-600/20 text-plum-400 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-shield-cat"></i>
+                        </div>
+                        <h3 class="gothic-heading text-xl font-bold text-white">INSERT CARD 2 TITLE HERE</h3>
+                        <p class="text-sm text-slate-300 leading-relaxed">
+                            INSERT CARD 2 DESCRIPTION HERE
+                        </p>
+                    </div>
+
+                    <div class="p-6 rounded-2xl bg-charcoal-800 border border-charcoal-700 hover:border-plum-500/50 transition space-y-4">
+                        <div class="w-12 h-12 rounded-xl bg-plum-600/20 text-plum-400 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-skull"></i>
+                        </div>
+                        <h3 class="gothic-heading text-xl font-bold text-white">INSERT CARD 3 TITLE HERE</h3>
+                        <p class="text-sm text-slate-300 leading-relaxed">
+                            INSERT CARD 3 DESCRIPTION HERE
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Content Hub Section with Interactive Filtering Tabs -->
+        <section id="hub" class="py-20 bg-charcoal-900">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                
+                <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+                    <div>
+                        <span class="text-plum-400 font-mono text-xs uppercase tracking-widest">INSERT TAGLINE HERE</span>
+                        <h2 class="gothic-heading text-3xl sm:text-4xl font-bold text-white mt-1">INSERT HUB HEADING HERE</h2>
+                    </div>
+                    
+                    <!-- Interactive Category Tabs -->
+                    <div class="flex flex-wrap gap-2 bg-charcoal-800 p-1.5 rounded-xl border border-charcoal-700">
+                        <button onclick="filterContent('all')" class="tab-btn px-4 py-2 rounded-lg text-xs font-medium bg-plum-600 text-white transition" data-filter="all">All</button>
+                        <button onclick="filterContent('vibe')" class="tab-btn px-4 py-2 rounded-lg text-xs font-medium text-slate-300 hover:text-white transition" data-filter="vibe">INSERT TAB 1 HERE</button>
+                        <button onclick="filterContent('shorts')" class="tab-btn px-4 py-2 rounded-lg text-xs font-medium text-slate-300 hover:text-white transition" data-filter="shorts">INSERT TAB 2 HERE</button>
+                        <button onclick="filterContent('lore')" class="tab-btn px-4 py-2 rounded-lg text-xs font-medium text-slate-300 hover:text-white transition" data-filter="lore">INSERT TAB 3 HERE</button>
+                    </div>
+                </div>
+
+                <!-- Showcase Cards Grid -->
+                <div id="content-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    
+                    <!-- Card 1 -->
+                    <article class="content-card vibe rounded-2xl bg-charcoal-800 border border-charcoal-700 overflow-hidden hover:border-plum-500/50 transition flex flex-col">
+                        <div class="h-48 bg-cover bg-center relative" style="background-image: url('https://placehold.co/600x400/151821/bd4b8d?text=INSERT+IMAGE+01+HERE');">
+                            <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-mono bg-charcoal-900/90 text-plum-300 border border-charcoal-700">INSERT CATEGORY HERE</span>
+                        </div>
+                        <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
+                            <div class="space-y-2">
+                                <span class="text-xs text-slate-400 font-mono">INSERT DATE • READ TIME HERE</span>
+                                <h3 class="gothic-heading text-xl font-bold text-white">INSERT POST 1 TITLE HERE</h3>
+                                <p class="text-sm text-slate-300 line-clamp-3">INSERT POST 1 SUMMARY / EXCERPT HERE</p>
+                            </div>
+                            <div class="pt-4 border-t border-charcoal-700/60 flex items-center justify-between text-xs font-medium">
+                                <span class="text-plum-400">INSERT LINK TEXT HERE</span>
+                                <i class="fa-solid fa-arrow-right text-plum-400"></i>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Card 2 -->
+                    <article class="content-card shorts rounded-2xl bg-charcoal-800 border border-charcoal-700 overflow-hidden hover:border-plum-500/50 transition flex flex-col">
+                        <div class="h-48 bg-cover bg-center relative" style="background-image: url('https://placehold.co/600x400/1e222e/9d3a72?text=INSERT+IMAGE+02+HERE');">
+                            <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-mono bg-charcoal-900/90 text-amber-300 border border-charcoal-700">INSERT CATEGORY HERE</span>
+                        </div>
+                        <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
+                            <div class="space-y-2">
+                                <span class="text-xs text-slate-400 font-mono">INSERT DATE • READ TIME HERE</span>
+                                <h3 class="gothic-heading text-xl font-bold text-white">INSERT POST 2 TITLE HERE</h3>
+                                <p class="text-sm text-slate-300 line-clamp-3">INSERT POST 2 SUMMARY / EXCERPT HERE</p>
+                            </div>
+                            <div class="pt-4 border-t border-charcoal-700/60 flex items-center justify-between text-xs font-medium">
+                                <span class="text-plum-400">INSERT LINK TEXT HERE</span>
+                                <i class="fa-solid fa-arrow-right text-plum-400"></i>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Card 3 -->
+                    <article class="content-card lore rounded-2xl bg-charcoal-800 border border-charcoal-700 overflow-hidden hover:border-plum-500/50 transition flex flex-col">
+                        <div class="h-48 bg-cover bg-center relative" style="background-image: url('https://placehold.co/600x400/0c0e12/7c2d58?text=INSERT+IMAGE+03+HERE');">
+                            <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-mono bg-charcoal-900/90 text-pink-300 border border-charcoal-700">INSERT CATEGORY HERE</span>
+                        </div>
+                        <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
+                            <div class="space-y-2">
+                                <span class="text-xs text-slate-400 font-mono">INSERT DATE • READ TIME HERE</span>
+                                <h3 class="gothic-heading text-xl font-bold text-white">INSERT POST 3 TITLE HERE</h3>
+                                <p class="text-sm text-slate-300 line-clamp-3">INSERT POST 3 SUMMARY / EXCERPT HERE</p>
+                            </div>
+                            <div class="pt-4 border-t border-charcoal-700/60 flex items-center justify-between text-xs font-medium">
+                                <span class="text-plum-400">INSERT LINK TEXT HERE</span>
+                                <i class="fa-solid fa-arrow-right text-plum-400"></i>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Card 4 -->
+                    <article class="content-card vibe rounded-2xl bg-charcoal-800 border border-charcoal-700 overflow-hidden hover:border-plum-500/50 transition flex flex-col">
+                        <div class="h-48 bg-cover bg-center relative" style="background-image: url('https://placehold.co/600x400/1e222e/bd4b8d?text=INSERT+IMAGE+04+HERE');">
+                            <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-mono bg-charcoal-900/90 text-plum-300 border border-charcoal-700">INSERT CATEGORY HERE</span>
+                        </div>
+                        <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
+                            <div class="space-y-2">
+                                <span class="text-xs text-slate-400 font-mono">INSERT DATE • READ TIME HERE</span>
+                                <h3 class="gothic-heading text-xl font-bold text-white">INSERT POST 4 TITLE HERE</h3>
+                                <p class="text-sm text-slate-300 line-clamp-3">INSERT POST 4 SUMMARY / EXCERPT HERE</p>
+                            </div>
+                            <div class="pt-4 border-t border-charcoal-700/60 flex items-center justify-between text-xs font-medium">
+                                <span class="text-plum-400">INSERT LINK TEXT HERE</span>
+                                <i class="fa-solid fa-arrow-right text-plum-400"></i>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Card 5 -->
+                    <article class="content-card lore rounded-2xl bg-charcoal-800 border border-charcoal-700 overflow-hidden hover:border-plum-500/50 transition flex flex-col">
+                        <div class="h-48 bg-cover bg-center relative" style="background-image: url('https://placehold.co/600x400/0c0e12/9d3a72?text=INSERT+IMAGE+05+HERE');">
+                            <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-mono bg-charcoal-900/90 text-pink-300 border border-charcoal-700">INSERT CATEGORY HERE</span>
+                        </div>
+                        <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
+                            <div class="space-y-2">
+                                <span class="text-xs text-slate-400 font-mono">INSERT DATE • READ TIME HERE</span>
+                                <h3 class="gothic-heading text-xl font-bold text-white">INSERT POST 5 TITLE HERE</h3>
+                                <p class="text-sm text-slate-300 line-clamp-3">INSERT POST 5 SUMMARY / EXCERPT HERE</p>
+                            </div>
+                            <div class="pt-4 border-t border-charcoal-700/60 flex items-center justify-between text-xs font-medium">
+                                <span class="text-plum-400">INSERT LINK TEXT HERE</span>
+                                <i class="fa-solid fa-arrow-right text-plum-400"></i>
+                            </div>
+                        </div>
+                    </article>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Character Bibles Section -->
+        <section id="characters" class="py-20 bg-charcoal-800/40 border-t border-b border-charcoal-700/40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-2xl mx-auto mb-16 space-y-4">
+                    <span class="text-plum-400 font-mono text-xs uppercase tracking-widest">INSERT TAGLINE HERE</span>
+                    <h2 class="gothic-heading text-3xl sm:text-4xl font-bold text-white">INSERT CHARACTER SECTION HEADING HERE</h2>
+                    <p class="text-slate-400 text-sm">INSERT CHARACTER SECTION DESCRIPTION HERE</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Character 1 -->
+                    <div class="p-6 sm:p-8 rounded-2xl bg-charcoal-800 border border-charcoal-700 flex flex-col sm:flex-row gap-6 items-center text-center sm:text-left">
+                        <div class="w-32 h-32 rounded-xl bg-cover bg-center shrink-0 border border-plum-500/40" style="background-image: url('https://placehold.co/300x300/1e222e/bd4b8d?text=INSERT+IMAGE+HERE');"></div>
+                        <div class="space-y-3">
+                            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+                                <h3 class="gothic-heading text-2xl font-bold text-white">INSERT CHARACTER 1 NAME HERE</h3>
+                                <span class="text-xs font-mono px-2 py-0.5 rounded bg-plum-600/30 text-plum-300">INSERT ROLE HERE</span>
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                INSERT CHARACTER 1 BIO / LORE HERE
+                            </p>
+                            <span class="inline-block text-xs text-plum-400 font-semibold cursor-pointer hover:underline">INSERT LINK TEXT HERE &rarr;</span>
+                        </div>
+                    </div>
+
+                    <!-- Character 2 -->
+                    <div class="p-6 sm:p-8 rounded-2xl bg-charcoal-800 border border-charcoal-700 flex flex-col sm:flex-row gap-6 items-center text-center sm:text-left">
+                        <div class="w-32 h-32 rounded-xl bg-cover bg-center shrink-0 border border-plum-500/40" style="background-image: url('https://placehold.co/300x300/151821/9d3a72?text=INSERT+IMAGE+HERE');"></div>
+                        <div class="space-y-3">
+                            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+                                <h3 class="gothic-heading text-2xl font-bold text-white">INSERT CHARACTER 2 NAME HERE</h3>
+                                <span class="text-xs font-mono px-2 py-0.5 rounded bg-blue-600/30 text-blue-300">INSERT ROLE HERE</span>
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                INSERT CHARACTER 2 BIO / LORE HERE
+                            </p>
+                            <span class="inline-block text-xs text-plum-400 font-semibold cursor-pointer hover:underline">INSERT LINK TEXT HERE &rarr;</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-charcoal-900 border-t border-charcoal-700/60 py-12 text-slate-400 text-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-plum-600 flex items-center justify-center text-white font-bold text-xs">HK</div>
+                <span class="gothic-heading text-white font-semibold">House of Kay</span>
+                <span class="text-xs font-mono">© 2026. All rights reserved.</span>
+            </div>
+
+            <div class="flex items-center gap-6 text-slate-400 text-base">
+                <a href="#" class="hover:text-plum-400 transition" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+                <a href="#" class="hover:text-plum-400 transition" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+                <a href="#" class="hover:text-plum-400 transition" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+                <a href="#" class="hover:text-plum-400 transition" aria-label="LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
+            </div>
+
+            <div class="text-xs font-mono text-slate-500">
+                INSERT FOOTER TAGLINE HERE
+            </div>
+        </div>
+    </footer>
+
+    <!-- Interactive Scripts -->
+    <script>
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+
+        // 3D Curved Video Carousel (Workiro-style: continuous slow drift + manual drag, trackpad/wheel scroll & arrow buttons)
+        (function initCurvedCarousel() {
+            const stage = document.getElementById('curved-stage');
+            if (!stage) return;
+            const cards = Array.from(stage.querySelectorAll('.curved-card'));
+            const N = cards.length;
+            if (!N) return;
+
+            const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            let pos = 0;
+            const DRIFT = 0.09; // Continuous slow drift speed (cards per second)
+            let manualVelocity = 0; // Extra momentum from manual scrolling/dragging/buttons
+            let isDragging = false;
+
+            function gap() {
+                return window.innerWidth < 700 ? 214 : 304;
+            }
+
+            function layout() {
+                const g = gap();
+                const mob = window.innerWidth < 700;
+                for (let i = 0; i < N; i++) {
+                    let p = ((i - pos) % N + N) % N;
+                    if (p > N / 2) p -= N;
+                    const a = Math.abs(p);
+                    let x, ry, s, z;
+
+                    if (mob) {
+                        const Rr = 520;
+                        const th = p * 2 * Math.asin(106 / Rr);
+                        x = Rr * Math.sin(th);
+                        z = Rr * (1 - Math.cos(th));
+                        ry = -th * 180 / Math.PI;
+                        s = 1;
+                    } else {
+                        x = p * g * (1 + a * 0.035);
+                        ry = -p * 11;
+                        s = 1 + Math.min(a, 3) * 0.045;
+                        z = -Math.min(a, 3) * 12;
+                    }
+
+                    const c = cards[i];
+                    c.style.transform = `translateX(${x.toFixed(1)}px) translateZ(${z.toFixed(1)}px) rotateY(${ry.toFixed(2)}deg) scale(${s.toFixed(3)})`;
+
+                    // Smooth fade before the wrap boundary so cards never visibly jump
+                    const fadeStart = mob ? 1.8 : 2.1;
+                    const fadeEnd = mob ? 2.4 : 2.75;
+                    const opacity = a >= fadeEnd ? 0 : a > fadeStart ? (fadeEnd - a) / (fadeEnd - fadeStart) : 1;
+                    c.style.opacity = opacity.toFixed(3);
+                    c.style.zIndex = String(100 - Math.round(a * 10));
+
+                    const vid = c.querySelector('video');
+                    if (vid && vid.currentSrc) {
+                        const onScreen = a < 2.3;
+                        if (onScreen && vid.paused && !reducedMotion) {
+                            const pr = vid.play();
+                            if (pr && pr.catch) pr.catch(() => {});
+                        } else if (!onScreen && !vid.paused) {
+                            vid.pause();
+                        }
+                    }
+                }
+            }
+
+            const START = 0;
+            const SPIN = 3.5;
+            const INTRO = 2000;
+            let t0 = null;
+            let last = null;
+            let introDone = false;
+
+            function ease(t) {
+                return 1 - Math.pow(1 - t, 4);
+            }
+
+            function tick(now) {
+                if (t0 === null) t0 = last = now;
+                const dt = Math.min(60, now - last) / 1000;
+                last = now;
+
+                if (!introDone) {
+                    const k = Math.min(1, (now - t0) / INTRO);
+                    pos = START - SPIN * (1 - ease(k));
+                    if (k >= 1) introDone = true;
+                } else if (!isDragging) {
+                    // Always keep slowly drifting, plus any manual scroll/button momentum
+                    pos += ( (reducedMotion ? 0 : DRIFT) + manualVelocity ) * dt;
+                    // Smoothly decay manual velocity back to 0 so slow drift takes over seamlessly
+                    manualVelocity *= Math.pow(0.015, dt);
+                    if (Math.abs(manualVelocity) < 0.002) manualVelocity = 0;
+                }
+
+                layout();
+                requestAnimationFrame(tick);
+            }
+
+            // 1. Click & drag / touch swipe with momentum
+            let sx = null;
+            let lastDragX = 0;
+            let lastDragTime = 0;
+            let dragVel = 0;
+
+            stage.addEventListener('pointerdown', (e) => {
+                introDone = true;
+                isDragging = true;
+                sx = e.clientX;
+                lastDragX = e.clientX;
+                lastDragTime = performance.now();
+                dragVel = 0;
+                manualVelocity = 0;
+                if (stage.setPointerCapture) {
+                    try { stage.setPointerCapture(e.pointerId); } catch (_) {}
+                }
+            });
+
+            stage.addEventListener('pointermove', (e) => {
+                if (!isDragging || sx === null) return;
+                const now = performance.now();
+                const dx = e.clientX - lastDragX;
+                const dt = Math.max(8, now - lastDragTime) / 1000;
+                const step = -dx / gap();
+                pos += step;
+                dragVel = step / dt;
+                lastDragX = e.clientX;
+                lastDragTime = now;
+                layout();
+            });
+
+            function endDrag(e) {
+                if (!isDragging) return;
+                isDragging = false;
+                sx = null;
+                // Carry release momentum smoothly into the continuous drift
+                if (performance.now() - lastDragTime < 120) {
+                    manualVelocity = Math.max(-8, Math.min(8, dragVel * 0.55));
+                }
+                if (e && stage.releasePointerCapture) {
+                    try { stage.releasePointerCapture(e.pointerId); } catch (_) {}
+                }
+            }
+
+            stage.addEventListener('pointerup', endDrag);
+            stage.addEventListener('pointercancel', endDrag);
+
+            // 2. Trackpad / Mouse wheel horizontal scrolling
+            stage.addEventListener('wheel', (e) => {
+                const isHorizontalSwipe = Math.abs(e.deltaX) > Math.abs(e.deltaY) * 0.6 || e.shiftKey;
+                if (!isHorizontalSwipe) return; // Let normal vertical page scroll pass through
+                e.preventDefault();
+                introDone = true;
+                const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+                pos += delta / gap();
+                manualVelocity = Math.max(-6, Math.min(6, (delta / gap()) * 12));
+                layout();
+            }, { passive: false });
+
+            // 3. Prev / Next arrow buttons
+            const prevBtn = document.getElementById('carousel-prev');
+            const nextBtn = document.getElementById('carousel-next');
+            if (prevBtn) {
+                prevBtn.addEventListener('click', () => {
+                    introDone = true;
+                    manualVelocity -= 4.2;
+                });
+            }
+            if (nextBtn) {
+                nextBtn.addEventListener('click', () => {
+                    introDone = true;
+                    manualVelocity += 4.2;
+                });
+            }
+
+            pos = reducedMotion ? START : START - SPIN;
+            layout();
+            requestAnimationFrame(tick);
+            window.addEventListener('resize', layout);
+        })();
+
+        // Content Hub Filter Logic
+        function filterContent(category) {
+            const cards = document.querySelectorAll('.content-card');
+            const buttons = document.querySelectorAll('.tab-btn');
+
+            buttons.forEach(btn => {
+                if (btn.getAttribute('data-filter') === category) {
+                    btn.classList.remove('text-slate-300');
+                    btn.classList.add('bg-plum-600', 'text-white');
+                } else {
+                    btn.classList.remove('bg-plum-600', 'text-white');
+                    btn.classList.add('text-slate-300');
+                }
+            });
+
+            cards.forEach(card => {
+                if (category === 'all' || card.classList.contains(category)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
 </body>
 </html>

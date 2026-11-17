@@ -12,14 +12,6 @@ const hostname = (req) => (req.hostname || '').toLowerCase()
 app.use((req, res, next) => {
   const host = hostname(req)
 
-  if (req.path === '/' || req.path === '/index.html') {
-    const target = host === 'house-of-kay.co.uk' || host === CANONICAL_HOST
-      ? `https://${CANONICAL_HOST}/voxie`
-      : '/voxie'
-
-    return res.redirect(host ? 301 : 302, target)
-  }
-
   if (host === 'house-of-kay.co.uk') {
     return res.redirect(301, `https://${CANONICAL_HOST}${req.originalUrl}`)
   }
