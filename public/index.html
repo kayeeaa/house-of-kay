@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>House of Kay | The AI Building & Creative Journey</title>
+    <link rel="icon" type="image/png" href="/media/favicon.png">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -129,35 +130,37 @@
 </head>
 <body class="bg-charcoal-900 text-slate-100 min-h-screen flex flex-col selection:bg-plum-600 selection:text-white">
 
-    <!-- Header & Navigation (NO LOGO & NO TAGLINE TEXT AS REQUESTED) -->
-    <header class="sticky top-0 z-[70] backdrop-blur-md bg-charcoal-900/90 border-b border-charcoal-700/60">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <!-- Empty placeholder slot for your custom logo drop-in later -->
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded bg-charcoal-800 border border-charcoal-700 flex items-center justify-center text-xs font-mono text-slate-500">HK</div>
-            </div>
+    <!-- Floating Glass Pill Header (Style A) -->
+    <header class="relative z-[70] max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-1">
+        <div class="w-full rounded-full bg-charcoal-800/85 backdrop-blur-xl border border-plum-500/30 shadow-xl shadow-black/60 px-4 sm:px-6 h-14 flex items-center justify-between">
+            <!-- Brand / Logo Slot -->
+            <a href="#" class="flex items-center gap-3 group">
+                <img src="/media/logo.png" alt="House of Kay logo" class="w-10 h-10 rounded-full object-cover shadow-md group-hover:scale-105 transition">
+                <span class="gothic-heading text-base font-bold text-white tracking-tight hidden sm:inline group-hover:text-plum-300 transition">House of Kay</span>
+            </a>
             
-            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
-                <a href="#about" class="hover:text-plum-400 transition">The Journey</a>
-                <a href="#hub" class="hover:text-plum-400 transition">Content Hub</a>
-                <a href="#characters" class="hover:text-plum-400 transition">Character Bibles</a>
+            <!-- Pill Navigation Links -->
+            <nav class="hidden md:flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-300">
+                <a href="#about" class="px-3.5 py-1.5 rounded-full hover:bg-plum-600/25 hover:text-white border border-transparent hover:border-plum-500/40 transition">The mindset</a>
+                <a href="#pipeline" class="px-3.5 py-1.5 rounded-full hover:bg-plum-600/25 hover:text-white border border-transparent hover:border-plum-500/40 transition">Tech &amp; pipeline</a>
+                <a href="#hub" class="px-3.5 py-1.5 rounded-full hover:bg-plum-600/25 hover:text-white border border-transparent hover:border-plum-500/40 transition">Content hub</a>
+                <a href="#characters" class="px-3.5 py-1.5 rounded-full hover:bg-plum-600/25 hover:text-white border border-transparent hover:border-plum-500/40 transition">Character bibles</a>
             </nav>
 
-            <div class="flex items-center gap-4">
-                <a href="#hub" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-plum-600/20 border border-plum-500/40 text-plum-300 text-sm font-medium hover:bg-plum-600 hover:text-white transition shadow-lg shadow-plum-600/10">
-                    <i class="fa-solid fa-compass"></i> Explore Logs
-                </a>
-                <button id="mobile-menu-btn" class="md:hidden p-2 text-slate-300 hover:text-white focus:outline-none" aria-label="Toggle Menu">
-                    <i class="fa-solid fa-bars text-xl"></i>
+            <!-- Mobile Menu Button -->
+            <div class="flex items-center md:hidden">
+                <button id="mobile-menu-btn" class="w-9 h-9 rounded-full bg-charcoal-700/70 border border-charcoal-600 text-slate-300 hover:text-white flex items-center justify-center focus:outline-none" aria-label="Toggle Menu">
+                    <i class="fa-solid fa-bars text-base"></i>
                 </button>
             </div>
         </div>
 
-        <!-- Mobile Navigation Menu -->
-        <div id="mobile-menu" class="hidden md:hidden bg-charcoal-800 border-b border-charcoal-700 px-4 pt-2 pb-6 space-y-3">
-            <a href="#about" class="block py-2 text-slate-300 hover:text-plum-400 font-medium border-b border-charcoal-700/50">The Journey</a>
-            <a href="#hub" class="block py-2 text-slate-300 hover:text-plum-400 font-medium border-b border-charcoal-700/50">Content Hub</a>
-            <a href="#characters" class="block py-2 text-slate-300 hover:text-plum-400 font-medium">Character Bibles</a>
+        <!-- Mobile Navigation Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden w-full mt-2 rounded-2xl bg-charcoal-800/95 backdrop-blur-xl border border-plum-500/30 shadow-2xl px-4 py-3 space-y-1">
+            <a href="#about" class="block px-3 py-2 rounded-xl text-sm text-slate-300 hover:bg-plum-600/20 hover:text-white font-medium">The mindset</a>
+            <a href="#pipeline" class="block px-3 py-2 rounded-xl text-sm text-slate-300 hover:bg-plum-600/20 hover:text-white font-medium">Tech &amp; pipeline</a>
+            <a href="#hub" class="block px-3 py-2 rounded-xl text-sm text-slate-300 hover:bg-plum-600/20 hover:text-white font-medium">Content hub</a>
+            <a href="#characters" class="block px-3 py-2 rounded-xl text-sm text-slate-300 hover:bg-plum-600/20 hover:text-white font-medium">Character bibles</a>
         </div>
     </header>
 
@@ -165,69 +168,58 @@
     <section class="relative w-full py-6 sm:py-8 bg-charcoal-900 border-b border-charcoal-700/40 overflow-hidden">
         <div id="curved-stage" class="curved-stage" aria-label="Featured video reels">
 
-            <!-- Video Card 1: Replace src="" with your MP4 path/URL -->
-            <div class="curved-card" style="background-image: url('https://placehold.co/600x800/151821/bd4b8d?text=INSERT+VIDEO+01+HERE');">
-                <video muted loop playsinline preload="metadata" poster="https://placehold.co/600x800/151821/bd4b8d?text=INSERT+VIDEO+01+HERE">
-                    <!-- <source src="/videos/reel-1.mp4" type="video/mp4"> -->
+            <!-- Card 1: Happy Face Video (S04 approved v4) -->
+            <div class="curved-card" style="background-color: #0c0e12;">
+                <video muted loop playsinline autoplay preload="auto" style="object-position: center 95%;">
+                    <source src="/media/carousel/s04-approved-v4.mp4" type="video/mp4">
                 </video>
                 <div class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none">
-                    <span class="text-[10px] font-mono uppercase tracking-widest text-plum-400">INSERT TAG HERE</span>
-                    <p class="gothic-heading text-sm font-bold text-white">INSERT TITLE 01 HERE</p>
+                    <span class="text-[10px] font-mono uppercase tracking-widest text-plum-400">Happy Face · In Progress</span>
+                    <p class="gothic-heading text-sm font-bold text-white">An untimely ending</p>
                 </div>
             </div>
 
-            <!-- Video Card 2: Replace src="" with your MP4 path/URL -->
-            <div class="curved-card" style="background-image: url('https://placehold.co/600x800/1e222e/d4af37?text=INSERT+VIDEO+02+HERE');">
-                <video muted loop playsinline preload="metadata" poster="https://placehold.co/600x800/1e222e/d4af37?text=INSERT+VIDEO+02+HERE">
-                    <!-- <source src="/videos/reel-2.mp4" type="video/mp4"> -->
-                </video>
-                <div class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none">
-                    <span class="text-[10px] font-mono uppercase tracking-widest text-amber-300">INSERT TAG HERE</span>
-                    <p class="gothic-heading text-sm font-bold text-white">INSERT TITLE 02 HERE</p>
+            <!-- Card 2: Voxie App (house-of-kay.co.uk/voxie) -->
+            <div class="curved-card" style="background-color: #191814; background-image: url('/media/carousel/voxie-app.png'); background-size: contain; background-position: center 35%;">
+                <div class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/95 via-black/70 to-transparent">
+                    <span class="text-[10px] font-mono uppercase tracking-widest text-amber-300">Vibe Coding · Live App</span>
+                    <p class="gothic-heading text-sm font-bold text-white">
+                        <a href="/voxie" class="hover:text-amber-300 transition underline decoration-amber-300/40 underline-offset-4">Voxie — kids task &amp; chore app</a>
+                    </p>
                 </div>
             </div>
 
-            <!-- Video Card 3: Replace src="" with your MP4 path/URL -->
-            <div class="curved-card" style="background-image: url('https://placehold.co/600x800/0c0e12/9d3a72?text=INSERT+VIDEO+03+HERE');">
-                <video muted loop playsinline preload="metadata" poster="https://placehold.co/600x800/0c0e12/9d3a72?text=INSERT+VIDEO+03+HERE">
-                    <!-- <source src="/videos/reel-3.mp4" type="video/mp4"> -->
-                </video>
+            <!-- Card 3: Happy Face (Gristle full body) -->
+            <div class="curved-card" style="background-image: url('/media/carousel/gristle-full-body.png'); background-position: center 15%;">
                 <div class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none">
-                    <span class="text-[10px] font-mono uppercase tracking-widest text-pink-300">INSERT TAG HERE</span>
-                    <p class="gothic-heading text-sm font-bold text-white">INSERT TITLE 03 HERE</p>
+                    <span class="text-[10px] font-mono uppercase tracking-widest text-amber-300">Happy Face · In Progress</span>
+                    <p class="gothic-heading text-sm font-bold text-white">Gristle — full body</p>
                 </div>
             </div>
 
-            <!-- Video Card 4: Replace src="" with your MP4 path/URL -->
-            <div class="curved-card" style="background-image: url('https://placehold.co/600x800/151821/7c2d58?text=INSERT+VIDEO+04+HERE');">
-                <video muted loop playsinline preload="metadata" poster="https://placehold.co/600x800/151821/7c2d58?text=INSERT+VIDEO+04+HERE">
-                    <!-- <source src="/videos/reel-4.mp4" type="video/mp4"> -->
-                </video>
-                <div class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none">
-                    <span class="text-[10px] font-mono uppercase tracking-widest text-plum-400">INSERT TAG HERE</span>
-                    <p class="gothic-heading text-sm font-bold text-white">INSERT TITLE 04 HERE</p>
+            <!-- Card 4: Threshr Holiday Let Calculator (threshr.co.uk/calculator/) -->
+            <div class="curved-card" style="background-color: #f8f7fc; background-image: url('/media/carousel/threshr-calculator.jpg'); background-size: 100% auto; background-position: top center;">
+                <div class="absolute inset-x-0 bottom-0 p-4 bg-charcoal-900/95 border-t border-charcoal-700/80">
+                    <span class="text-[10px] font-mono uppercase tracking-widest text-amber-300">Vibe Coding · Live Tool</span>
+                    <p class="gothic-heading text-sm font-bold text-white">
+                        <a href="https://threshr.co.uk/calculator/" target="_blank" rel="noopener" class="hover:text-amber-300 transition underline decoration-amber-300/40 underline-offset-4">Threshr — holiday let calculator</a>
+                    </p>
                 </div>
             </div>
 
-            <!-- Video Card 5: Replace src="" with your MP4 path/URL -->
-            <div class="curved-card" style="background-image: url('https://placehold.co/600x800/1e222e/bd4b8d?text=INSERT+VIDEO+05+HERE');">
-                <video muted loop playsinline preload="metadata" poster="https://placehold.co/600x800/1e222e/bd4b8d?text=INSERT+VIDEO+05+HERE">
-                    <!-- <source src="/videos/reel-5.mp4" type="video/mp4"> -->
-                </video>
+            <!-- Card 5: Happy Face (Aske 3/4 portrait) -->
+            <div class="curved-card" style="background-image: url('/media/carousel/fairy-portrait.jpg');">
                 <div class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none">
-                    <span class="text-[10px] font-mono uppercase tracking-widest text-amber-300">INSERT TAG HERE</span>
-                    <p class="gothic-heading text-sm font-bold text-white">INSERT TITLE 05 HERE</p>
+                    <span class="text-[10px] font-mono uppercase tracking-widest text-pink-300">Happy Face · In Progress</span>
+                    <p class="gothic-heading text-sm font-bold text-white">Aske — 3/4 portrait</p>
                 </div>
             </div>
 
-            <!-- Video Card 6: Replace src="" with your MP4 path/URL -->
-            <div class="curved-card" style="background-image: url('https://placehold.co/600x800/0c0e12/d4af37?text=INSERT+VIDEO+06+HERE');">
-                <video muted loop playsinline preload="metadata" poster="https://placehold.co/600x800/0c0e12/d4af37?text=INSERT+VIDEO+06+HERE">
-                    <!-- <source src="/videos/reel-6.mp4" type="video/mp4"> -->
-                </video>
+            <!-- Card 6: AI Generation Fail (Two-Handed Stamp Fail) -->
+            <div class="curved-card" style="background-image: url('/media/carousel/bogle-two-hands-fail.png'); background-position: center 75%;">
                 <div class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none">
-                    <span class="text-[10px] font-mono uppercase tracking-widest text-pink-300">INSERT TAG HERE</span>
-                    <p class="gothic-heading text-sm font-bold text-white">INSERT TITLE 06 HERE</p>
+                    <span class="text-[10px] font-mono uppercase tracking-widest text-pink-300">AI Fail · Behind The Scenes</span>
+                    <p class="gothic-heading text-sm font-bold text-white">Ask for 4 fingers, get 2 hands</p>
                 </div>
             </div>
 
@@ -254,62 +246,181 @@
                 </h1>
                 
                 <p class="text-base sm:text-lg text-slate-300 leading-relaxed font-light max-w-3xl mx-auto">
-                    Kay here, hi! Mum of 2 humans and 2 dogs (rescues of course), Operations Manager, based in Beds UK. Spare time vibe coder (are we still saying that?!) and now diving head first into creating the creatures and short stories that have been lingering in this neurospicy brain since the beginning of its time! I'll be documenting my journey, tech stack, pipelines, wins, losses, frustrations and everything in between.
+                    Hi, Kay here! Mum of two humans and two rescue dogs, Operations Manager based in the UK, and spare time vibe coder (are we still saying that?!). I'm now diving head first into creating the creatures and short stories that have been infiltrating my mind for as long as I can remember, and documenting the journey: the tech stack, the pipelines, the wins, the losses, the frustrations and everything in between.
                 </p>
 
                 <div class="flex flex-wrap justify-center gap-4 pt-4">
                     <a href="#hub" class="px-6 py-3 rounded-xl bg-plum-600 text-white font-medium hover:bg-plum-500 transition shadow-lg shadow-plum-600/30 flex items-center gap-2">
-                        <i class="fa-solid fa-compass"></i> INSERT BUTTON 1 TEXT HERE
+                        <i class="fa-solid fa-compass"></i> Content hub
                     </a>
-                    <a href="#about" class="px-6 py-3 rounded-xl bg-charcoal-700/80 border border-charcoal-600 text-slate-200 font-medium hover:bg-charcoal-600 transition flex items-center gap-2">
-                        <i class="fa-solid fa-heart"></i> INSERT BUTTON 2 TEXT HERE
+                    <a href="#pipeline" class="px-6 py-3 rounded-xl bg-charcoal-700/80 border border-charcoal-600 text-slate-200 font-medium hover:bg-charcoal-600 transition flex items-center gap-2">
+                        <i class="fa-solid fa-gears"></i> Tech &amp; pipeline
+                    </a>
+                    <a href="#characters" class="px-6 py-3 rounded-xl bg-charcoal-700/80 border border-charcoal-600 text-slate-200 font-medium hover:bg-charcoal-600 transition flex items-center gap-2">
+                        <i class="fa-solid fa-book-skull"></i> Character bibles
                     </a>
                 </div>
             </div>
         </section>
 
         <!-- The Vibe & Mission Section -->
-        <section id="about" class="py-20 bg-charcoal-800/50 border-b border-charcoal-700/40">
+        <section id="about" class="py-16 bg-charcoal-800/50 border-b border-charcoal-700/40">
             <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
-                    <span class="text-plum-400 font-mono text-xs uppercase tracking-widest">INSERT TAGLINE HERE</span>
-                    <h2 class="gothic-heading text-3xl sm:text-4xl font-bold text-white">INSERT SECTION HEADING HERE</h2>
-                    <p class="text-slate-400 text-sm italic">INSERT SUBTITLE / NOTE HERE</p>
-                </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     
-                    <div class="p-6 rounded-2xl bg-charcoal-800 border border-charcoal-700 hover:border-plum-500/50 transition space-y-4">
+                    <div class="p-6 rounded-2xl bg-charcoal-800 border border-charcoal-700 space-y-4">
                         <div class="w-12 h-12 rounded-xl bg-plum-600/20 text-plum-400 flex items-center justify-center text-xl">
                             <i class="fa-solid fa-mug-hot"></i>
                         </div>
-                        <h3 class="gothic-heading text-xl font-bold text-white">INSERT CARD 1 TITLE HERE</h3>
+                        <h3 class="gothic-heading text-xl font-bold text-white">The day to day routine</h3>
                         <p class="text-sm text-slate-300 leading-relaxed">
-                            INSERT CARD 1 DESCRIPTION HERE
+                            Balancing a full time day job, trying not to drag up two kids, navigating neurodiversity, renovating a house, and taking in rescue animals, all while carving out late night hours to code, learn AI, and build short films from scratch. AI gave this regular person the key to unlock creative doors that always felt completely out of reach.
                         </p>
                     </div>
 
-                    <div class="p-6 rounded-2xl bg-charcoal-800 border border-charcoal-700 hover:border-plum-500/50 transition space-y-4">
+                    <div class="p-6 rounded-2xl bg-charcoal-800 border border-charcoal-700 space-y-4">
                         <div class="w-12 h-12 rounded-xl bg-plum-600/20 text-plum-400 flex items-center justify-center text-xl">
                             <i class="fa-solid fa-shield-cat"></i>
                         </div>
-                        <h3 class="gothic-heading text-xl font-bold text-white">INSERT CARD 2 TITLE HERE</h3>
+                        <h3 class="gothic-heading text-xl font-bold text-white">No fear, full speed</h3>
                         <p class="text-sm text-slate-300 leading-relaxed">
-                            INSERT CARD 2 DESCRIPTION HERE
+                            If AI is supposedly going to upend everything, I'd rather be wiped off the face of this earth trying to learn, utilise and have fun with it than sit back on the sidelines. Or hate on it! I want my kids to see that curiosity beats anxiety every single time.
                         </p>
                     </div>
 
-                    <div class="p-6 rounded-2xl bg-charcoal-800 border border-charcoal-700 hover:border-plum-500/50 transition space-y-4">
+                    <div class="p-6 rounded-2xl bg-charcoal-800 border border-charcoal-700 space-y-4">
                         <div class="w-12 h-12 rounded-xl bg-plum-600/20 text-plum-400 flex items-center justify-center text-xl">
                             <i class="fa-solid fa-skull"></i>
                         </div>
-                        <h3 class="gothic-heading text-xl font-bold text-white">INSERT CARD 3 TITLE HERE</h3>
+                        <h3 class="gothic-heading text-xl font-bold text-white">Dark, moody and unapologetic</h3>
                         <p class="text-sm text-slate-300 leading-relaxed">
-                            INSERT CARD 3 DESCRIPTION HERE
+                            I gravitate towards the macabre, dark fantasy, and complex feminist narratives. I want to tackle difficult concepts head on, taking old folklore, fairy tales, nursery rhymes and fables and twisting them into thought provoking short films and dark visual stories.
                         </p>
                     </div>
 
                 </div>
+            </div>
+        </section>
+
+        <!-- Tech Stack & Pipeline Section (Placement 1) -->
+        <section id="pipeline" class="py-20 bg-charcoal-900 border-b border-charcoal-700/40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-14">
+                
+                <div class="text-center max-w-3xl mx-auto space-y-3">
+                    <h2 class="gothic-heading text-3xl sm:text-4xl font-bold text-white">Tech stack &amp; pipeline</h2>
+                    <p class="text-sm sm:text-base text-slate-300 leading-relaxed">
+                        This is where I'll be breaking down my step by step workflow from first idea to finished short film and live app, alongside every AI model, coding tool, Python script and workaround I actually use (and what each one is good or terrible at).
+                    </p>
+                </div>
+
+                <!-- 6-Stage Pipeline Grid -->
+                <div>
+                    <h3 class="text-xs font-mono uppercase tracking-widest text-plum-400 mb-6 text-center sm:text-left">The production pipeline</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="p-5 rounded-2xl bg-charcoal-800/80 border border-charcoal-700 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-mono px-2.5 py-1 rounded-full bg-plum-600/20 text-plum-300 border border-plum-500/30">Step 01</span>
+                                <i class="fa-solid fa-lightbulb text-slate-500 text-sm"></i>
+                            </div>
+                            <h4 class="gothic-heading text-lg font-bold text-white pt-1">INSERT STEP 1 TITLE HERE</h4>
+                            <p class="text-xs text-slate-300 leading-relaxed">INSERT STEP 1 DESCRIPTION HERE</p>
+                        </div>
+
+                        <div class="p-5 rounded-2xl bg-charcoal-800/80 border border-charcoal-700 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-mono px-2.5 py-1 rounded-full bg-plum-600/20 text-plum-300 border border-plum-500/30">Step 02</span>
+                                <i class="fa-solid fa-cubes text-slate-500 text-sm"></i>
+                            </div>
+                            <h4 class="gothic-heading text-lg font-bold text-white pt-1">INSERT STEP 2 TITLE HERE</h4>
+                            <p class="text-xs text-slate-300 leading-relaxed">INSERT STEP 2 DESCRIPTION HERE</p>
+                        </div>
+
+                        <div class="p-5 rounded-2xl bg-charcoal-800/80 border border-charcoal-700 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-mono px-2.5 py-1 rounded-full bg-plum-600/20 text-plum-300 border border-plum-500/30">Step 03</span>
+                                <i class="fa-solid fa-wand-magic-sparkles text-slate-500 text-sm"></i>
+                            </div>
+                            <h4 class="gothic-heading text-lg font-bold text-white pt-1">INSERT STEP 3 TITLE HERE</h4>
+                            <p class="text-xs text-slate-300 leading-relaxed">INSERT STEP 3 DESCRIPTION HERE</p>
+                        </div>
+
+                        <div class="p-5 rounded-2xl bg-charcoal-800/80 border border-charcoal-700 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-mono px-2.5 py-1 rounded-full bg-plum-600/20 text-plum-300 border border-plum-500/30">Step 04</span>
+                                <i class="fa-solid fa-code text-slate-500 text-sm"></i>
+                            </div>
+                            <h4 class="gothic-heading text-lg font-bold text-white pt-1">INSERT STEP 4 TITLE HERE</h4>
+                            <p class="text-xs text-slate-300 leading-relaxed">INSERT STEP 4 DESCRIPTION HERE</p>
+                        </div>
+
+                        <div class="p-5 rounded-2xl bg-charcoal-800/80 border border-charcoal-700 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-mono px-2.5 py-1 rounded-full bg-plum-600/20 text-plum-300 border border-plum-500/30">Step 05</span>
+                                <i class="fa-solid fa-film text-slate-500 text-sm"></i>
+                            </div>
+                            <h4 class="gothic-heading text-lg font-bold text-white pt-1">INSERT STEP 5 TITLE HERE</h4>
+                            <p class="text-xs text-slate-300 leading-relaxed">INSERT STEP 5 DESCRIPTION HERE</p>
+                        </div>
+
+                        <div class="p-5 rounded-2xl bg-charcoal-800/80 border border-charcoal-700 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-mono px-2.5 py-1 rounded-full bg-plum-600/20 text-plum-300 border border-plum-500/30">Step 06</span>
+                                <i class="fa-solid fa-sliders text-slate-500 text-sm"></i>
+                            </div>
+                            <h4 class="gothic-heading text-lg font-bold text-white pt-1">INSERT STEP 6 TITLE HERE</h4>
+                            <p class="text-xs text-slate-300 leading-relaxed">INSERT STEP 6 DESCRIPTION HERE</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tech Stack Cards -->
+                <div>
+                    <h3 class="text-xs font-mono uppercase tracking-widest text-plum-400 mb-6 text-center sm:text-left">The tech stack</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="p-6 rounded-2xl bg-charcoal-800 border border-charcoal-700 space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-plum-600/20 text-plum-400 flex items-center justify-center">
+                                    <i class="fa-solid fa-eye"></i>
+                                </div>
+                                <h4 class="gothic-heading text-lg font-bold text-white">INSERT STACK GROUP 1 HERE</h4>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-3 py-1 rounded-full text-xs font-mono bg-charcoal-900 border border-charcoal-700 text-slate-300">INSERT TOOL HERE</span>
+                                <span class="px-3 py-1 rounded-full text-xs font-mono bg-charcoal-900 border border-charcoal-700 text-slate-300">INSERT TOOL HERE</span>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-relaxed">INSERT STACK GROUP 1 NOTES HERE</p>
+                        </div>
+
+                        <div class="p-6 rounded-2xl bg-charcoal-800 border border-charcoal-700 space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-plum-600/20 text-plum-400 flex items-center justify-center">
+                                    <i class="fa-solid fa-terminal"></i>
+                                </div>
+                                <h4 class="gothic-heading text-lg font-bold text-white">INSERT STACK GROUP 2 HERE</h4>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-3 py-1 rounded-full text-xs font-mono bg-charcoal-900 border border-charcoal-700 text-slate-300">INSERT TOOL HERE</span>
+                                <span class="px-3 py-1 rounded-full text-xs font-mono bg-charcoal-900 border border-charcoal-700 text-slate-300">INSERT TOOL HERE</span>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-relaxed">INSERT STACK GROUP 2 NOTES HERE</p>
+                        </div>
+
+                        <div class="p-6 rounded-2xl bg-charcoal-800 border border-charcoal-700 space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-plum-600/20 text-plum-400 flex items-center justify-center">
+                                    <i class="fa-solid fa-microphone-lines"></i>
+                                </div>
+                                <h4 class="gothic-heading text-lg font-bold text-white">INSERT STACK GROUP 3 HERE</h4>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-3 py-1 rounded-full text-xs font-mono bg-charcoal-900 border border-charcoal-700 text-slate-300">INSERT TOOL HERE</span>
+                                <span class="px-3 py-1 rounded-full text-xs font-mono bg-charcoal-900 border border-charcoal-700 text-slate-300">INSERT TOOL HERE</span>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-relaxed">INSERT STACK GROUP 3 NOTES HERE</p>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </section>
 
@@ -319,26 +430,25 @@
                 
                 <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
                     <div>
-                        <span class="text-plum-400 font-mono text-xs uppercase tracking-widest">INSERT TAGLINE HERE</span>
-                        <h2 class="gothic-heading text-3xl sm:text-4xl font-bold text-white mt-1">INSERT HUB HEADING HERE</h2>
+                        <h2 class="gothic-heading text-3xl sm:text-4xl font-bold text-white">Content hub</h2>
                     </div>
                     
                     <!-- Interactive Category Tabs -->
                     <div class="flex flex-wrap gap-2 bg-charcoal-800 p-1.5 rounded-xl border border-charcoal-700">
                         <button onclick="filterContent('all')" class="tab-btn px-4 py-2 rounded-lg text-xs font-medium bg-plum-600 text-white transition" data-filter="all">All</button>
-                        <button onclick="filterContent('vibe')" class="tab-btn px-4 py-2 rounded-lg text-xs font-medium text-slate-300 hover:text-white transition" data-filter="vibe">INSERT TAB 1 HERE</button>
-                        <button onclick="filterContent('shorts')" class="tab-btn px-4 py-2 rounded-lg text-xs font-medium text-slate-300 hover:text-white transition" data-filter="shorts">INSERT TAB 2 HERE</button>
-                        <button onclick="filterContent('lore')" class="tab-btn px-4 py-2 rounded-lg text-xs font-medium text-slate-300 hover:text-white transition" data-filter="lore">INSERT TAB 3 HERE</button>
+                        <button onclick="filterContent('journey')" class="tab-btn px-4 py-2 rounded-lg text-xs font-medium text-slate-300 hover:text-white transition" data-filter="journey">The Journey &amp; BTS</button>
+                        <button onclick="filterContent('films')" class="tab-btn px-4 py-2 rounded-lg text-xs font-medium text-slate-300 hover:text-white transition" data-filter="films">Short Films</button>
+                        <button onclick="filterContent('vibe')" class="tab-btn px-4 py-2 rounded-lg text-xs font-medium text-slate-300 hover:text-white transition" data-filter="vibe">Vibe Coding</button>
                     </div>
                 </div>
 
                 <!-- Showcase Cards Grid -->
                 <div id="content-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     
-                    <!-- Card 1 -->
-                    <article class="content-card vibe rounded-2xl bg-charcoal-800 border border-charcoal-700 overflow-hidden hover:border-plum-500/50 transition flex flex-col">
+                    <!-- Card 1: The Journey & BTS -->
+                    <article class="content-card journey rounded-2xl bg-charcoal-800 border border-charcoal-700 overflow-hidden hover:border-plum-500/50 transition flex flex-col">
                         <div class="h-48 bg-cover bg-center relative" style="background-image: url('https://placehold.co/600x400/151821/bd4b8d?text=INSERT+IMAGE+01+HERE');">
-                            <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-mono bg-charcoal-900/90 text-plum-300 border border-charcoal-700">INSERT CATEGORY HERE</span>
+                            <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-mono bg-charcoal-900/90 text-pink-300 border border-charcoal-700">The Journey &amp; BTS</span>
                         </div>
                         <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
                             <div class="space-y-2">
@@ -353,10 +463,10 @@
                         </div>
                     </article>
 
-                    <!-- Card 2 -->
-                    <article class="content-card shorts rounded-2xl bg-charcoal-800 border border-charcoal-700 overflow-hidden hover:border-plum-500/50 transition flex flex-col">
+                    <!-- Card 2: Short Films -->
+                    <article class="content-card films rounded-2xl bg-charcoal-800 border border-charcoal-700 overflow-hidden hover:border-plum-500/50 transition flex flex-col">
                         <div class="h-48 bg-cover bg-center relative" style="background-image: url('https://placehold.co/600x400/1e222e/9d3a72?text=INSERT+IMAGE+02+HERE');">
-                            <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-mono bg-charcoal-900/90 text-amber-300 border border-charcoal-700">INSERT CATEGORY HERE</span>
+                            <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-mono bg-charcoal-900/90 text-amber-300 border border-charcoal-700">Short Films</span>
                         </div>
                         <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
                             <div class="space-y-2">
@@ -371,10 +481,10 @@
                         </div>
                     </article>
 
-                    <!-- Card 3 -->
-                    <article class="content-card lore rounded-2xl bg-charcoal-800 border border-charcoal-700 overflow-hidden hover:border-plum-500/50 transition flex flex-col">
+                    <!-- Card 3: Vibe Coding -->
+                    <article class="content-card vibe rounded-2xl bg-charcoal-800 border border-charcoal-700 overflow-hidden hover:border-plum-500/50 transition flex flex-col">
                         <div class="h-48 bg-cover bg-center relative" style="background-image: url('https://placehold.co/600x400/0c0e12/7c2d58?text=INSERT+IMAGE+03+HERE');">
-                            <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-mono bg-charcoal-900/90 text-pink-300 border border-charcoal-700">INSERT CATEGORY HERE</span>
+                            <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-mono bg-charcoal-900/90 text-plum-300 border border-charcoal-700">Vibe Coding</span>
                         </div>
                         <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
                             <div class="space-y-2">
@@ -389,10 +499,10 @@
                         </div>
                     </article>
 
-                    <!-- Card 4 -->
-                    <article class="content-card vibe rounded-2xl bg-charcoal-800 border border-charcoal-700 overflow-hidden hover:border-plum-500/50 transition flex flex-col">
+                    <!-- Card 4: The Journey & BTS -->
+                    <article class="content-card journey rounded-2xl bg-charcoal-800 border border-charcoal-700 overflow-hidden hover:border-plum-500/50 transition flex flex-col">
                         <div class="h-48 bg-cover bg-center relative" style="background-image: url('https://placehold.co/600x400/1e222e/bd4b8d?text=INSERT+IMAGE+04+HERE');">
-                            <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-mono bg-charcoal-900/90 text-plum-300 border border-charcoal-700">INSERT CATEGORY HERE</span>
+                            <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-mono bg-charcoal-900/90 text-pink-300 border border-charcoal-700">The Journey &amp; BTS</span>
                         </div>
                         <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
                             <div class="space-y-2">
@@ -407,10 +517,10 @@
                         </div>
                     </article>
 
-                    <!-- Card 5 -->
-                    <article class="content-card lore rounded-2xl bg-charcoal-800 border border-charcoal-700 overflow-hidden hover:border-plum-500/50 transition flex flex-col">
+                    <!-- Card 5: Vibe Coding -->
+                    <article class="content-card vibe rounded-2xl bg-charcoal-800 border border-charcoal-700 overflow-hidden hover:border-plum-500/50 transition flex flex-col">
                         <div class="h-48 bg-cover bg-center relative" style="background-image: url('https://placehold.co/600x400/0c0e12/9d3a72?text=INSERT+IMAGE+05+HERE');">
-                            <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-mono bg-charcoal-900/90 text-pink-300 border border-charcoal-700">INSERT CATEGORY HERE</span>
+                            <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-mono bg-charcoal-900/90 text-plum-300 border border-charcoal-700">Vibe Coding</span>
                         </div>
                         <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
                             <div class="space-y-2">
@@ -433,45 +543,116 @@
         <!-- Character Bibles Section -->
         <section id="characters" class="py-20 bg-charcoal-800/40 border-t border-b border-charcoal-700/40">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center max-w-2xl mx-auto mb-16 space-y-4">
-                    <span class="text-plum-400 font-mono text-xs uppercase tracking-widest">INSERT TAGLINE HERE</span>
-                    <h2 class="gothic-heading text-3xl sm:text-4xl font-bold text-white">INSERT CHARACTER SECTION HEADING HERE</h2>
-                    <p class="text-slate-400 text-sm">INSERT CHARACTER SECTION DESCRIPTION HERE</p>
+                <div class="text-center max-w-2xl mx-auto mb-14">
+                    <h2 class="gothic-heading text-3xl sm:text-4xl font-bold text-white">Character bibles</h2>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Character 1 -->
-                    <div class="p-6 sm:p-8 rounded-2xl bg-charcoal-800 border border-charcoal-700 flex flex-col sm:flex-row gap-6 items-center text-center sm:text-left">
-                        <div class="w-32 h-32 rounded-xl bg-cover bg-center shrink-0 border border-plum-500/40" style="background-image: url('https://placehold.co/300x300/1e222e/bd4b8d?text=INSERT+IMAGE+HERE');"></div>
+                    <!-- Character 1: Aske -->
+                    <div onclick="openCharacterBible('aske')" class="group cursor-pointer p-6 sm:p-8 rounded-2xl bg-charcoal-800 border border-charcoal-700 hover:border-plum-500/60 transition flex flex-col sm:flex-row gap-6 items-center text-center sm:text-left">
+                        <div class="w-36 h-44 rounded-xl bg-cover bg-top shrink-0 border border-plum-500/40 shadow-lg group-hover:scale-[1.02] transition" style="background-image: url('/media/characters/aske/master.jpg');"></div>
                         <div class="space-y-3">
-                            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3">
-                                <h3 class="gothic-heading text-2xl font-bold text-white">INSERT CHARACTER 1 NAME HERE</h3>
-                                <span class="text-xs font-mono px-2 py-0.5 rounded bg-plum-600/30 text-plum-300">INSERT ROLE HERE</span>
+                            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+                                <h3 class="gothic-heading text-2xl font-bold text-white group-hover:text-plum-300 transition">Aske</h3>
+                                <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-plum-600/30 text-plum-300 border border-plum-500/30">Piskie · Happy Face</span>
                             </div>
-                            <p class="text-xs text-slate-300 leading-relaxed">
-                                INSERT CHARACTER 1 BIO / LORE HERE
+                            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                                Pronounced "ASK uh" (Norwegian and Danish for ash). After a fire took her home, her family and broke her wings in childhood, she decided to take back happiness. Armed with an ornate antique shotgun that fires colour powder, she walks into the Office of Untimely Endings for revenge through joy.
                             </p>
-                            <span class="inline-block text-xs text-plum-400 font-semibold cursor-pointer hover:underline">INSERT LINK TEXT HERE &rarr;</span>
+                            <span class="inline-flex items-center gap-1.5 text-xs text-plum-400 font-semibold group-hover:text-plum-300">
+                                View character bible &amp; 4 approved refs <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            </span>
                         </div>
                     </div>
 
-                    <!-- Character 2 -->
-                    <div class="p-6 sm:p-8 rounded-2xl bg-charcoal-800 border border-charcoal-700 flex flex-col sm:flex-row gap-6 items-center text-center sm:text-left">
-                        <div class="w-32 h-32 rounded-xl bg-cover bg-center shrink-0 border border-plum-500/40" style="background-image: url('https://placehold.co/300x300/151821/9d3a72?text=INSERT+IMAGE+HERE');"></div>
+                    <!-- Character 2: Gristle -->
+                    <div onclick="openCharacterBible('gristle')" class="group cursor-pointer p-6 sm:p-8 rounded-2xl bg-charcoal-800 border border-charcoal-700 hover:border-plum-500/60 transition flex flex-col sm:flex-row gap-6 items-center text-center sm:text-left">
+                        <div class="w-36 h-44 rounded-xl bg-cover bg-top shrink-0 border border-plum-500/40 shadow-lg group-hover:scale-[1.02] transition" style="background-image: url('/media/characters/gristle/master.jpg');"></div>
                         <div class="space-y-3">
-                            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3">
-                                <h3 class="gothic-heading text-2xl font-bold text-white">INSERT CHARACTER 2 NAME HERE</h3>
-                                <span class="text-xs font-mono px-2 py-0.5 rounded bg-blue-600/30 text-blue-300">INSERT ROLE HERE</span>
+                            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+                                <h3 class="gothic-heading text-2xl font-bold text-white group-hover:text-plum-300 transition">Gristle</h3>
+                                <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">Bogle · Happy Face</span>
                             </div>
-                            <p class="text-xs text-slate-300 leading-relaxed">
-                                INSERT CHARACTER 2 BIO / LORE HERE
+                            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                                Around 175 years old and left on a butcher's doorstep as a baby, where two fingers on his left hand were taken as payment. Immaculately dressed in his dark green OUE suit, he has never known love, scrubs his skin red raw, and stamps horrific early deaths on baby certificates without even looking.
                             </p>
-                            <span class="inline-block text-xs text-plum-400 font-semibold cursor-pointer hover:underline">INSERT LINK TEXT HERE &rarr;</span>
+                            <span class="inline-flex items-center gap-1.5 text-xs text-plum-400 font-semibold group-hover:text-plum-300">
+                                View character bible &amp; 5 approved refs <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Character 3: Art -->
+                    <div onclick="openCharacterBible('art')" class="group cursor-pointer p-6 sm:p-8 rounded-2xl bg-charcoal-800 border border-charcoal-700 hover:border-plum-500/60 transition flex flex-col sm:flex-row gap-6 items-center text-center sm:text-left">
+                        <div class="w-36 h-44 rounded-xl bg-cover bg-top shrink-0 border border-plum-500/40 shadow-lg group-hover:scale-[1.02] transition" style="background-image: url('/media/characters/art/master.jpg');"></div>
+                        <div class="space-y-3">
+                            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+                                <h3 class="gothic-heading text-2xl font-bold text-white group-hover:text-plum-300 transition">Art</h3>
+                                <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">Young Bogle · Happy Face</span>
+                            </div>
+                            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                                Only 35 (young for a bogle) and wearing a hand me down uniform a size too big from his uncle who got him the job. He doesn't belong at the Office of Untimely Endings, feels pangs of guilt he doesn't quite understand, and hesitates over the stamp rack trying to pick gentler endings and older ages.
+                            </p>
+                            <span class="inline-flex items-center gap-1.5 text-xs text-plum-400 font-semibold group-hover:text-plum-300">
+                                View character bible &amp; 4 approved refs <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Character 4: Bogle Clerks -->
+                    <div onclick="openCharacterBible('bogle-clerks')" class="group cursor-pointer p-6 sm:p-8 rounded-2xl bg-charcoal-800 border border-charcoal-700 hover:border-plum-500/60 transition flex flex-col sm:flex-row gap-6 items-center text-center sm:text-left">
+                        <div class="w-36 h-44 rounded-xl bg-cover bg-top shrink-0 border border-plum-500/40 shadow-lg group-hover:scale-[1.02] transition" style="background-image: url('/media/characters/bogle-clerks/clerk-1-master.jpg');"></div>
+                        <div class="space-y-3">
+                            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+                                <h3 class="gothic-heading text-2xl font-bold text-white group-hover:text-plum-300 transition">The Bogle clerks</h3>
+                                <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-slate-600/40 text-slate-300 border border-slate-500/40">Office Bogles · Happy Face</span>
+                            </div>
+                            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                                Bored, joyless bureaucrats standing behind towering counters in the counting hall. Built around Clerk 1 (the dark slate bogle Aske shoots first), alongside background variants and the four fingered species hand references built using a real hand pose guide.
+                            </p>
+                            <span class="inline-flex items-center gap-1.5 text-xs text-plum-400 font-semibold group-hover:text-plum-300">
+                                View character bible &amp; 6 approved refs <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Character 5: Morrowveils -->
+                    <div onclick="openCharacterBible('morrowveils')" class="group cursor-pointer p-6 sm:p-8 rounded-2xl bg-charcoal-800 border border-charcoal-700 hover:border-plum-500/60 transition flex flex-col sm:flex-row gap-6 items-center text-center sm:text-left md:col-span-2 lg:col-span-1">
+                        <div class="w-36 h-44 rounded-xl bg-cover bg-center shrink-0 border border-plum-500/40 shadow-lg group-hover:scale-[1.02] transition" style="background-image: url('/media/characters/morrowveils/master.jpg');"></div>
+                        <div class="space-y-3">
+                            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+                                <h3 class="gothic-heading text-2xl font-bold text-white group-hover:text-plum-300 transition">Morrowveils</h3>
+                                <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/30">Watcher Species · Happy Face</span>
+                            </div>
+                            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                                Nosey moth mammal watcher creatures with glossy black button eyes, small branching antlers, and an occult symbol grown into the skull. They perch in the fog wherever drama is about to happen and physically change depending on whether they feed on celebration or tragedy.
+                            </p>
+                            <span class="inline-flex items-center gap-1.5 text-xs text-plum-400 font-semibold group-hover:text-plum-300">
+                                View character bible &amp; 3 approved refs <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            </span>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
+
+        <!-- Full-Screen Character Bible & Approved Refs Modal / Page View -->
+        <div id="character-modal" class="fixed inset-0 z-[100] hidden bg-charcoal-900/95 backdrop-blur-xl overflow-y-auto">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+                <!-- Top Bar -->
+                <div class="flex items-center justify-between pb-6 mb-8 border-b border-charcoal-700">
+                    <button onclick="closeCharacterBible()" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-charcoal-800 border border-charcoal-600 text-slate-200 hover:bg-plum-600 hover:text-white hover:border-plum-500 transition text-sm font-medium">
+                        <i class="fa-solid fa-arrow-left text-xs"></i> Back to character bibles
+                    </button>
+                    <button onclick="closeCharacterBible()" class="w-10 h-10 rounded-full bg-charcoal-800 border border-charcoal-600 text-slate-300 hover:text-white flex items-center justify-center" aria-label="Close">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <!-- Dynamic Character Content Container -->
+                <div id="character-modal-body" class="space-y-10"></div>
+            </div>
+        </div>
 
     </main>
 
@@ -479,20 +660,20 @@
     <footer class="bg-charcoal-900 border-t border-charcoal-700/60 py-12 text-slate-400 text-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-plum-600 flex items-center justify-center text-white font-bold text-xs">HK</div>
+                <img src="/media/logo.png" alt="House of Kay logo" class="w-9 h-9 rounded-full object-cover">
                 <span class="gothic-heading text-white font-semibold">House of Kay</span>
                 <span class="text-xs font-mono">© 2026. All rights reserved.</span>
             </div>
 
             <div class="flex items-center gap-6 text-slate-400 text-base">
                 <a href="#" class="hover:text-plum-400 transition" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
-                <a href="#" class="hover:text-plum-400 transition" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+                <a href="#" class="hover:text-plum-400 transition" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
                 <a href="#" class="hover:text-plum-400 transition" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
                 <a href="#" class="hover:text-plum-400 transition" aria-label="LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
             </div>
 
             <div class="text-xs font-mono text-slate-500">
-                INSERT FOOTER TAGLINE HERE
+                Embracing the AI revolution
             </div>
         </div>
     </footer>
@@ -616,6 +797,7 @@
             let dragVel = 0;
 
             stage.addEventListener('pointerdown', (e) => {
+                if (e.target.closest('a')) return;
                 introDone = true;
                 isDragging = true;
                 sx = e.clientX;
@@ -714,6 +896,170 @@
                 }
             });
         }
+
+        // Character Bibles Data & Full-Page Dossier View
+        const CHARACTER_BIBLES = {
+            aske: {
+                name: 'Aske',
+                species: 'Piskie (Cornish & Devon folklore)',
+                project: 'Happy Face',
+                pronunciation: 'Pronounced "ASK uh" (Norwegian and Danish for ash, a nod to Askeladden of Norwegian folk tales)',
+                age: 'Looks early 20s; actually in her 50s',
+                backstory: 'As a child, her home burned down and her whole family was killed. Only she survived, and her wings were broken escaping the fire. She spent years in misery until she decided to take back happiness. She is certain her family\'s deaths were decided at the Office of Untimely Endings, and walks in for revenge through joy rather than murder.',
+                appearance: 'Small piskie woman whose head sits just below desk height. Very pale, almost translucent dewy skin with freckles, large pale grey green irises with wet red rimmed lower lids, and slightly pointed ears. She wears a yellowed frayed white t shirt, a dusty ash pink tulle skirt, and goes barefoot with long yellowed nails. Two pairs of battered, transparent dragonfly wings come through slits in her t shirt, strapped over by a worn leather holster carrying an ornate antique floral shotgun that fires colour powder.',
+                productionNotes: 'AI models constantly try to make her conventionally pretty and drift her eyes back to human, so every close up uses locked start and end frames. The face master is used strictly for face/eyes, while wing proportions come from the full body references.',
+                refs: [
+                    { src: '/media/characters/aske/master.jpg', title: 'Master face reference', note: 'Head and shoulders front. The locked reference for eyes, translucent skin, veins, freckles and expression.' },
+                    { src: '/media/characters/aske/threequarter.jpg', title: '3/4 head and shoulders', note: 'Three quarter angle showing her right ear and profile framing.' },
+                    { src: '/media/characters/aske/fullbody-front.jpg', title: 'Full body front', note: 'Canon wing size and outfit reference, with master face composited by hand and gun barrels behind the wing.' },
+                    { src: '/media/characters/aske/fullbody-back.jpg', title: 'Full body back', note: 'Shows the two pairs of tattered dragonfly wings emerging through slits in the t shirt and the ornate shotgun on its leather strap.' }
+                ]
+            },
+            gristle: {
+                name: 'Gristle',
+                species: 'Bogle (Scots & Northern English folklore)',
+                project: 'Happy Face',
+                pronunciation: 'Named as a quiet nod to the butcher who raised him',
+                age: 'Around 175 (bogles live to about 250)',
+                backstory: 'Left on a butcher\'s doorstep as a baby, where the butcher cut off two fingers on his left hand as payment for taking him in. He spent his childhood living amongst butchered remains and didn\'t see sunlight until he was 15. He has worked at the Office of Untimely Endings since leaving school at 30. Mean, soulless and never having known love, he scrubs himself red raw and stamps horrific early deaths on baby certificates without looking, until Aske\'s shot triggers his breakdown and he sweeps his two lit oil lamps off his desk to burn the office down.',
+                appearance: 'Short, stocky, heavy torso with no neck, his head sunk straight into hunched shoulders. Huge pointed flopping ears with coarse hairs. Missing his left eye (scrunched dark socket); his remaining right eye is small, matte chestnut brown with a horizontal goat pupil and zero catchlight. Rough pinkish skin scrubbed red raw in patches. Immaculately dressed in an almost black dark green three piece suit, tall stiff white collar, and cravat bearing the OUE monogram.',
+                productionNotes: 'Never prompt the word "goblin" alone (defaults to short green fantasy goblins) or "pig" (turns pink skin and big ears into a pig man). Missing fingers on his left hand are kept exclusively for the dedicated S09 stamp grab close up because Kling regrows missing fingers in wider shots.',
+                refs: [
+                    { src: '/media/characters/gristle/master.jpg', title: 'Master face reference', note: 'Front head and shoulders master with hand composited goat pupil, squinted socket and standard 12% OUE cravat monogram.' },
+                    { src: '/media/characters/gristle/threequarter.jpg', title: '3/4 portrait reference', note: 'Three quarter angle matching skin texture, ear droop, matte goat eye and squeezed OUE monogram.' },
+                    { src: '/media/carousel/gristle-full-body.png', title: 'Full body front', note: 'Shows his stocky proportions, immaculate dark green three piece suit, four fingered hands and polished boots.' },
+                    { src: '/media/characters/gristle/hand-right.jpg', title: 'Species 4 fingered right hand', note: 'The foundational bogle hand anatomy: thumb plus three thick blunt fingers fused near the base with black picked down nails.' },
+                    { src: '/media/characters/gristle/hand-left-maimed.jpg', title: 'Maimed left hand (Shot 09 ref)', note: 'Dedicated close up reference showing the index finger removed at the stump and little finger cut at the middle joint.' }
+                ]
+            },
+            art: {
+                name: 'Art',
+                species: 'Bogle (Scots & Northern English folklore)',
+                project: 'Happy Face',
+                pronunciation: 'The youngest, newest clerk at the Office of Untimely Endings',
+                age: '35 (young adult in bogle years)',
+                backstory: 'Not too good at anything, Art left school and his uncle got him a job at the Office of Untimely Endings. He has been there about a year, doesn\'t really know what he\'s doing, and feels pangs of guilt he doesn\'t quite understand. While other bogles slam down horrific stamps, Art hesitates over his rack, puts DECAPITATED back, and chooses DROWNING at 099 YEARS for baby coblyn Thora Runebinder because it feels like the gentlest option available.',
+                appearance: 'Taller and slimmer than Gristle, plain, slightly ugly and a little sweet, looking permanently worried and out of place. No neck, long defined jaw, upturned porous snout nose, floppy dark chestnut hair, and large wet bright blue eyes with horizontal goat pupils and concerned upturned brows. Wears his uncle\'s hand me down suit one size too big, with a small hole in the lapel and trouser knee, and a larger new issue OUE emblem on his cravat.',
+                productionNotes: 'Using Gristle\'s full master as an image reference copied Gristle\'s old angry face despite negative prompts; what worked was feeding fenced part crops (ears only, uniform only) one edit at a time and pasting Art\'s master face back at 2048px.',
+                refs: [
+                    { src: '/media/characters/art/master.jpg', title: 'Master face reference', note: 'Front 9:16 master showing his worried blue goat pupil eyes, upturned nose and larger new issue OUE cravat emblem.' },
+                    { src: '/media/characters/art/threequarter.jpg', title: '3/4 head and shoulders', note: 'Built in free Gemini and finished by hand with goat pupils, colour match and OUE monogram.' },
+                    { src: '/media/characters/art/fullbody-front.jpg', title: 'Full body front', note: 'Shows his uncle\'s oversized hand me down suit, subtle holes in the lapel and knee, gold ring on his left hand and horn nails.' },
+                    { src: '/media/characters/art/hand-right.jpg', title: 'Right hand reference (Kling Element)', note: 'Built from Gristle\'s 4 digit hand shape with toned pale horn nails, younger spongy skin texture and long hand me down blazer sleeve.' }
+                ]
+            },
+            'bogle-clerks': {
+                name: 'The Bogle clerks',
+                species: 'Bogles (Office bureaucrats)',
+                project: 'Happy Face',
+                pronunciation: 'Clerk 1 (lead generic clerk) & background variants Clerk 2 and Clerk 3',
+                age: 'Middle aged to old (120 to 190 years)',
+                backstory: 'The bored, joyless bureaucrats who fill the towering counters of the Office of Untimely Endings. Neither cruel like Gristle nor conflicted like Art, they have simply stopped caring. Clerk 1 is the dark slate bogle whose four fingered warty hand slams BURNT onto baby Thrum Drifts\' certificate in Shot 04, and the first clerk to peer over his desk when Aske kicks it.',
+                appearance: 'Same species traits as Gristle and Art (no neck, head sunk into the shoulders, large pointed ears, horizontal goat pupils, four fingered hands wider than an A5 page, and near black green suits with the standard 12% OUE cravat monogram). Clerk 1 has dark purplish slate leathery skin with two smooth dome warts; Clerk 2 has pinky grey creased skin with his chin sunk inside a tall collar; Clerk 3 has dark charcoal brown skin and long hanging ears.',
+                productionNotes: 'Every AI model tries to draw 5 human fingers when gripping a stamp. Clerk 1\'s gripping hand (Ref 3) was solved by taking a real photo of my own hand with the little finger folded away, turning it into a flat grey clay silhouette pose guide, painting bogle skin over it by hand, and running a single Gemini surface pass.',
+                refs: [
+                    { src: '/media/characters/bogle-clerks/clerk-1-master.jpg', title: 'Clerk 1 — Master face reference', note: 'The generic clerk Aske shoots first. Dark slate leathery skin, two smooth dome warts laid on from the hand ref, squinted goat slot eyes and 2K Kling refine.' },
+                    { src: '/media/characters/bogle-clerks/clerk-2-background.jpg', title: 'Clerk 2 — Background variant', note: 'Pinky grey creased skin, small pointed hairy ears, stained pointed teeth and chin sunk inside a tall white collar.' },
+                    { src: '/media/characters/bogle-clerks/clerk-3-background.jpg', title: 'Clerk 3 — Background variant', note: 'Dark charcoal brown skin, long narrow hanging ears, pointed chin and sparse comb over.' },
+                    { src: '/media/characters/bogle-clerks/hand-ref1-back.jpg', title: 'Clerk hand Ref 1 — Back of hand', note: 'Built from Gristle\'s 4 digit species hand shape recoloured to dark slate with toned horn nails and large knuckle warts.' },
+                    { src: '/media/characters/bogle-clerks/hand-ref2-flat-on-page.jpg', title: 'Clerk hand Ref 2 — Scale on A5 page', note: 'Top down lamp lit reference setting the enormous scale of a bogle hand (~23cm long) against an A5 birth certificate.' },
+                    { src: '/media/characters/bogle-clerks/hand-ref3-grip-stamp.jpg', title: 'Clerk hand Ref 3 — Gripping the stamp', note: 'Built from a real hand photo turned into a grey clay pose guide so Gemini kept 4 digits while gripping the bone handled stamp.' }
+                ]
+            },
+            morrowveils: {
+                name: 'Morrowveils',
+                species: 'Watcher creatures (Moth & small mammal hybrid)',
+                project: 'Happy Face',
+                pronunciation: 'Working name was Fog Birds; named Morrowveils on 8 Nov',
+                age: 'Varies (ears grow longer and droop more with age)',
+                backstory: 'Nosey watcher creatures that roam the fog around the Office of Untimely Endings street. They go wherever drama is about to happen because they literally feed off it. Individuals that witness celebrations and joy stay soft and friendly; those that feed on tragedy grow hunched, snarling and talon clawed, sometimes even causing disasters just to watch and feed.',
+                appearance: 'About the size of a blackbird up to a cat, sitting upright and still. A round flat moth face of damp grey ivory fuzz with no nose and no muzzle, wide set solid glossy black eyes under a fold of furred skin, leaf shaped sideways ears with fluffy plume tips, two small branching deer antlers, and an intricate occult sigil grown into the forehead skull like a brand. Two pairs of dusty powdery moth wings with muted charcoal eye spots.',
+                productionNotes: 'Using words like "rabbit" or "hare" in prompts immediately drifted the face into a cute plush bunny with a pink nose. Locking the look required describing a flat fuzzy moth face with no muzzle and removing any stray cat nose by hand in Python.',
+                refs: [
+                    { src: '/media/characters/morrowveils/master.jpg', title: 'Master individual reference', note: 'The unreadable master individual perched in a foggy back street with wings spread, eye spots, small antlers and forehead sigil.' },
+                    { src: '/media/characters/morrowveils/master-cutout.png', title: 'Master cutout on transparency', note: 'Clean alpha cutout with hand traced antlers used for placing Morrowveils onto sills and ledges at true scale.' },
+                    { src: '/media/characters/morrowveils/silhouette-dark.png', title: 'Fog silhouette asset', note: 'Near black cool silhouette with 6% inner detail for distant watcher figures sitting in deep street fog.' }
+                ]
+            }
+        };
+
+        function openCharacterBible(id) {
+            const char = CHARACTER_BIBLES[id];
+            if (!char) return;
+            const modal = document.getElementById('character-modal');
+            const body = document.getElementById('character-modal-body');
+
+            const refsHtml = char.refs.map(ref => `
+                <div class="rounded-2xl bg-charcoal-800 border border-charcoal-700 overflow-hidden flex flex-col">
+                    <a href="${ref.src}" target="_blank" rel="noopener" class="block bg-charcoal-900 overflow-hidden group relative">
+                        <img src="${ref.src}" alt="${ref.title}" class="w-full h-80 object-contain bg-charcoal-900 group-hover:scale-[1.03] transition duration-300">
+                        <span class="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/70 border border-white/15 text-[10px] font-mono text-slate-200 opacity-0 group-hover:opacity-100 transition">
+                            <i class="fa-solid fa-up-right-from-square mr-1"></i> Full res
+                        </span>
+                    </a>
+                    <div class="p-4 space-y-1.5 flex-grow">
+                        <h4 class="gothic-heading text-base font-bold text-white">${ref.title}</h4>
+                        <p class="text-xs text-slate-300 leading-relaxed">${ref.note}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            body.innerHTML = `
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                    <div class="rounded-2xl overflow-hidden border border-plum-500/40 bg-charcoal-800 shadow-2xl">
+                        <img src="${char.refs[0].src}" alt="${char.name}" class="w-full h-auto object-cover">
+                    </div>
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="space-y-2">
+                            <div class="flex flex-wrap items-center gap-3">
+                                <span class="text-xs font-mono px-3 py-1 rounded-full bg-plum-600/30 text-plum-300 border border-plum-500/40">${char.species}</span>
+                                <span class="text-xs font-mono px-3 py-1 rounded-full bg-charcoal-800 text-slate-300 border border-charcoal-700">Project: ${char.project}</span>
+                            </div>
+                            <h2 class="gothic-heading text-3xl sm:text-5xl font-bold text-white pt-1">${char.name}</h2>
+                            <p class="text-xs font-mono text-slate-400">${char.pronunciation} · Age: ${char.age}</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-4">
+                            <div class="p-5 rounded-2xl bg-charcoal-800/80 border border-charcoal-700 space-y-1.5">
+                                <h3 class="text-xs font-mono uppercase tracking-widest text-plum-400">Backstory &amp; role</h3>
+                                <p class="text-sm text-slate-200 leading-relaxed">${char.backstory}</p>
+                            </div>
+                            <div class="p-5 rounded-2xl bg-charcoal-800/80 border border-charcoal-700 space-y-1.5">
+                                <h3 class="text-xs font-mono uppercase tracking-widest text-plum-400">Locked look &amp; anatomy</h3>
+                                <p class="text-sm text-slate-200 leading-relaxed">${char.appearance}</p>
+                            </div>
+                            <div class="p-5 rounded-2xl bg-charcoal-800/80 border border-charcoal-700 space-y-1.5">
+                                <h3 class="text-xs font-mono uppercase tracking-widest text-amber-300">AI production &amp; pipeline notes</h3>
+                                <p class="text-sm text-slate-200 leading-relaxed">${char.productionNotes}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-6 border-t border-charcoal-700/80 space-y-6">
+                    <div class="flex items-center justify-between">
+                        <h3 class="gothic-heading text-2xl font-bold text-white">Approved references (${char.refs.length})</h3>
+                        <span class="text-xs font-mono text-slate-400">Click any reference to open full resolution</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        ${refsHtml}
+                    </div>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCharacterBible() {
+            const modal = document.getElementById('character-modal');
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeCharacterBible();
+        });
     </script>
 </body>
 </html>
