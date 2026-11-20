@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content hub | House of Kay</title>
+    <meta name="description" content="Behind-the-scenes write-ups, finished shorts and vibe coding stories from House of Kay.">
+    <link rel="icon" type="image/png" href="/media/favicon.png">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="/css/site.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-charcoal-900 text-slate-100 min-h-screen flex flex-col selection:bg-plum-600 selection:text-white">
+
+    <!-- Floating Glass Pill Header (Style A) -->
+    <header class="relative z-[70] max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-1">
+        <div class="w-full rounded-full bg-charcoal-800/85 backdrop-blur-xl border border-plum-500/30 shadow-xl shadow-black/60 px-4 sm:px-6 h-14 flex items-center justify-between">
+            <!-- Brand / Logo Slot -->
+            <a href="/" class="flex items-center gap-3 group">
+                <img src="/media/logo.png" alt="House of Kay logo" class="w-10 h-10 rounded-full object-cover shadow-md group-hover:scale-105 transition">
+                <span class="gothic-heading text-sm sm:text-base font-bold text-white tracking-tight group-hover:text-plum-300 transition">House of Kay</span>
+            </a>
+            
+            <!-- Pill Navigation Links -->
+            <nav class="hidden md:flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-300">
+                <a href="/#about" class="px-3.5 py-1.5 rounded-full hover:bg-plum-600/25 hover:text-white border border-transparent hover:border-plum-500/40 transition">The mindset</a>
+                <a href="/#pipeline" class="px-3.5 py-1.5 rounded-full hover:bg-plum-600/25 hover:text-white border border-transparent hover:border-plum-500/40 transition">Video pipeline</a>
+                <a href="/hub/" aria-current="page" class="px-3.5 py-1.5 rounded-full bg-plum-600/25 text-white border border-plum-500/40 transition">Content hub</a>
+                <a href="/characters/" class="px-3.5 py-1.5 rounded-full hover:bg-plum-600/25 hover:text-white border border-transparent hover:border-plum-500/40 transition">Characters</a>
+            </nav>
+
+            <!-- Mobile Menu Button -->
+            <div class="flex items-center md:hidden">
+                <button id="mobile-menu-btn" class="w-9 h-9 rounded-full bg-charcoal-700/70 border border-charcoal-600 text-slate-300 hover:text-white flex items-center justify-center focus:outline-none" aria-label="Toggle Menu">
+                    <i class="fa-solid fa-bars text-base"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden w-full mt-2 rounded-2xl bg-charcoal-800/95 backdrop-blur-xl border border-plum-500/30 shadow-2xl px-4 py-3 space-y-1">
+            <a href="/#about" class="block px-3 py-2 rounded-xl text-sm text-slate-300 hover:bg-plum-600/20 hover:text-white font-medium">The mindset</a>
+            <a href="/#pipeline" class="block px-3 py-2 rounded-xl text-sm text-slate-300 hover:bg-plum-600/20 hover:text-white font-medium">Video pipeline</a>
+            <a href="/hub/" class="block px-3 py-2 rounded-xl text-sm text-slate-300 hover:bg-plum-600/20 hover:text-white font-medium">Content hub</a>
+            <a href="/characters/" class="block px-3 py-2 rounded-xl text-sm text-slate-300 hover:bg-plum-600/20 hover:text-white font-medium">Characters</a>
+        </div>
+    </header>
+
+    <main class="flex-grow">
+        <section class="py-16 sm:py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-2xl mx-auto mb-10">
+                    <h1 class="gothic-heading text-4xl sm:text-5xl font-bold text-white">Content hub</h1>
+                </div>
+
+                <!-- Coming soon (swap for the filter tabs and cards once posts exist) -->
+                <div class="max-w-2xl mx-auto p-8 sm:p-10 rounded-2xl bg-charcoal-800 border border-dashed border-plum-500/40 text-center space-y-5">
+                    <span class="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest px-3 py-1 rounded-full bg-plum-600/20 text-plum-300 border border-plum-500/30">
+                        <i class="fa-solid fa-hourglass-half text-[10px]"></i> Coming soon
+                    </span>
+                    <p class="text-sm sm:text-base text-slate-300 leading-relaxed">
+                        Behind-the-scenes write-ups, finished shorts and vibe coding stories will land here soon.
+                    </p>
+                    <div class="flex flex-wrap justify-center gap-2">
+                        <span class="px-3 py-1 rounded-full text-xs font-mono bg-charcoal-900 border border-charcoal-700 text-slate-400">The Journey &amp; BTS</span>
+                        <span class="px-3 py-1 rounded-full text-xs font-mono bg-charcoal-900 border border-charcoal-700 text-slate-400">Shorts</span>
+                        <span class="px-3 py-1 rounded-full text-xs font-mono bg-charcoal-900 border border-charcoal-700 text-slate-400">Vibe Coding</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-charcoal-900 border-t border-charcoal-700/60 py-12 text-slate-400 text-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-3">
+                <img src="/media/logo.png" alt="House of Kay logo" class="w-9 h-9 rounded-full object-cover">
+                <span class="gothic-heading text-white font-semibold">House of Kay</span>
+                <span class="text-xs font-mono">© 2026. All rights reserved.</span>
+            </div>
+
+            <div class="flex items-center gap-6 text-slate-400 text-base">
+                <a href="#" class="hover:text-plum-400 transition" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+                <a href="#" class="hover:text-plum-400 transition" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+                <a href="#" class="hover:text-plum-400 transition" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+                <a href="#" class="hover:text-plum-400 transition" aria-label="LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
+            </div>
+
+            <div class="text-xs font-mono text-slate-500">
+                Embracing the AI revolution
+            </div>
+        </div>
+    </footer>
+
+    <script src="/js/site.js"></script>
+</body>
+</html>

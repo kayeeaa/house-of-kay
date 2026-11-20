@@ -1,0 +1,23 @@
+/* Shared base styles for every House of Kay page */
+body {
+    background-color: #0c0e12;
+    color: #e2e8f0;
+    font-family: 'Inter', sans-serif;
+}
+.gothic-heading {
+    font-family: 'Playfair Display', serif;
+}
+/* Custom scrollbar for moody aesthetic */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #0c0e12;
+}
+::-webkit-scrollbar-thumb {
+    background: #2a3040;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #7c2d58;
+}
