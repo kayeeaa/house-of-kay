@@ -17,7 +17,7 @@ const CHARACTER_CARDS = {
         tagClass: 'bg-plum-600/30 text-plum-300 border-plum-500/30',
         meetName: 'Aske',
         image: '/media/characters/aske/master.jpg',
-        imagePosition: 'bg-top',
+        imagePosition: 'bg-[center_25%]',
         blurb: 'Pronounced "ASK-uh", the Norwegian and Danish word for ash. When she was a child, a fire took her home and her family and broke her wings as she escaped. After years of grief she decided to take happiness back. Now she walks into the Office of Untimely Endings with an antique shotgun that fires colour powder. Her revenge is joy.'
     },
     gristle: {
@@ -26,7 +26,7 @@ const CHARACTER_CARDS = {
         tagClass: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
         meetName: 'Gristle',
         image: '/media/characters/gristle/master.jpg',
-        imagePosition: 'bg-top',
+        imagePosition: 'bg-center',
         blurb: 'About 175 years old. He was left on a butcher\'s doorstep as a baby and paid for his keep with two fingers of his left hand. He has never known love and scrubs his skin until it\'s red raw. Yet he turns up to work every day immaculate in his dark green suit, and stamps horrific early deaths on babies\' certificates without even looking.'
     },
     art: {
@@ -35,7 +35,7 @@ const CHARACTER_CARDS = {
         tagClass: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
         meetName: 'Art',
         image: '/media/characters/art/master.jpg',
-        imagePosition: 'bg-top',
+        imagePosition: 'bg-center',
         blurb: 'Only 35, which is young for a bogle, and wearing the hand-me-down suit of the uncle who got him the job. Art doesn\'t belong at the Office of Untimely Endings. He feels pangs of guilt he can\'t name, and hovers over the stamp rack looking for the gentlest ending he can find.'
     },
     'bogle-clerks': {
@@ -44,7 +44,7 @@ const CHARACTER_CARDS = {
         tagClass: 'bg-slate-600/40 text-slate-300 border-slate-500/40',
         meetName: 'the clerks',
         image: '/media/characters/bogle-clerks/clerk-1-master.jpg',
-        imagePosition: 'bg-top',
+        imagePosition: 'bg-center',
         blurb: 'The bored, joyless bureaucrats who fill the towering counters of the counting hall. They aren\'t cruel like Gristle or troubled like Art; they stopped caring a long time ago. Clerk 1, the dark slate bogle, is the first one Aske shoots.'
     },
     morrowveils: {
